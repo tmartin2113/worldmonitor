@@ -1,4 +1,9 @@
-// Non-sebuf: returns XML/HTML, stays as standalone Vercel function
+// Returns XML/HTML for social crawlers. Uses the Web-handler contract
+// (req: Request -> Response) so it runs under the docker sidecar's dispatch
+// (local-api-server.mjs calls `mod.default(request)` and requires a Response),
+// same as every other handler here. The prior Node-style `(req, res)` +
+// res.writeHead() form threw "Cannot read properties of undefined (reading
+// 'writeHead')" because the sidecar passes no `res`.
 /**
  * Story Page for Social Crawlers
  * Returns HTML with proper og:image and twitter:card meta tags.
@@ -15,7 +20,7 @@ const COUNTRY_NAMES = {
 
 const BOT_UA = /twitterbot|facebookexternalhit|linkedinbot|slackbot|telegrambot|whatsapp|discordbot|redditbot|googlebot/i;
 
-export default function handler(req, res) {
+export default function handler(req) {
   const url = new URL(req.url, 'https://worldmonitor.app');
   const countryCode = (url.searchParams.get('c') || '').toUpperCase();
   const type = url.searchParams.get('t') || 'ciianalysis';
@@ -23,7 +28,7 @@ export default function handler(req, res) {
   const score = url.searchParams.get('s') || '';
   const level = url.searchParams.get('l') || '';
 
-  const ua = req.headers['user-agent'] || '';
+  const ua = req.headers.get('user-agent') || '';
   const isBot = BOT_UA.test(ua);
 
   const baseUrl = 'https://worldmonitor.app';
@@ -31,9 +36,7 @@ export default function handler(req, res) {
 
   // Real users → redirect to SPA
   if (!isBot) {
-    res.writeHead(302, { Location: spaUrl });
-    res.end();
-    return;
+    return new Response(null, { status: 302, headers: { Location: spaUrl } });
   }
 
   // Bots → serve meta tags
@@ -75,9 +78,13 @@ export default function handler(req, res) {
 </body>
 </html>`;
 
-  res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  res.setHeader('Cache-Control', 'public, max-age=300, s-maxage=300, stale-while-revalidate=60');
-  res.status(200).send(html);
+  return new Response(html, {
+    status: 200,
+    headers: {
+      'Content-Type': 'text/html; charset=utf-8',
+      'Cache-Control': 'public, max-age=300, s-maxage=300, stale-while-revalidate=60',
+    },
+  });
 }
 
 function esc(str) {
