@@ -54,6 +54,19 @@ const MAX_WATCH_ITEMS = 3;
  */
 const DEFAULT_PROVIDERS = [
   {
+    // Local CPU inference (Ollama). Primary provider on the self-hosted box:
+    // mirofish-granite is CPU-pinned (num_gpu 0), so brief generation never
+    // touches the GPU the IronClaw 27B owns, and it's free/offline. Gated on
+    // WM_BRIEF_LLM_URL so removing that .env var falls back to the cloud chain.
+    // Granite is NOT a reasoning model, so no thinking-token / empty-output trap.
+    name: 'ollama-local',
+    envKey: 'WM_BRIEF_LLM_URL',
+    apiUrl: process.env.WM_BRIEF_LLM_URL || 'http://localhost:11434/v1/chat/completions',
+    model: process.env.WM_BRIEF_LLM_MODEL || 'mirofish-granite:latest',
+    timeout: 300_000, // CPU inference — generous; this is a nightly batch
+    headers: () => ({ 'Content-Type': 'application/json' }),
+  },
+  {
     name: 'openrouter',
     envKey: 'OPENROUTER_API_KEY',
     apiUrl: 'https://openrouter.ai/api/v1/chat/completions',
