@@ -54,10 +54,17 @@ const AISSTREAM_URL = 'wss://stream.aisstream.io/v0/stream';
 const API_KEY = process.env.AISSTREAM_API_KEY || process.env.VITE_AISSTREAM_API_KEY;
 const PORT = process.env.PORT || 3004;
 
-if (!API_KEY) {
-  console.error('[Relay] Error: AISSTREAM_API_KEY environment variable not set');
-  console.error('[Relay] Get a free key at https://aisstream.io');
-  process.exit(1);
+// AIS vessel tracking (aisstream.io) is one feed among many this relay serves
+// (OpenSky, Polymarket, Telegram, market data, and ~20 seed loops need no AIS
+// key). Every other upstream key in this file degrades gracefully with `|| ''`
+// + an `if (KEY)` guard; AISSTREAM used to be the lone hard-exit, which took the
+// whole relay — and all those unrelated feeds — down when only the AIS map layer
+// was unavailable. Degrade instead: warn, skip the AIS websocket (guarded in
+// connectUpstream), and serve everything else. Set AISSTREAM_API_KEY (free at
+// https://aisstream.io) to light up live vessel positions.
+const AIS_ENABLED = Boolean(API_KEY);
+if (!AIS_ENABLED) {
+  console.warn('[Relay] AISSTREAM_API_KEY not set — live AIS vessel tracking disabled; all other relay feeds continue. Get a free key at https://aisstream.io');
 }
 
 const MAX_WS_CLIENTS = 10; // Cap WS clients — app uses HTTP snapshots, not WS
@@ -11436,6 +11443,10 @@ function switchTab(btn, key) {
 // ─── End Widget Agent ────────────────────────────────────────────────────────
 
 function connectUpstream() {
+  // No AISSTREAM key → no live vessel feed. No-op so the relay never opens a
+  // wss connection with an undefined APIKey (which aisstream rejects, spinning
+  // a 5s reconnect loop). /ais/snapshot then serves an empty snapshot.
+  if (!AIS_ENABLED) return;
   // Skip if already connected or connecting
   if (upstreamSocket?.readyState === WebSocket.OPEN ||
       upstreamSocket?.readyState === WebSocket.CONNECTING) return;

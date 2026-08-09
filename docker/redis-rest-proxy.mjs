@@ -53,7 +53,17 @@ function checkAuth(req) {
 }
 
 // Command safety: allowlist of expected Redis commands.
-// Blocks dangerous operations like FLUSHALL, CONFIG SET, EVAL, DEBUG, SLAVEOF.
+// Blocks dangerous operations like FLUSHALL, CONFIG SET, DEBUG, SLAVEOF.
+//
+// EVAL/EVALSHA/SCRIPT are permitted because @upstash/ratelimit (used by the
+// WorldMonitor app's /api/wm-session rate limiter, which runs failClosed) drives
+// its sliding-window logic through Lua server-side scripts. Without these, the
+// limiter's script call 500s here and the app fails closed → 429 on every
+// session mint → 401 on every feed endpoint. The shim binds 127.0.0.1 only and
+// is bearer-token gated, and the backing redis holds reseedable cache data that
+// the already-allowlisted DEL/SET can trash anyway — so permitting server-side
+// scripting is a marginal escalation on this local deployment. Note: EVAL can
+// still reach FLUSHALL/CONFIG from inside Lua; that is the accepted tradeoff.
 const ALLOWED_COMMANDS = new Set([
   'GET', 'SET', 'DEL', 'MGET', 'MSET', 'SCAN',
   'TTL', 'EXPIRE', 'PEXPIRE', 'EXISTS', 'TYPE',
@@ -67,6 +77,7 @@ const ALLOWED_COMMANDS = new Set([
   'PUBLISH', 'SUBSCRIBE',
   'SETNX', 'SETEX', 'PSETEX', 'GETSET',
   'APPEND', 'STRLEN',
+  'EVAL', 'EVALSHA', 'SCRIPT',
 ]);
 
 async function runCommand(args) {

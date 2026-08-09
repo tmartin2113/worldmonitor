@@ -1846,6 +1846,26 @@ export async function createLocalApiServer(options = {}) {
           );
         }
       }
+      // The relay (ais-relay) is a trusted internal sidecar exactly like
+      // redis-rest above: operator-configured via WS_RELAY_URL, reached over the
+      // compose network on a private (172.16/12) IP. Without allowlisting its
+      // origin, every relay-proxied feed (opensky/polymarket/telegram) is
+      // SSRF-blocked at the global fetch guard. This is the same trusted-sidecar
+      // derivation Redis already gets — NOT an env-driven widening of the SSRF
+      // boundary (the "env-free by design" note above concerns arbitrary
+      // operator env, not the two fixed internal sidecars this server depends on).
+      if (context.mode === 'docker' && process.env.WS_RELAY_URL) {
+        try {
+          const relayHttpOrigin = process.env.WS_RELAY_URL
+            .replace('wss://', 'https://')
+            .replace('ws://', 'http://');
+          extraAllowedPrivateOrigins.push(new URL(relayHttpOrigin).origin);
+        } catch (err) {
+          context.logger.warn(
+            `[local-api] WS_RELAY_URL is not a valid URL; not added to the private-fetch allowlist (relay-proxied feeds will be SSRF-blocked): ${err.message}`,
+          );
+        }
+      }
       if (context.allowPrivateRemoteBase) {
         try { extraAllowedPrivateOrigins.push(new URL(context.remoteBase).origin); } catch {}
       }

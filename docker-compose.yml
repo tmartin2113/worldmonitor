@@ -19,14 +19,24 @@ services:
     image: worldmonitor:latest
     container_name: worldmonitor
     ports:
-      - "${WM_PORT:-3000}:8080"
+      # Bind loopback-only: the agent reaches worldmonitor via localhost; no LAN
+      # exposure. (audit 2026-07-16 network-segmentation) Was "${WM_PORT:-3000}:8080".
+      - "127.0.0.1:${WM_PORT:-3000}:8080"
     environment:
       UPSTASH_REDIS_REST_URL: "http://redis-rest:80"
       UPSTASH_REDIS_REST_TOKEN: "${REDIS_TOKEN:?REDIS_TOKEN required — generate with: openssl rand -hex 32}"
+      # Signs the browser session cookie minted by /api/wm-session. Without it,
+      # issueSessionToken() throws → 503, and every feed endpoint 401s for lack
+      # of a session. Min 32 chars.
+      WM_SESSION_SECRET: "${WM_SESSION_SECRET:?WM_SESSION_SECRET required — generate with: openssl rand -hex 32}"
       LOCAL_API_PORT: "46123"
       LOCAL_API_MODE: "docker"
       LOCAL_API_CLOUD_FALLBACK: "false"
       WS_RELAY_URL: "http://ais-relay:3004"
+      # Must match the ais-relay service's RELAY_SHARED_SECRET — the app sends it
+      # as the x-relay-key header when proxying feeds (opensky/polymarket/telegram)
+      # through the relay; a mismatch or absence makes the relay 401 every proxy.
+      RELAY_SHARED_SECRET: "${RELAY_SHARED_SECRET:?RELAY_SHARED_SECRET required — generate with: openssl rand -hex 32}"
       # LLM provider (any OpenAI-compatible endpoint)
       LLM_API_URL: "${LLM_API_URL:-}"
       LLM_API_KEY: "${LLM_API_KEY:-}"
@@ -70,6 +80,10 @@ services:
     container_name: worldmonitor-ais-relay
     environment:
       AISSTREAM_API_KEY: "${AISSTREAM_API_KEY:-}"
+      # Shared secret the relay requires to boot and uses to authenticate proxied
+      # requests (x-relay-key header). MUST match the value the worldmonitor app
+      # sends. Without it the relay FATALs on startup.
+      RELAY_SHARED_SECRET: "${RELAY_SHARED_SECRET:?RELAY_SHARED_SECRET required — generate with: openssl rand -hex 32}"
       UPSTASH_REDIS_REST_URL: "http://redis-rest:80"
       UPSTASH_REDIS_REST_TOKEN: "${REDIS_TOKEN:?REDIS_TOKEN required — generate with: openssl rand -hex 32}"
       UPSTASH_ALLOW_INSECURE_HTTP: "true"
