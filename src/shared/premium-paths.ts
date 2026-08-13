@@ -52,4 +52,12 @@ export const PREMIUM_RPC_PATHS = new Set<string>([
   // stayed hidden until PR #3797 fixed the unlock-wipe so users could
   // actually type and click Send.
   '/api/chat-analyst',
+  // /api/news/v1/summarize-article: the handler calls isCallerPremium() and
+  // returns 401 "Pro authentication required" for non-premium callers, but the
+  // path was missing from this set — so enrichInitForPremium() never attached
+  // any credential and EVERY browser call 401'd, tripping the client circuit
+  // breaker ("[News Summarization] On cooldown for 300s after N failures").
+  // Same class of bug as /api/chat-analyst above. LOCAL fork patch — re-apply
+  // after any upstream sync.
+  '/api/news/v1/summarize-article',
 ]);

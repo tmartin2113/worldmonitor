@@ -1389,7 +1389,19 @@ export function createDomainGateway(
     // already enforced 50/day + 60/min per userId in api/mcp.ts. A second
     // limiter here would create misleading double-counting and could 429
     // legitimate Pro tool fetches that pass the upstream cap.
-    if (!internalMcpVerified) {
+    // isEnterpriseAuth is exempted for the same reason internalMcpVerified is:
+    // enterprise keys are governed by the per-key API-key layer below
+    // (ENTERPRISE_API_RATE_LIMIT, 1,000/min, keyed on the key hash), so running
+    // the per-endpoint policy here too is double-counting and 429s legitimate
+    // Pro fetches that already pass the upstream cap. It bit self-host hard:
+    // summarize-article's 30/60s budget is a CLOUD SPEND control, but a
+    // self-hosted instance runs local granite at zero marginal cost, and every
+    // browser call arrives from the same docker gateway IP, so one page load's
+    // burst exhausted the shared per-IP bucket and latched the client's 300s
+    // circuit breaker. Requires API_RATE_LIMIT_ENFORCE=true (set in
+    // docker-compose.yml) or the key layer only runs in shadow mode.
+    // LOCAL fork patch — re-apply after any upstream sync.
+    if (!internalMcpVerified && !isEnterpriseAuth) {
       const endpointRlResponse = await checkEndpointRateLimit(request, pathname, corsHeaders);
       if (endpointRlResponse) {
         const reason =

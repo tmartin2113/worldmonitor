@@ -216,7 +216,7 @@ const LLM_PROVIDERS = [
       return h;
     },
     extraBody: { think: false },
-    timeout: 25_000,
+    timeout: 60_000,  // local prime patch: granite on CPU averages ~28-40s/gen; 25s under-cut it → headline fallback
   },
   {
     name: 'openrouter',

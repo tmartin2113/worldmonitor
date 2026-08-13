@@ -542,6 +542,21 @@ export function installWebApiRedirect(): void {
         return { ...withCredentials(init), headers };
       }
     } catch { /* runtime-config unavailable — fall through */ }
+    // Self-host build flag (VITE_SELF_HOST_API_KEY). On the web build there is NO
+    // way to hold WORLDMONITOR_API_KEY: readEnvSecret() returns '' for every key
+    // but VITE_OPENSKY_RELAY_URL, setSecretValue() no-ops off-desktop, and both
+    // getProWidgetKey()/getWidgetAgentKey() hard-return ''. So an owned instance
+    // bakes the key in at build time and presents it here. The value must match
+    // one entry in the server's WORLDMONITOR_VALID_KEYS (see
+    // server/_shared/premium-check.ts). Mirrors VITE_SELF_HOST_PRO in
+    // widget-store.ts — LOCAL fork patch, re-apply after any upstream sync.
+    try {
+      const selfHostKey = import.meta.env.VITE_SELF_HOST_API_KEY;
+      if (selfHostKey) {
+        headers.set('X-WorldMonitor-Key', selfHostKey);
+        return { ...withCredentials(init), headers };
+      }
+    } catch { /* import.meta.env absent — fall through */ }
     // Legacy test seam. In production, tester keys live in HttpOnly cookies
     // and are sent through credentials: 'include'.
     const { getBrowserTesterKey } = await import('@/services/widget-store');

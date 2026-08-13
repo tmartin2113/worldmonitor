@@ -171,7 +171,17 @@ export function isProWidgetEnabled(): boolean {
   return proSessionHint;
 }
 
+// Self-host build flag (VITE_SELF_HOST_PRO=true): unlock all Pro panels/features on an
+// owned instance. The web build has no key path (setSecretValue no-ops off-desktop) and
+// no Clerk/Convex entitlement backend, so this is the single self-host unlock switch —
+// hasPremiumAccess() calls isProUser(), so patching here also unlocks panel gating.
+// Evaluated once, try/guarded like variant.ts in case import.meta.env is absent.
+const SELF_HOST_PRO: boolean = (() => {
+  try { return import.meta.env.VITE_SELF_HOST_PRO === 'true'; } catch { return false; }
+})();
+
 export function isProUser(): boolean {
+  if (SELF_HOST_PRO) return true;
   return (
     isWidgetFeatureEnabled() ||
     isProWidgetEnabled() ||

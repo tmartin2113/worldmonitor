@@ -16,6 +16,12 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        # Baked into the client bundle and sent as X-WorldMonitor-Key; must match
+        # WORLDMONITOR_VALID_KEYS below (same .env value serves both sides).
+        # NOTE: anyone who can load the dashboard can read this key out of the
+        # bundle — acceptable for a tailnet-only instance, not for public exposure.
+        VITE_SELF_HOST_API_KEY: "${WORLDMONITOR_VALID_KEYS:-}"
     image: worldmonitor:latest
     container_name: worldmonitor
     ports:
@@ -41,6 +47,36 @@ services:
       LLM_API_URL: "${LLM_API_URL:-}"
       LLM_API_KEY: "${LLM_API_KEY:-}"
       LLM_MODEL: "${LLM_MODEL:-}"
+      # Self-host: server-side LLM → the HOST's Ollama, on CPU granite.
+      # `ollama` is FIRST in PROVIDER_CHAIN (server/_shared/llm.ts) and needs no
+      # API key, unlike the `generic` provider which returns null without
+      # LLM_API_KEY. This is a BASE url — llm.ts appends /v1/chat/completions.
+      # NOT taken from .env: the host-side OLLAMA_API_URL there is
+      # http://localhost:11434 for the seeder scripts, and inside the container
+      # localhost is the container. host.docker.internal is mapped to the docker
+      # host by extra_hosts below and is in llm.ts's OLLAMA_HOST_ALLOWLIST.
+      # CPU granite deliberately — keeps the GPU for IronClaw's 27B.
+      # Raw docker0 gateway IP, NOT host.docker.internal: the API handlers run in
+      # a Workers-style isolate whose fetch does not resolve the /etc/hosts entry
+      # that extra_hosts adds, so the hostname form made llm-health's probe report
+      # "Provider unreachable" while a plain node fetch in the same container
+      # succeeded in 2ms. LOCAL_API_MODE=docker makes isLocalDeployment() true, so
+      # the raw IP bypasses llm.ts's OLLAMA_HOST_ALLOWLIST hostname check.
+      OLLAMA_API_URL: "http://172.17.0.1:11434"
+      OLLAMA_MODEL: "${WM_BRIEF_LLM_MODEL:-mirofish-granite:latest}"
+      # Self-host Pro unlock: a browser-held WORLDMONITOR_API_KEY that matches a value
+      # here satisfies the SERVER-side premium gate. (Panels unlock client-side on any
+      # 16+ char key entered in Settings; this makes server premium endpoints honor it.)
+      WORLDMONITOR_VALID_KEYS: "${WORLDMONITOR_VALID_KEYS:-}"
+      # Promote the per-API-key rate-limit layer from SHADOW to ENFORCE, so
+      # enterprise-key callers are governed by ENTERPRISE_API_RATE_LIMIT
+      # (1,000/min, per key hash) instead of the shared per-IP bucket. Paired
+      # with the isEnterpriseAuth exemption in server/gateway.ts — without this
+      # the key layer only records telemetry and traffic still falls through.
+      API_RATE_LIMIT_ENFORCE: "true"
+      # Self-host: the instance's own browser origin(s) so CORS/origin gates pass
+      # (fixes the YouTube-live webcam resolver 403 on the tailnet MagicDNS origin).
+      SELF_HOST_ORIGINS: "${SELF_HOST_ORIGINS:-}"
       GROQ_API_KEY: "${GROQ_API_KEY:-}"
       OPENROUTER_API_KEY: "${OPENROUTER_API_KEY:-}"
       # Data source API keys (optional — features degrade gracefully)
@@ -65,6 +101,12 @@ services:
     #   - FRED_API_KEY
     #   - NASA_FIRMS_API_KEY
     #   - LLM_API_KEY
+    # Maps host.docker.internal → the docker host, so the container can reach the
+    # host's Ollama (see OLLAMA_API_URL above). Reaches it through the socat
+    # bridge on the docker0 gateway, which allowlists the docker address space
+    # (ollama-docker-bridge.service — see ~/tool-integrations/install-ollama-bridge.sh).
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       redis-rest:
         condition: service_started

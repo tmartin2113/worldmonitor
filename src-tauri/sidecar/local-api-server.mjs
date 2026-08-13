@@ -192,12 +192,29 @@ async function assertSafeSidecarFetchUrl(url) {
   return safety;
 }
 
+// Origins of the operator-configured local LLM. The compiled API handlers
+// (server/_shared/llm-health.ts probe, summarize-article's own fetch) call plain
+// global fetch and CANNOT set the ALLOW_PRIVATE_NETWORK_FETCH symbol, so without
+// this a self-hosted Ollama on a private address is SSRF-blocked: the health probe
+// fails, isProviderAvailable() returns false, and every LLM call short-circuits to
+// "Empty response" in 0ms while silently falling through to a cloud provider.
+// Narrow by design — ONLY the exact origins named in OLLAMA_API_URL / LLM_API_URL,
+// which the operator set deliberately. Everything else stays SSRF-guarded.
+// LOCAL fork patch — re-apply after any upstream sync.
+const SELF_HOST_LLM_ORIGINS = new Set(
+  [process.env.OLLAMA_API_URL, process.env.LLM_API_URL]
+    .filter(Boolean)
+    .map((u) => { try { return new URL(u).origin; } catch { return null; } })
+    .filter(Boolean),
+);
+
 globalThis.fetch = async function ipv4Fetch(input, init) {
   const isRequest = input && typeof input === 'object' && 'url' in input;
   let url;
   try { url = new URL(typeof input === 'string' ? input : input.url); } catch { return _originalFetch(input, init); }
   if (url.protocol !== 'https:' && url.protocol !== 'http:') return _originalFetch(input, init);
-  const allowPrivateNetwork = init?.[ALLOW_PRIVATE_NETWORK_FETCH] === true;
+  const allowPrivateNetwork = init?.[ALLOW_PRIVATE_NETWORK_FETCH] === true
+    || SELF_HOST_LLM_ORIGINS.has(url.origin);
   const safety = allowPrivateNetwork
     ? { safe: true, resolvedAddresses: [url.hostname] }
     : await assertSafeSidecarFetchUrl(url);
@@ -1541,10 +1558,12 @@ async function dispatch(requestUrl, req, routes, context) {
     }
   }
 
-  // YouTube live detection — requires residential proxy (Railway relay).
-  // Direct fetch from sidecar fails (YouTube blocks datacenter IPs).
-  // Always proxy to cloud, bypassing the cloudFallback flag.
-  if (requestUrl.pathname === '/api/youtube/live') {
+  // YouTube live detection needs the residential-proxy relay. When a local relay IS
+  // configured (WS_RELAY_URL — e.g. a self-hosted ais-relay), let the normal local
+  // handler run: it proxies to that relay, which resolves the live id fine, so we must
+  // NOT force-cloud (api.worldmonitor.app is Cloudflare-gated and 403s self-hosters).
+  // Only force-cloud when there's no relay at all (a desktop sidecar without one).
+  if (requestUrl.pathname === '/api/youtube/live' && !process.env.WS_RELAY_URL) {
     const cloudResponse = await tryCloudFallback(requestUrl, req, context, 'youtube-live needs relay');
     if (cloudResponse) return cloudResponse;
     return json({ error: 'YouTube live detection unavailable' }, 503);

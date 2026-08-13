@@ -10,6 +10,7 @@ import { playAllLiveMedia, registerLiveMediaStarter, unregisterLiveMediaStarter,
 import { getLiveStreamsAlwaysOn, subscribeLiveStreamsSettingsChange } from '@/services/live-stream-settings';
 import { setTrustedHtml, trustedHtml } from '@/utils/dom-utils';
 import { isAllowedWebcamEmbedMessageOrigin } from './_live-webcams-origin';
+import { fetchLiveVideoInfo } from '@/services/live-news';
 
 
 type WebcamRegion = 'middle-east' | 'europe' | 'asia' | 'americas' | 'space';
@@ -28,29 +29,29 @@ interface WebcamFeed {
 const WEBCAM_FEEDS: WebcamFeed[] = [
   // Middle East — Jerusalem & Tehran adjacent (conflict hotspots)
   { id: 'jerusalem', city: 'Jerusalem', country: 'Israel', region: 'middle-east', channelHandle: '@TheWesternWall', fallbackVideoId: 'e34xb-Fbl0U' },
-  { id: 'middle-east', city: 'Middle East', country: 'Multi', region: 'middle-east', channelHandle: '@MiddleEastCams', fallbackVideoId: 'oxT5R6I0N6E' },
-  { id: 'tel-aviv', city: 'Tel Aviv', country: 'Israel', region: 'middle-east', channelHandle: '@IsraelLiveCam', fallbackVideoId: 'gmtlJ_m2r5A' },
+  { id: 'middle-east', city: 'Middle East', country: 'Multi', region: 'middle-east', channelHandle: '@AlJazeeraEnglish', fallbackVideoId: 'gCNeDWCI0vo' },
+  { id: 'tel-aviv', city: 'Tel Aviv', country: 'Israel', region: 'middle-east', channelHandle: '@i24NEWS_EN', fallbackVideoId: 'AiWmQzbt8jc' },
   { id: 'mecca', city: 'Mecca', country: 'Saudi Arabia', region: 'middle-east', channelHandle: '@MakkahLive', fallbackVideoId: 'kJwEsQTegxk' },
   { id: 'beirut-mtv', city: 'Beirut', country: 'Lebanon', region: 'middle-east', channelHandle: '@MTVLebanonNews', fallbackVideoId: 'djF-Lkgfp6k' },
   // Europe
-  { id: 'kyiv', city: 'Kyiv', country: 'Ukraine', region: 'europe', channelHandle: '@DWNews', fallbackVideoId: '-Q7FuPINDjA' },
-  { id: 'odessa', city: 'Odessa', country: 'Ukraine', region: 'europe', channelHandle: '@UkraineLiveCam', fallbackVideoId: 'e2gC37ILQmk' },
-  { id: 'paris', city: 'Paris', country: 'France', region: 'europe', channelHandle: '@PalaisIena', fallbackVideoId: 'OzYp4NRZlwQ' },
-  { id: 'st-petersburg', city: 'St. Petersburg', country: 'Russia', region: 'europe', channelHandle: '@SPBLiveCam', fallbackVideoId: 'CjtIYbmVfck' },
-  { id: 'london', city: 'London', country: 'UK', region: 'europe', channelHandle: '@EarthCam', fallbackVideoId: 'Lxqcg1qt0XU' },
+  { id: 'kyiv', city: 'Kyiv', country: 'Ukraine', region: 'europe', channelHandle: '@DWNews', fallbackVideoId: 'LuKwFajn37U' },
+  { id: 'odessa', city: 'Odessa', country: 'Ukraine', region: 'europe', channelHandle: '@UkraineNow', fallbackVideoId: 'e2gC37ILQmk' },
+  { id: 'paris', city: 'Paris', country: 'France', region: 'europe', channelHandle: '@France24', fallbackVideoId: 'a47ckXKZjxI' },
+  { id: 'st-petersburg', city: 'St. Petersburg', country: 'Russia', region: 'europe', channelHandle: '@RailStream', fallbackVideoId: 'a_IsaWR8fBE' },
+  { id: 'london', city: 'London', country: 'UK', region: 'europe', channelHandle: '@SkyNews', fallbackVideoId: '1WTpVyKAPTU' },
   // Americas
   { id: 'washington', city: 'Washington DC', country: 'USA', region: 'americas', channelHandle: '@AxisCommunications', fallbackVideoId: '1wV9lLe14aU' },
-  { id: 'new-york', city: 'New York', country: 'USA', region: 'americas', channelHandle: '@EarthCam', fallbackVideoId: '4qyZLflp-sI' },
-  { id: 'los-angeles', city: 'Los Angeles', country: 'USA', region: 'americas', channelHandle: '@VeniceVHotel', fallbackVideoId: 'EO_1LWqsCNE' },
-  { id: 'miami', city: 'Miami', country: 'USA', region: 'americas', channelHandle: '@FloridaLiveCams', fallbackVideoId: '5YCajRjvWCg' },
+  { id: 'new-york', city: 'New York', country: 'USA', region: 'americas', channelHandle: '@EarthCam', fallbackVideoId: 'aPo-gk0y9tg' },
+  { id: 'los-angeles', city: 'Los Angeles', country: 'USA', region: 'americas', channelHandle: '@LosAngelesLive', fallbackVideoId: 'EO_1LWqsCNE' },
+  { id: 'miami', city: 'Miami', country: 'USA', region: 'americas', channelHandle: '@MiamiLive', fallbackVideoId: '5YCajRjvWCg' },
   // Asia-Pacific — Taipei first (strait hotspot), then Shanghai, Tokyo, Seoul
-  { id: 'taipei', city: 'Taipei', country: 'Taiwan', region: 'asia', channelHandle: '@JackyWuTaipei', fallbackVideoId: 'z_fY1pj1VBw' },
-  { id: 'shanghai', city: 'Shanghai', country: 'China', region: 'asia', channelHandle: '@SkylineWebcams', fallbackVideoId: '76EwqI5XZIc' },
-  { id: 'tokyo', city: 'Tokyo', country: 'Japan', region: 'asia', channelHandle: '@TokyoLiveCam4K', fallbackVideoId: '_k-5U7IeK8g' },
-  { id: 'seoul', city: 'Seoul', country: 'South Korea', region: 'asia', channelHandle: '@UNvillage_live', fallbackVideoId: '-JhoMGoAfFc' },
-  { id: 'sydney', city: 'Sydney', country: 'Australia', region: 'asia', channelHandle: '@WebcamSydney', fallbackVideoId: '7pcL-0Wo77U' },
+  { id: 'taipei', city: 'Taipei', country: 'Taiwan', region: 'asia', channelHandle: '@JackyWuTaipei', fallbackVideoId: 'pmM2CeSAx0I' },
+  { id: 'shanghai', city: 'Shanghai', country: 'China', region: 'asia', channelHandle: '@SkylineWebcams', fallbackVideoId: 'kUfuwa8mDrA' },
+  { id: 'tokyo', city: 'Tokyo', country: 'Japan', region: 'asia', channelHandle: '@ANNnewsCH', fallbackVideoId: 'lLmE8YiIg14' },
+  { id: 'seoul', city: 'Seoul', country: 'South Korea', region: 'asia', channelHandle: '@YTNnews', fallbackVideoId: '-JhoMGoAfFc' },
+  { id: 'sydney', city: 'Sydney', country: 'Australia', region: 'asia', channelHandle: '@WebcamSydney', fallbackVideoId: '5uZa3-RMFos' },
   // Space
-  { id: 'iss-earth', city: 'ISS Earth View', country: 'Space', region: 'space', channelHandle: '@NASA', fallbackVideoId: 'vytmBNhc9ig' },
+  { id: 'iss-earth', city: 'ISS Earth View', country: 'Space', region: 'space', channelHandle: '@NASA', fallbackVideoId: 'M3HKLzjvKPc' },
   { id: 'nasa-live', city: 'NASA TV', country: 'Space', region: 'space', channelHandle: '@NASA', fallbackVideoId: 'zPH5KtjJFaQ' },
   { id: 'space-x', city: 'SpaceX', country: 'Space', region: 'space', channelHandle: '@SpaceX', fallbackVideoId: 'fO9e9jnhYK8' },
   { id: 'space-walk', city: 'Space', country: 'Space', region: 'space', channelHandle: '@NASA', fallbackVideoId: 'fO9e9jnhYK8' },
@@ -328,6 +329,15 @@ export class LiveWebcamsPanel extends Panel {
       iframe.allowFullscreen = true;
       iframe.setAttribute('loading', 'lazy');
     }
+    // The static fallbackVideoId goes stale as channels rotate their live stream, so
+    // resolve the channel's CURRENT live video (via /api/youtube/live) and swap it in
+    // when it differs. Renders instantly on the fallback, upgrades once resolved. If the
+    // channel is offline (videoId === null) we keep the fallback / its blocked-overlay.
+    void fetchLiveVideoInfo(feed.channelHandle).then((info) => {
+      if (info?.videoId && info.videoId !== feed.fallbackVideoId && iframe.isConnected) {
+        iframe.src = this.buildEmbedUrl(info.videoId);
+      }
+    }).catch(() => { /* resolution failed — keep the fallback embed */ });
     return iframe;
   }
 

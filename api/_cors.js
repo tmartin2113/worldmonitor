@@ -14,6 +14,13 @@ const ALLOWED_ORIGIN_PATTERNS = [
     /^https?:\/\/localhost(:\d+)?$/,
     /^https?:\/\/127\.0\.0\.1(:\d+)?$/,
   ]),
+  // Self-host: exact origins from SELF_HOST_ORIGINS env (comma-separated) — e.g. a
+  // Tailscale MagicDNS URL like https://ironclaw.tailXXXX.ts.net plus loopback. Lets a
+  // self-hosted instance's OWN browser origin pass the origin gate (the YouTube-live
+  // webcam resolver 403s otherwise). Exact-matched + escaped, so no wildcard hole.
+  ...String(process.env.SELF_HOST_ORIGINS || '')
+    .split(',').map((s) => s.trim()).filter(Boolean)
+    .map((o) => new RegExp('^' + o.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$')),
 ];
 
 const ALLOWED_HEADERS = [

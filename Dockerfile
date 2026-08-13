@@ -25,6 +25,16 @@ RUN node docker/build-handlers.mjs
 
 # Build the crawlable static corpus and Vite frontend (outputs to dist/)
 # Skip blog build — blog-site has its own deps not installed here
+# VITE_SELF_HOST_PRO=true: self-host Pro unlock (isProUser() short-circuits) — this is an
+# owned instance with no Clerk/Convex entitlement backend. Vite bakes it into the bundle.
+ENV VITE_SELF_HOST_PRO=true
+# Self-host SERVER-side premium: baked into the bundle and sent as X-WorldMonitor-Key
+# (src/services/runtime.ts), matched against WORLDMONITOR_VALID_KEYS by
+# server/_shared/premium-check.ts. Passed as a build arg from compose so the value
+# lives in .env, never in the repo. VITE_SELF_HOST_PRO unlocks the UI; this unlocks
+# the server endpoints behind it (summarize-article, sanctions pressure, classify).
+ARG VITE_SELF_HOST_API_KEY=""
+ENV VITE_SELF_HOST_API_KEY=${VITE_SELF_HOST_API_KEY}
 RUN npm run build:crawlable-corpus && npm run build:content-corpus && npx tsc && npx vite build
 
 # ── Stage 2: Runtime dependencies ───────────────────────────────────────────
