@@ -62,7 +62,13 @@ services:
       # "Provider unreachable" while a plain node fetch in the same container
       # succeeded in 2ms. LOCAL_API_MODE=docker makes isLocalDeployment() true, so
       # the raw IP bypasses llm.ts's OLLAMA_HOST_ALLOWLIST hostname check.
-      OLLAMA_API_URL: "http://172.17.0.1:11434"
+      # 172.19.0.1 = THIS network's (worldmonitor_default) own gateway, not the
+      # default bridge's 172.17.0.1. Each docker network now gets its own scoped
+      # Ollama listener that accepts only that network's /16
+      # (ollama-bridge@.service), so a container reaches Ollama through its own
+      # gateway and has no path into any other network's. Replaces a single
+      # listener that accepted the entire 172.16.0.0/12 docker space.
+      OLLAMA_API_URL: "http://172.19.0.1:11434"
       OLLAMA_MODEL: "${WM_BRIEF_LLM_MODEL:-mirofish-granite:latest}"
       # Self-host Pro unlock: a browser-held WORLDMONITOR_API_KEY that matches a value
       # here satisfies the SERVER-side premium gate. (Panels unlock client-side on any
