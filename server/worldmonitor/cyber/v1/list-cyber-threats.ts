@@ -9,7 +9,7 @@ import type {
   ListCyberThreatsResponse,
 } from '../../../../src/generated/server/worldmonitor/cyber/v1/service_server';
 
-import { getCachedJson } from '../../../_shared/redis';
+import { attach } from '../../../_shared/data-status';
 import {
   DEFAULT_LIMIT,
   MAX_LIMIT,
@@ -50,11 +50,11 @@ export async function listCyberThreats(
 ): Promise<ListCyberThreatsResponse> {
   const empty: ListCyberThreatsResponse = { threats: [], pagination: { nextCursor: '', totalCount: 0 } };
 
-  try {
+  return attach(SEED_CACHE_KEY, 'the seeder for list cyber threats has not written this key', (__cachedValue) => {
     const pageSize = clampInt(req.pageSize, DEFAULT_LIMIT, 1, MAX_LIMIT);
     const offset = parseCursor(req.cursor);
 
-    const seedData = await getCachedJson(SEED_CACHE_KEY, true) as Pick<ListCyberThreatsResponse, 'threats'> | null;
+    const seedData = __cachedValue as Pick<ListCyberThreatsResponse, 'threats'> | null;
     if (!seedData?.threats?.length) return empty;
 
     const allThreats = filterSeededThreats(seedData.threats, req);
@@ -65,7 +65,5 @@ export async function listCyberThreats(
       threats: page,
       pagination: { totalCount: allThreats.length, nextCursor: hasMore ? String(offset + pageSize) : '' },
     };
-  } catch {
-    return empty;
-  }
+  });
 }

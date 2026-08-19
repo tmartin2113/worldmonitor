@@ -4,7 +4,7 @@ import type {
   ListDefensePatentsResponse,
   DefensePatentFiling,
 } from '../../../../src/generated/server/worldmonitor/military/v1/service_server';
-import { getCachedJson } from '../../../_shared/redis';
+import { attach } from '../../../_shared/data-status';
 
 const SEED_KEY = 'patents:defense:latest';
 const DEFAULT_LIMIT = 20;
@@ -14,8 +14,8 @@ export async function listDefensePatents(
   _ctx: ServerContext,
   req: ListDefensePatentsRequest,
 ): Promise<ListDefensePatentsResponse> {
-  try {
-    const result = await getCachedJson(SEED_KEY, true) as { patents?: DefensePatentFiling[]; fetchedAt?: string } | null;
+  return attach(SEED_KEY, 'the seeder for list defense patents has not written this key', (__cachedValue) => {
+    const result = __cachedValue as { patents?: DefensePatentFiling[]; fetchedAt?: string } | null;
     if (!result?.patents?.length) {
       return { patents: [], total: 0, fetchedAt: '' };
     }
@@ -36,7 +36,5 @@ export async function listDefensePatents(
     patents = patents.slice(0, limit);
 
     return { patents, total, fetchedAt: result.fetchedAt ?? '' };
-  } catch {
-    return { patents: [], total: 0, fetchedAt: '' };
-  }
+  });
 }

@@ -7,7 +7,7 @@ import type {
   GetTradeFlowsRequest,
   GetTradeFlowsResponse,
 } from '../../../../src/generated/server/worldmonitor/trade/v1/service_server';
-import { getCachedJson } from '../../../_shared/redis';
+import { attach } from '../../../_shared/data-status';
 
 const SEED_KEY_PREFIX = 'trade:flows:v1';
 
@@ -19,18 +19,16 @@ export async function getTradeFlows(
   _ctx: ServerContext,
   req: GetTradeFlowsRequest,
 ): Promise<GetTradeFlowsResponse> {
-  try {
-    const reporter = isValidCode(req.reportingCountry) ? req.reportingCountry : '840';
-    const partner = isValidCode(req.partnerCountry) ? req.partnerCountry : '000';
-    const years = Math.max(1, Math.min(req.years > 0 ? req.years : 10, 30));
+  const reporter = isValidCode(req.reportingCountry) ? req.reportingCountry : '840';
+  const partner = isValidCode(req.partnerCountry) ? req.partnerCountry : '000';
+  const years = Math.max(1, Math.min(req.years > 0 ? req.years : 10, 30));
+  const seedKey = `${SEED_KEY_PREFIX}:${reporter}:${partner}:${years}`;
 
-    const seedKey = `${SEED_KEY_PREFIX}:${reporter}:${partner}:${years}`;
-    const result = await getCachedJson(seedKey, true) as GetTradeFlowsResponse | null;
+  return attach(seedKey, 'the trade-flows seeder has not written this key', (__cachedValue) => {
+    const result = __cachedValue as GetTradeFlowsResponse | null;
     if (!result?.flows?.length) {
       return { flows: [], fetchedAt: new Date().toISOString(), upstreamUnavailable: true };
     }
     return result;
-  } catch {
-    return { flows: [], fetchedAt: new Date().toISOString(), upstreamUnavailable: true };
-  }
+  });
 }

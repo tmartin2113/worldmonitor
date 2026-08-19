@@ -6,7 +6,7 @@ import type {
   ServerContext,
 } from '../../../../src/generated/server/worldmonitor/sanctions/v1/service_server';
 
-import { getCachedJson } from '../../../_shared/redis';
+import { attach } from '../../../_shared/data-status';
 
 const ENTITY_INDEX_KEY = 'sanctions:entities:v1';
 const DEFAULT_MAX = 10;
@@ -164,10 +164,8 @@ export const lookupSanctionEntity: SanctionsServiceHandler['lookupSanctionEntity
 
   // Fallback: local OFAC fuzzy match from the seeded Redis index. Keeps the
   // endpoint useful when OpenSanctions is unreachable or rate-limiting us.
-  try {
-    const raw = await getCachedJson(ENTITY_INDEX_KEY, true);
+  return attach(ENTITY_INDEX_KEY, 'the seeder for lookup entity has not written this key', (__cachedValue) => {
+    const raw = __cachedValue;
     return { ...searchOfacLocal(q, maxResults, raw), source: 'ofac' };
-  } catch {
-    return { results: [], total: 0, source: 'ofac' };
-  }
+  });
 };

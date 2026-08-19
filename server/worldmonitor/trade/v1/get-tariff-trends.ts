@@ -7,7 +7,7 @@ import type {
   GetTariffTrendsRequest,
   GetTariffTrendsResponse,
 } from '../../../../src/generated/server/worldmonitor/trade/v1/service_server';
-import { getCachedJson } from '../../../_shared/redis';
+import { attach } from '../../../_shared/data-status';
 import { isCallerPremium } from '../../../_shared/premium-check';
 
 const SEED_KEY_PREFIX = 'trade:tariffs:v1';
@@ -21,20 +21,28 @@ export async function getTariffTrends(
   req: GetTariffTrendsRequest,
 ): Promise<GetTariffTrendsResponse> {
   const isPro = await isCallerPremium(ctx.request);
-  if (!isPro) return { datapoints: [], fetchedAt: '', upstreamUnavailable: true };
+  // Entitlement, not absence — a different answer from "we hold no tariff data".
+  if (!isPro) {
+    return {
+      datapoints: [], fetchedAt: '', upstreamUnavailable: true,
+      dataStatus: {
+        fetchedAt: '0',
+        availability: 'DATA_AVAILABILITY_EMPTY',
+        detail: 'tariff trends require a premium caller; no lookup was performed',
+      },
+    };
+  }
 
-  try {
-    const reporter = isValidCode(req.reportingCountry) ? req.reportingCountry : '840';
-    const productSector = isValidCode(req.productSector) ? req.productSector : '';
-    const years = Math.max(1, Math.min(req.years > 0 ? req.years : 10, 30));
+  const reporter = isValidCode(req.reportingCountry) ? req.reportingCountry : '840';
+  const productSector = isValidCode(req.productSector) ? req.productSector : '';
+  const years = Math.max(1, Math.min(req.years > 0 ? req.years : 10, 30));
+  const seedKey = `${SEED_KEY_PREFIX}:${reporter}:${productSector || 'all'}:${years}`;
 
-    const seedKey = `${SEED_KEY_PREFIX}:${reporter}:${productSector || 'all'}:${years}`;
-    const result = await getCachedJson(seedKey, true) as GetTariffTrendsResponse | null;
+  return attach(seedKey, 'the tariff-trends seeder has not written this key', (__cachedValue) => {
+    const result = __cachedValue as GetTariffTrendsResponse | null;
     if (!result?.datapoints?.length) {
       return { datapoints: [], fetchedAt: new Date().toISOString(), upstreamUnavailable: true };
     }
     return result;
-  } catch {
-    return { datapoints: [], fetchedAt: new Date().toISOString(), upstreamUnavailable: true };
-  }
+  });
 }

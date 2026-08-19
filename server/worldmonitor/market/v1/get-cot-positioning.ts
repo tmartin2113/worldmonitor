@@ -4,7 +4,7 @@ import type {
   GetCotPositioningResponse,
   CotInstrument,
 } from '../../../../src/generated/server/worldmonitor/market/v1/service_server';
-import { getCachedJson } from '../../../_shared/redis';
+import { attach } from '../../../_shared/data-status';
 
 const SEED_CACHE_KEY = 'market:cot:v1';
 
@@ -25,8 +25,8 @@ export async function getCotPositioning(
   _ctx: ServerContext,
   _req: GetCotPositioningRequest,
 ): Promise<GetCotPositioningResponse> {
-  try {
-    const raw = await getCachedJson(SEED_CACHE_KEY, true) as { instruments?: RawInstrument[]; reportDate?: string } | null;
+  return attach(SEED_CACHE_KEY, 'the seeder for get cot positioning has not written this key', (__cachedValue) => {
+    const raw = __cachedValue as { instruments?: RawInstrument[]; reportDate?: string } | null;
     if (!raw?.instruments || raw.instruments.length === 0) {
       return { instruments: [], reportDate: '', unavailable: true };
     }
@@ -49,7 +49,5 @@ export async function getCotPositioning(
       reportDate: String(raw.reportDate ?? ''),
       unavailable: false,
     };
-  } catch {
-    return { instruments: [], reportDate: '', unavailable: true };
-  }
+  });
 }

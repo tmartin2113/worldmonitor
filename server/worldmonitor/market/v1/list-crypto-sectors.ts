@@ -7,7 +7,7 @@ import type {
   ListCryptoSectorsRequest,
   ListCryptoSectorsResponse,
 } from '../../../../src/generated/server/worldmonitor/market/v1/service_server';
-import { getCachedJson } from '../../../_shared/redis';
+import { attach } from '../../../_shared/data-status';
 
 const SEED_CACHE_KEY = 'market:crypto-sectors:v1';
 
@@ -15,11 +15,9 @@ export async function listCryptoSectors(
   _ctx: ServerContext,
   _req: ListCryptoSectorsRequest,
 ): Promise<ListCryptoSectorsResponse> {
-  try {
-    const seedData = await getCachedJson(SEED_CACHE_KEY, true) as { sectors: Array<{ id: string; name: string; change: number }> } | null;
+  return attach(SEED_CACHE_KEY, 'the seeder for list crypto sectors has not written this key', (__cachedValue) => {
+    const seedData = __cachedValue as { sectors: Array<{ id: string; name: string; change: number }> } | null;
     if (!seedData?.sectors?.length) return { sectors: [] };
     return { sectors: seedData.sectors };
-  } catch {
-    return { sectors: [] };
-  }
+  });
 }

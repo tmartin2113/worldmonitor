@@ -4,7 +4,7 @@ import type {
   GetHyperliquidFlowResponse,
   HyperliquidAssetFlow,
 } from '../../../../src/generated/server/worldmonitor/market/v1/service_server';
-import { getCachedJson } from '../../../_shared/redis';
+import { attach } from '../../../_shared/data-status';
 
 const SEED_CACHE_KEY = 'market:hyperliquid:flow:v1';
 
@@ -53,8 +53,8 @@ export async function getHyperliquidFlow(
   _ctx: ServerContext,
   _req: GetHyperliquidFlowRequest,
 ): Promise<GetHyperliquidFlowResponse> {
-  try {
-    const raw = await getCachedJson(SEED_CACHE_KEY, true) as SeededSnapshot | null;
+  return attach(SEED_CACHE_KEY, 'the seeder for get hyperliquid flow has not written this key', (__cachedValue) => {
+    const raw = __cachedValue as SeededSnapshot | null;
     if (!raw?.assets || raw.assets.length === 0) {
       // No error — seeder hasn't run yet, or empty snapshot. Distinguish from
       // parse/Redis failures below (those hit the catch and log).
@@ -99,15 +99,5 @@ export async function getHyperliquidFlow(
       assets,
       unavailable: false,
     };
-  } catch (err) {
-    console.error('[getHyperliquidFlow] Redis read or parse failed:', err instanceof Error ? err.message : err);
-    return {
-      ts: '0',
-      fetchedAt: '',
-      warmup: true,
-      assetCount: 0,
-      assets: [],
-      unavailable: true,
-    };
-  }
+  });
 }
