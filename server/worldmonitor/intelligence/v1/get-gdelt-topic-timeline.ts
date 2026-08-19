@@ -5,7 +5,7 @@ import type {
   GdeltTimelinePoint,
 } from '../../../../src/generated/server/worldmonitor/intelligence/v1/service_server';
 
-import { getCachedJson } from '../../../_shared/redis';
+import { cacheTally } from '../../../_shared/data-status';
 
 const VALID_TOPICS = new Set(['military', 'cyber', 'nuclear', 'sanctions', 'intelligence', 'maritime']);
 
@@ -15,13 +15,19 @@ export async function getGdeltTopicTimeline(
 ): Promise<GetGdeltTopicTimelineResponse> {
   const topic = (req.topic ?? '').trim().toLowerCase();
   if (!topic || !VALID_TOPICS.has(topic)) {
-    return { topic, tone: [], vol: [], fetchedAt: '', error: 'invalid topic' };
+    return {
+      topic, tone: [], vol: [], fetchedAt: '', error: 'invalid topic',
+      dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: 'topic is not one this endpoint tracks; nothing was looked up' },
+    };
   }
 
+  // Tone and volume are both real inputs: one present without the other is a
+  // PARTIAL answer, not a complete one, and the chart would silently draw half.
+  const tally = cacheTally(`the GDELT seeder has not written the "${topic}" timeline`);
   try {
     const [toneData, volData] = await Promise.all([
-      getCachedJson(`gdelt:intel:tone:${topic}`, true),
-      getCachedJson(`gdelt:intel:vol:${topic}`, true),
+      tally.read(`gdelt:intel:tone:${topic}`),
+      tally.read(`gdelt:intel:vol:${topic}`),
     ]);
 
     const unwrap = (d: unknown): { arr: GdeltTimelinePoint[]; fetchedAt: string } => {
@@ -36,8 +42,8 @@ export async function getGdeltTopicTimeline(
     const { arr: vol, fetchedAt: volFetchedAt } = unwrap(volData);
     const fetchedAt = toneFetchedAt || volFetchedAt;
 
-    return { topic, tone, vol, fetchedAt, error: '' };
+    return { topic, tone, vol, fetchedAt, error: '', dataStatus: tally.status() };
   } catch {
-    return { topic, tone: [], vol: [], fetchedAt: '', error: 'unavailable' };
+    return { topic, tone: [], vol: [], fetchedAt: '', error: 'unavailable', dataStatus: tally.status() };
   }
 }

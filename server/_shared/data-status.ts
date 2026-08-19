@@ -326,8 +326,14 @@ export function cacheTally(context: string): CacheTally {
         return { fetchedAt: '0', availability: 'DATA_AVAILABILITY_OK', detail: 'answered without reading any cached input' };
       }
       if (present === 0) {
+        // "none of the 1 inputs" is what a template written for the plural case
+        // produces when an optional input drops out of the count. It is a
+        // user-facing string; say it properly.
+        const phrase = total === 1
+          ? 'the input has never been written'
+          : `none of the ${total} inputs has ever been written`;
         return { fetchedAt: '0', availability: 'DATA_AVAILABILITY_NEVER_SEEDED',
-                 detail: sanitizeDetail(`none of the ${total} inputs has ever been written — ${context}`) };
+                 detail: sanitizeDetail(`${phrase} — ${context}`) };
       }
       if (missing.length) {
         return { fetchedAt: String(oldest), availability: 'DATA_AVAILABILITY_PARTIAL',
