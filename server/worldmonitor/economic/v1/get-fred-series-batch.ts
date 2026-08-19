@@ -29,6 +29,18 @@ export async function getFredSeriesBatch(
   _ctx: ServerContext,
   req: GetFredSeriesBatchRequest,
 ): Promise<GetFredSeriesBatchResponse> {
+  // `series_ids` declares buf.validate min_items=1, but an ABSENT repeated field
+  // arrives as undefined rather than [], so validation does not fire and
+  // `.map()` threw a TypeError. That was previously swallowed into an empty
+  // success; with the envelope it surfaced as UPSTREAM_ERROR, which is closer to
+  // honest but still wrong — a malformed request is the caller's, not upstream's.
+  if (!Array.isArray(req.seriesIds) || req.seriesIds.length === 0) {
+    return {
+      results: {}, fetched: 0, requested: 0,
+      dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: 'no series_ids supplied; nothing was looked up' },
+    };
+  }
+
   try {
     const normalized = req.seriesIds
       .map((id) => id.trim().toUpperCase())
