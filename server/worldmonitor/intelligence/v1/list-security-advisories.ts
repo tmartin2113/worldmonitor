@@ -4,7 +4,7 @@ import type {
   ListSecurityAdvisoriesResponse,
 } from '../../../../src/generated/server/worldmonitor/intelligence/v1/service_server';
 
-import { getCachedJson } from '../../../_shared/redis';
+import { attach } from '../../../_shared/data-status';
 
 const ADVISORY_KEY = 'intelligence:advisories:v1';
 
@@ -12,8 +12,8 @@ export async function listSecurityAdvisories(
   _ctx: ServerContext,
   _req: ListSecurityAdvisoriesRequest,
 ): Promise<ListSecurityAdvisoriesResponse> {
-  try {
-    const data = (await getCachedJson(ADVISORY_KEY, true)) as {
+  return attach(ADVISORY_KEY, 'the security-advisory seeder has not written this key', (cached) => {
+    const data = cached as {
       advisories: Array<{ title: string; link: string; pubDate: string; source: string; sourceCountry: string; level: string; country: string }>;
       byCountry: Record<string, string>;
     } | null;
@@ -34,8 +34,5 @@ export async function listSecurityAdvisories(
     }
 
     return { advisories: [], byCountry: {} };
-  } catch (err: unknown) {
-    console.warn('[SecurityAdvisories] Redis read error:', err instanceof Error ? err.message : err);
-    return { advisories: [], byCountry: {} };
-  }
+  }, (out) => out.advisories.length);
 }

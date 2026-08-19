@@ -4,7 +4,7 @@ import type {
   ListPositiveGeoEventsResponse,
   PositiveGeoEvent,
 } from '../../../../src/generated/server/worldmonitor/positive_events/v1/service_server';
-import { getCachedJson } from '../../../_shared/redis';
+import { readSeeded, withCount } from '../../../_shared/data-status';
 
 const CACHE_KEY = 'positive-events:geo:v1';
 const MAX_SOURCE_AGE_MS = 25 * 60 * 60 * 1000;
@@ -27,14 +27,17 @@ export async function listPositiveGeoEvents(
   _ctx: ServerContext,
   _req: ListPositiveGeoEventsRequest,
 ): Promise<ListPositiveGeoEventsResponse> {
-  try {
-    const raw = await getCachedJson(CACHE_KEY, true) as { events?: PositiveGeoEvent[]; fetchedAt?: number } | null;
-    if (raw?.events?.length && (!raw.fetchedAt || (Date.now() - raw.fetchedAt) < MAX_SOURCE_AGE_MS)) {
-      const sourceTs = raw.fetchedAt ?? Date.now();
-      fallback = { events: raw.events, readAt: Date.now(), sourceTs };
-      return { events: raw.events, fetchedAt: sourceTs, stale: false };
-    }
-  } catch { /* fall through */ }
+  const read = await readSeeded<{ events?: PositiveGeoEvent[]; fetchedAt?: number }>(
+    CACHE_KEY, 'the positive-events seeder has not written this key');
+  const raw = read.data;
+  if (raw?.events?.length && (!raw.fetchedAt || (Date.now() - raw.fetchedAt) < MAX_SOURCE_AGE_MS)) {
+    const sourceTs = raw.fetchedAt ?? Date.now();
+    fallback = { events: raw.events, readAt: Date.now(), sourceTs };
+    return {
+      events: raw.events, fetchedAt: sourceTs, stale: false,
+      dataStatus: withCount(read.status, raw.events.length),
+    };
+  }
 
   if (fallback && (Date.now() - fallback.readAt) < FALLBACK_WINDOW_MS) {
     // Serving a previously-cached payload because the upstream source is
@@ -44,8 +47,16 @@ export async function listPositiveGeoEvents(
     // `readAt` so we keep serving for the full 12 h after the last
     // successful read regardless of how aged the source was at that
     // moment. See issue #3706.
-    return { events: fallback.events, fetchedAt: fallback.sourceTs, stale: true };
+    return {
+      events: fallback.events, fetchedAt: fallback.sourceTs, stale: true,
+      dataStatus: {
+        fetchedAt: String(fallback.sourceTs),
+        availability: 'DATA_AVAILABILITY_STALE',
+        detail: 'serving the last good in-process snapshot; the live key was missing or aged out',
+      },
+    };
   }
 
-  return { events: [], fetchedAt: 0, stale: false };
+  // Nothing live, nothing cached — the read's own verdict is the honest one.
+  return { events: [], fetchedAt: 0, stale: false, dataStatus: read.status };
 }

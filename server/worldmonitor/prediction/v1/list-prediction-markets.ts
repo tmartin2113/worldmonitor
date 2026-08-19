@@ -15,7 +15,7 @@ import {
 
 import filterParamContracts from '../../../../shared/openapi-filter-param-contracts.json';
 import { clampInt } from '../../../_shared/constants';
-import { getCachedJson } from '../../../_shared/redis';
+import { attach } from '../../../_shared/data-status';
 
 const BOOTSTRAP_KEY = 'prediction:markets-bootstrap:v1';
 
@@ -55,12 +55,12 @@ export const listPredictionMarkets: PredictionServiceHandler['listPredictionMark
   _ctx: ServerContext,
   req: ListPredictionMarketsRequest,
 ): Promise<ListPredictionMarketsResponse> => {
-  try {
+  return attach(BOOTSTRAP_KEY, 'the prediction-market bootstrap has not been written', (cached) => {
     const category = (req.category || '').slice(0, 50);
     const query = (req.query || '').slice(0, 100);
     const limit = clampInt(req.pageSize, 50, 1, 100);
 
-    const bootstrap = await getCachedJson(BOOTSTRAP_KEY) as BootstrapData | null;
+    const bootstrap = cached as BootstrapData | null;
     if (!bootstrap) return { markets: [], pagination: undefined, fetchedAt: 0, dataAvailable: false };
 
     const fetchedAt = Number(bootstrap.fetchedAt ?? 0);
@@ -81,7 +81,5 @@ export const listPredictionMarkets: PredictionServiceHandler['listPredictionMark
     }
 
     return { markets: markets.slice(0, limit), pagination: undefined, fetchedAt, dataAvailable: true };
-  } catch {
-    return { markets: [], pagination: undefined, fetchedAt: 0, dataAvailable: false };
-  }
+  }, (out) => out.markets.length);
 };
