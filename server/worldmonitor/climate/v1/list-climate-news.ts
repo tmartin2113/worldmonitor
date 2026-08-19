@@ -9,17 +9,15 @@ import type {
   ListClimateNewsResponse,
 } from '../../../../src/generated/server/worldmonitor/climate/v1/service_server';
 
-import { getCachedJson } from '../../../_shared/redis';
+import { attach } from '../../../_shared/data-status';
 import { CLIMATE_NEWS_KEY } from '../../../_shared/cache-keys';
 
 export const listClimateNews: ClimateServiceHandler['listClimateNews'] = async (
   _ctx: ServerContext,
   _req: ListClimateNewsRequest,
 ): Promise<ListClimateNewsResponse> => {
-  try {
-    const result = await getCachedJson(CLIMATE_NEWS_KEY, true) as ListClimateNewsResponse | null;
+  return attach(CLIMATE_NEWS_KEY, 'the climate-news seeder has not written this key', (cached) => {
+    const result = cached as ListClimateNewsResponse | null;
     return result ? { ...result, dataAvailable: true } : { items: [], fetchedAt: 0, dataAvailable: false };
-  } catch {
-    return { items: [], fetchedAt: 0, dataAvailable: false };
-  }
+  }, (out) => out.items.length);
 };

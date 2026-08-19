@@ -3,7 +3,7 @@ import type {
   GetConsumerPriceOverviewResponse,
 } from '../../../../src/generated/server/worldmonitor/consumer_prices/v1/service_server';
 
-import { getCachedJson } from '../../../_shared/redis';
+import { attach } from '../../../_shared/data-status';
 
 const DEFAULT_MARKET = 'ae';
 
@@ -29,10 +29,8 @@ export async function getConsumerPriceOverview(
   const market = req.marketCode || DEFAULT_MARKET;
   const key = `consumer-prices:overview:${market}`;
 
-  try {
-    const result = await getCachedJson(key, true) as GetConsumerPriceOverviewResponse | null;
+  return attach(key, 'the seeder for get consumer price overview has not written this key', (raw) => {
+    const result = raw as GetConsumerPriceOverviewResponse | null;
     return result ?? { ...EMPTY, marketCode: market };
-  } catch {
-    return { ...EMPTY, marketCode: market };
-  }
+  });
 }

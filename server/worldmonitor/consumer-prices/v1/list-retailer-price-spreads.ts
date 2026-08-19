@@ -3,7 +3,7 @@ import type {
   ListRetailerPriceSpreadsResponse,
 } from '../../../../src/generated/server/worldmonitor/consumer_prices/v1/service_server';
 
-import { getCachedJson } from '../../../_shared/redis';
+import { attach } from '../../../_shared/data-status';
 
 const DEFAULT_MARKET = 'ae';
 const DEFAULT_BASKET = 'essentials-ae';
@@ -26,10 +26,8 @@ export async function listRetailerPriceSpreads(
     upstreamUnavailable: true,
   };
 
-  try {
-    const result = await getCachedJson(key, true) as ListRetailerPriceSpreadsResponse | null;
+  return attach(key, 'the seeder for list retailer price spreads has not written this key', (raw) => {
+    const result = raw as ListRetailerPriceSpreadsResponse | null;
     return result ?? EMPTY;
-  } catch {
-    return EMPTY;
-  }
+  });
 }

@@ -10,7 +10,7 @@ import type {
   MarketQuote,
 } from '../../../../src/generated/server/worldmonitor/market/v1/service_server';
 import { parseStringArray } from './_shared';
-import { getCachedJson } from '../../../_shared/redis';
+import { attach } from '../../../_shared/data-status';
 
 const BOOTSTRAP_KEY = 'market:stocks-bootstrap:v1';
 
@@ -20,8 +20,8 @@ export async function listMarketQuotes(
 ): Promise<ListMarketQuotesResponse> {
   const parsedSymbols = parseStringArray(req.symbols);
 
-  try {
-    const bootstrap = await getCachedJson(BOOTSTRAP_KEY, true) as ListMarketQuotesResponse | null;
+  return attach(BOOTSTRAP_KEY, 'the seeder for list market quotes has not written this key', (raw) => {
+    const bootstrap = raw as ListMarketQuotesResponse | null;
     if (!bootstrap?.quotes?.length) {
       return { quotes: [], finnhubSkipped: false, skipReason: '', rateLimited: false };
     }
@@ -33,7 +33,5 @@ export async function listMarketQuotes(
     }
 
     return bootstrap;
-  } catch {
-    return { quotes: [], finnhubSkipped: false, skipReason: '', rateLimited: false };
-  }
+  });
 }

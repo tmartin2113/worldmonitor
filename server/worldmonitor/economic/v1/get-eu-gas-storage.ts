@@ -9,7 +9,7 @@ import type {
   GetEuGasStorageResponse,
 } from '../../../../src/generated/server/worldmonitor/economic/v1/service_server';
 
-import { getCachedJson } from '../../../_shared/redis';
+import { attach } from '../../../_shared/data-status';
 
 const SEED_CACHE_KEY = 'economic:eu-gas-storage:v1';
 
@@ -30,8 +30,8 @@ export async function getEuGasStorage(
   _ctx: ServerContext,
   _req: GetEuGasStorageRequest,
 ): Promise<GetEuGasStorageResponse> {
-  try {
-    const result = await getCachedJson(SEED_CACHE_KEY, true) as GetEuGasStorageResponse | null;
+  return attach(SEED_CACHE_KEY, 'the EU gas-storage seeder has not written this key', (raw) => {
+    const result = raw as GetEuGasStorageResponse | null;
     if (result && !result.unavailable && typeof result.fillPct === 'number' && result.fillPct > 0) {
       return {
         ...result,
@@ -43,7 +43,5 @@ export async function getEuGasStorage(
       };
     }
     return buildFallbackResult();
-  } catch {
-    return buildFallbackResult();
-  }
+  }, (out) => (out.unavailable ? 0 : 1));
 }

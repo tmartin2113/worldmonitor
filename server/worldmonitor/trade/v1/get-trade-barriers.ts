@@ -7,7 +7,7 @@ import type {
   GetTradeBarriersRequest,
   GetTradeBarriersResponse,
 } from '../../../../src/generated/server/worldmonitor/trade/v1/service_server';
-import { getCachedJson } from '../../../_shared/redis';
+import { attach } from '../../../_shared/data-status';
 
 const SEED_CACHE_KEY = 'trade:barriers:v1:tariff-gap:50';
 
@@ -15,8 +15,8 @@ export async function getTradeBarriers(
   _ctx: ServerContext,
   req: GetTradeBarriersRequest,
 ): Promise<GetTradeBarriersResponse> {
-  try {
-    const result = await getCachedJson(SEED_CACHE_KEY, true) as GetTradeBarriersResponse | null;
+  return attach(SEED_CACHE_KEY, 'the seeder for get trade barriers has not written this key', (raw) => {
+    const result = raw as GetTradeBarriersResponse | null;
     if (!result?.barriers?.length) {
       return { barriers: [], fetchedAt: new Date().toISOString(), upstreamUnavailable: true };
     }
@@ -26,7 +26,5 @@ export async function getTradeBarriers(
       fetchedAt: result.fetchedAt || new Date().toISOString(),
       upstreamUnavailable: false,
     };
-  } catch {
-    return { barriers: [], fetchedAt: new Date().toISOString(), upstreamUnavailable: true };
-  }
+  });
 }

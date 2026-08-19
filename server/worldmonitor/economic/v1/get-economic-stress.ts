@@ -4,7 +4,7 @@ import type {
   GetEconomicStressResponse,
   EconomicStressComponent,
 } from '../../../../src/generated/server/worldmonitor/economic/v1/service_server';
-import { getCachedJson } from '../../../_shared/redis';
+import { attach } from '../../../_shared/data-status';
 
 const SEED_CACHE_KEY = 'economic:stress-index:v1';
 
@@ -22,8 +22,8 @@ export async function getEconomicStress(
   _ctx: ServerContext,
   _req: GetEconomicStressRequest,
 ): Promise<GetEconomicStressResponse> {
-  try {
-    const raw = await getCachedJson(SEED_CACHE_KEY, true) as Record<string, unknown> | null;
+  return attach(SEED_CACHE_KEY, 'the economic-stress seeder has not written this key', (cached) => {
+    const raw = cached as Record<string, unknown> | null;
     if (!raw || raw.unavailable) return buildFallbackResult();
 
     const components = (Array.isArray(raw.components) ? raw.components : []).map(
@@ -47,7 +47,5 @@ export async function getEconomicStress(
       seededAt: String(raw.seededAt ?? ''),
       unavailable: false,
     };
-  } catch {
-    return buildFallbackResult();
-  }
+  }, (out) => out.components?.length ?? 0);
 }

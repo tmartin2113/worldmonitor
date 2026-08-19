@@ -7,7 +7,7 @@ import type {
   GetTradeRestrictionsRequest,
   GetTradeRestrictionsResponse,
 } from '../../../../src/generated/server/worldmonitor/trade/v1/service_server';
-import { getCachedJson } from '../../../_shared/redis';
+import { attach } from '../../../_shared/data-status';
 
 const SEED_CACHE_KEY = 'trade:restrictions:v1:tariff-overview:50';
 
@@ -15,8 +15,8 @@ export async function getTradeRestrictions(
   _ctx: ServerContext,
   req: GetTradeRestrictionsRequest,
 ): Promise<GetTradeRestrictionsResponse> {
-  try {
-    const result = await getCachedJson(SEED_CACHE_KEY, true) as GetTradeRestrictionsResponse | null;
+  return attach(SEED_CACHE_KEY, 'the seeder for get trade restrictions has not written this key', (raw) => {
+    const result = raw as GetTradeRestrictionsResponse | null;
     if (!result?.restrictions?.length) {
       return { restrictions: [], fetchedAt: new Date().toISOString(), upstreamUnavailable: true };
     }
@@ -26,7 +26,5 @@ export async function getTradeRestrictions(
       fetchedAt: result.fetchedAt || new Date().toISOString(),
       upstreamUnavailable: false,
     };
-  } catch {
-    return { restrictions: [], fetchedAt: new Date().toISOString(), upstreamUnavailable: true };
-  }
+  });
 }

@@ -4,7 +4,7 @@ import type {
   GetEuFsiResponse,
   EuFsiObservation,
 } from '../../../../src/generated/server/worldmonitor/economic/v1/service_server';
-import { getCachedJson } from '../../../_shared/redis';
+import { attach } from '../../../_shared/data-status';
 import { CISS_STALE_THRESHOLD_MS } from '../../../../src/shared/ciss-staleness';
 
 const SEED_CACHE_KEY = 'economic:fsi-eu:v1';
@@ -34,8 +34,8 @@ export async function getEuFsi(
   _ctx: ServerContext,
   _req: GetEuFsiRequest,
 ): Promise<GetEuFsiResponse> {
-  try {
-    const raw = await getCachedJson(SEED_CACHE_KEY, true) as Record<string, unknown> | null;
+  return attach(SEED_CACHE_KEY, 'the EU financial-stress seeder has not written this key', (cached) => {
+    const raw = cached as Record<string, unknown> | null;
     if (!raw || raw.unavailable) return buildFallbackResult();
 
     const history = (Array.isArray(raw.history) ? raw.history : []) as EuFsiObservation[];
@@ -50,7 +50,5 @@ export async function getEuFsi(
       unavailable: false,
       stale: isStale(latestDate),
     };
-  } catch {
-    return buildFallbackResult();
-  }
+  }, (out) => out.history?.length ?? 0);
 }

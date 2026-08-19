@@ -5,7 +5,7 @@ import type {
   TransitDayCount,
 } from '../../../../src/generated/server/worldmonitor/supply_chain/v1/service_server';
 
-import { getCachedJson } from '../../../_shared/redis';
+import { attach } from '../../../_shared/data-status';
 import { markNoCacheResponse } from '../../../_shared/response-headers';
 import { CANONICAL_CHOKEPOINTS } from './_chokepoint-ids';
 
@@ -29,8 +29,8 @@ export async function getChokepointHistory(
     return { chokepointId: '', history: [], fetchedAt: '0' };
   }
 
-  try {
-    const payload = await getCachedJson(`${HISTORY_KEY_PREFIX}${id}`, true) as HistoryPayload | null;
+  return attach(`${HISTORY_KEY_PREFIX}${id}`, 'the seeder for get chokepoint history has not written this key', (raw) => {
+    const payload = raw as HistoryPayload | null;
     if (!payload || !Array.isArray(payload.history) || payload.history.length === 0) {
       // CRITICAL: do NOT let an empty response get CDN-cached. During the
       // deploy window (Vercel deploys instantly; Railway ais-relay takes
@@ -48,8 +48,5 @@ export async function getChokepointHistory(
       history: payload.history,
       fetchedAt: String(payload.fetchedAt ?? 0),
     };
-  } catch {
-    markNoCacheResponse(ctx.request);
-    return { chokepointId: id, history: [], fetchedAt: '0' };
-  }
+  });
 }

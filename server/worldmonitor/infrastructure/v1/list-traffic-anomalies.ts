@@ -10,7 +10,7 @@ import type {
   TrafficAnomaly,
 } from '../../../../src/generated/server/worldmonitor/infrastructure/v1/service_server';
 
-import { getCachedJson } from '../../../_shared/redis';
+import { attach } from '../../../_shared/data-status';
 
 const SEED_CACHE_KEY = 'cf:radar:traffic-anomalies:v1';
 
@@ -18,8 +18,8 @@ export async function listInternetTrafficAnomalies(
   _ctx: ServerContext,
   req: ListInternetTrafficAnomaliesRequest,
 ): Promise<ListInternetTrafficAnomaliesResponse> {
-  try {
-    const data = await getCachedJson(SEED_CACHE_KEY, true) as ListInternetTrafficAnomaliesResponse | null;
+  return attach(SEED_CACHE_KEY, 'the Cloudflare Radar traffic-anomaly seeder has not written this key', (raw) => {
+    const data = raw as ListInternetTrafficAnomaliesResponse | null;
     let anomalies: TrafficAnomaly[] = data?.anomalies || [];
 
     if (req.country) {
@@ -28,7 +28,5 @@ export async function listInternetTrafficAnomalies(
     }
 
     return { anomalies, totalCount: anomalies.length };
-  } catch {
-    return { anomalies: [], totalCount: 0 };
-  }
+  }, (out) => out.anomalies.length);
 }

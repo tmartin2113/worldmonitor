@@ -9,7 +9,7 @@ import type {
   ListInternetDdosAttacksResponse,
 } from '../../../../src/generated/server/worldmonitor/infrastructure/v1/service_server';
 
-import { getCachedJson } from '../../../_shared/redis';
+import { attach } from '../../../_shared/data-status';
 
 const SEED_CACHE_KEY = 'cf:radar:ddos:v1';
 
@@ -17,8 +17,8 @@ export async function listInternetDdosAttacks(
   _ctx: ServerContext,
   _req: ListInternetDdosAttacksRequest,
 ): Promise<ListInternetDdosAttacksResponse> {
-  try {
-    const data = await getCachedJson(SEED_CACHE_KEY, true) as ListInternetDdosAttacksResponse | null;
+  return attach(SEED_CACHE_KEY, 'the Cloudflare Radar DDoS seeder has not written this key', (raw) => {
+    const data = raw as ListInternetDdosAttacksResponse | null;
     return {
       protocol: data?.protocol || [],
       vector: data?.vector || [],
@@ -26,7 +26,5 @@ export async function listInternetDdosAttacks(
       dateRangeEnd: data?.dateRangeEnd || '',
       topTargetLocations: data?.topTargetLocations || [],
     };
-  } catch {
-    return { protocol: [], vector: [], dateRangeStart: '', dateRangeEnd: '', topTargetLocations: [] };
-  }
+  }, (out) => out.protocol.length + out.vector.length);
 }

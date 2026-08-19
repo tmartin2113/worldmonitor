@@ -11,7 +11,7 @@ import type {
   ClimateDisaster,
 } from '../../../../src/generated/server/worldmonitor/climate/v1/service_server';
 
-import { getCachedJson } from '../../../_shared/redis';
+import { attach } from '../../../_shared/data-status';
 
 const SEED_CACHE_KEY = 'climate:disasters:v1';
 const DEFAULT_LIMIT = 100;
@@ -61,10 +61,10 @@ export const listClimateDisasters: ClimateServiceHandler['listClimateDisasters']
   _ctx: ServerContext,
   req: ListClimateDisastersRequest,
 ): Promise<ListClimateDisastersResponse> => {
-  try {
+  return attach(SEED_CACHE_KEY, 'the climate-disaster seeder has not written this key', (cached) => {
     const limit = clampInt(req.pageSize, DEFAULT_LIMIT, 1, MAX_LIMIT);
     const offset = parseCursor(req.cursor);
-    const result = await getCachedJson(SEED_CACHE_KEY, true) as { disasters?: unknown[] } | null;
+    const result = cached as { disasters?: unknown[] } | null;
     const allDisasters = Array.isArray(result?.disasters)
       ? result.disasters.map(normalizeCachedDisaster).filter((row): row is ClimateDisaster => row != null)
       : [];
@@ -84,10 +84,5 @@ export const listClimateDisasters: ClimateServiceHandler['listClimateDisasters']
         totalCount: allDisasters.length,
       },
     };
-  } catch {
-    return {
-      disasters: [],
-      pagination: { nextCursor: '', totalCount: 0 },
-    };
-  }
+  }, (out) => out.pagination?.totalCount ?? out.disasters.length);
 };

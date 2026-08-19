@@ -8,7 +8,7 @@ import type {
   ListEtfFlowsRequest,
   ListEtfFlowsResponse,
 } from '../../../../src/generated/server/worldmonitor/market/v1/service_server';
-import { getCachedJson } from '../../../_shared/redis';
+import { attach } from '../../../_shared/data-status';
 
 const SEED_CACHE_KEY = 'market:etf-flows:v1';
 
@@ -30,10 +30,8 @@ export async function listEtfFlows(
   _ctx: ServerContext,
   _req: ListEtfFlowsRequest,
 ): Promise<ListEtfFlowsResponse> {
-  try {
-    const seedData = await getCachedJson(SEED_CACHE_KEY, true) as ListEtfFlowsResponse | null;
+  return attach(SEED_CACHE_KEY, 'the seeder for list etf flows has not written this key', (raw) => {
+    const seedData = raw as ListEtfFlowsResponse | null;
     return seedData || EMPTY_RESPONSE;
-  } catch {
-    return EMPTY_RESPONSE;
-  }
+  });
 }

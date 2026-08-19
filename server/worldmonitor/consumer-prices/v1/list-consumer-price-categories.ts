@@ -3,7 +3,7 @@ import type {
   ListConsumerPriceCategoriesResponse,
 } from '../../../../src/generated/server/worldmonitor/consumer_prices/v1/service_server';
 
-import { getCachedJson } from '../../../_shared/redis';
+import { attach } from '../../../_shared/data-status';
 
 const DEFAULT_MARKET = 'ae';
 const DEFAULT_RANGE = '30d';
@@ -25,10 +25,8 @@ export async function listConsumerPriceCategories(
     upstreamUnavailable: true,
   };
 
-  try {
-    const result = await getCachedJson(key, true) as ListConsumerPriceCategoriesResponse | null;
+  return attach(key, 'the seeder for list consumer price categories has not written this key', (raw) => {
+    const result = raw as ListConsumerPriceCategoriesResponse | null;
     return result ?? EMPTY;
-  } catch {
-    return EMPTY;
-  }
+  });
 }

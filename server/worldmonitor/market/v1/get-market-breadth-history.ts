@@ -4,7 +4,7 @@ import type {
   GetMarketBreadthHistoryResponse,
   BreadthSnapshot,
 } from '../../../../src/generated/server/worldmonitor/market/v1/service_server';
-import { getCachedJson } from '../../../_shared/redis';
+import { attach } from '../../../_shared/data-status';
 
 const SEED_CACHE_KEY = 'market:breadth-history:v1';
 
@@ -41,8 +41,8 @@ export async function getMarketBreadthHistory(
   _ctx: ServerContext,
   _req: GetMarketBreadthHistoryRequest,
 ): Promise<GetMarketBreadthHistoryResponse> {
-  try {
-    const raw = await getCachedJson(SEED_CACHE_KEY, true) as SeedPayload | null;
+  return attach(SEED_CACHE_KEY, 'the seeder for get market breadth history has not written this key', (cachedValue) => {
+    const raw = cachedValue as SeedPayload | null;
     if (!raw?.current || !Array.isArray(raw.history) || raw.history.length === 0) {
       return emptyUnavailable();
     }
@@ -65,7 +65,5 @@ export async function getMarketBreadthHistory(
       history,
       unavailable: false,
     };
-  } catch {
-    return emptyUnavailable();
-  }
+  });
 }

@@ -8,7 +8,7 @@ import type {
   ListGulfQuotesRequest,
   ListGulfQuotesResponse,
 } from '../../../../src/generated/server/worldmonitor/market/v1/service_server';
-import { getCachedJson } from '../../../_shared/redis';
+import { attach } from '../../../_shared/data-status';
 
 const SEED_CACHE_KEY = 'market:gulf-quotes:v1';
 
@@ -16,10 +16,8 @@ export async function listGulfQuotes(
   _ctx: ServerContext,
   _req: ListGulfQuotesRequest,
 ): Promise<ListGulfQuotesResponse> {
-  try {
-    const seedData = await getCachedJson(SEED_CACHE_KEY, true) as ListGulfQuotesResponse | null;
+  return attach(SEED_CACHE_KEY, 'the seeder for list gulf quotes has not written this key', (raw) => {
+    const seedData = raw as ListGulfQuotesResponse | null;
     return seedData || { quotes: [], rateLimited: false };
-  } catch {
-    return { quotes: [], rateLimited: false };
-  }
+  });
 }

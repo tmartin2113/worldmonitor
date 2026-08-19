@@ -5,7 +5,7 @@ import type {
   ServerContext,
 } from '../../../../src/generated/server/worldmonitor/sanctions/v1/service_server';
 
-import { getCachedJson } from '../../../_shared/redis';
+import { attach } from '../../../_shared/data-status';
 import { isCallerPremium } from '../../../_shared/premium-check';
 
 const REDIS_CACHE_KEY = 'sanctions:pressure:v1';
@@ -45,15 +45,13 @@ export const listSanctionsPressure: SanctionsServiceHandler['listSanctionsPressu
   if (!isPro) return emptyResponse();
 
   const maxItems = clampMaxItems(req.maxItems);
-  try {
-    const data = await getCachedJson(REDIS_CACHE_KEY, true) as ListSanctionsPressureResponse & { _state?: unknown } | null;
+  return attach(REDIS_CACHE_KEY, 'the seeder for list sanctions pressure has not written this key', (raw) => {
+    const data = raw as ListSanctionsPressureResponse & { _state?: unknown } | null;
     if (!data?.totalCount) return emptyResponse();
     const { _state: _discarded, ...rest } = data;
     return {
       ...rest,
       entries: (data.entries ?? []).slice(0, maxItems),
     };
-  } catch {
-    return emptyResponse();
-  }
+  });
 };

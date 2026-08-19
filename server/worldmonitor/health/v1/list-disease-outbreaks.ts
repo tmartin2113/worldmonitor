@@ -5,7 +5,7 @@ import type {
   ListDiseaseOutbreaksResponse,
 } from '../../../../src/generated/server/worldmonitor/health/v1/service_server';
 
-import { getCachedJson } from '../../../_shared/redis';
+import { attach } from '../../../_shared/data-status';
 
 const REDIS_KEY = 'health:disease-outbreaks:v1';
 
@@ -21,10 +21,15 @@ export const listDiseaseOutbreaks: HealthServiceHandler['listDiseaseOutbreaks'] 
   _ctx: ServerContext,
   _req: ListDiseaseOutbreaksRequest,
 ): Promise<ListDiseaseOutbreaksResponse> => {
-  const data = (await getCachedJson(REDIS_KEY, true)) as Partial<ListDiseaseOutbreaksResponse> | null;
-  return {
-    outbreaks: data?.outbreaks ?? [],
-    fetchedAt: data?.fetchedAt ?? 0,
-    alertLevelMethodologyVersion: data?.alertLevelMethodologyVersion ?? FALLBACK_METHODOLOGY_VERSION,
-  };
+  // Previously returned `{outbreaks:[], fetchedAt:0}` for a missing key, a Redis
+  // fault and a genuinely quiet week alike — and PASSED the empty-success sweep,
+  // because carrying a timestamp is not the same as saying what happened.
+  return attach(REDIS_KEY, 'the disease-outbreak seeder has not written this key', (cached) => {
+    const data = cached as Partial<ListDiseaseOutbreaksResponse> | null;
+    return {
+      outbreaks: data?.outbreaks ?? [],
+      fetchedAt: data?.fetchedAt ?? 0,
+      alertLevelMethodologyVersion: data?.alertLevelMethodologyVersion ?? FALLBACK_METHODOLOGY_VERSION,
+    };
+  }, (out) => out.outbreaks.length);
 };

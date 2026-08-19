@@ -8,7 +8,7 @@ import type {
   ListOtherTokensResponse,
   CryptoQuote,
 } from '../../../../src/generated/server/worldmonitor/market/v1/service_server';
-import { getCachedJson } from '../../../_shared/redis';
+import { attach } from '../../../_shared/data-status';
 
 const SEED_CACHE_KEY = 'market:other-tokens:v1';
 
@@ -18,8 +18,8 @@ export async function listOtherTokens(
   _ctx: ServerContext,
   _req: ListOtherTokensRequest,
 ): Promise<ListOtherTokensResponse> {
-  try {
-    const seedData = await getCachedJson(SEED_CACHE_KEY, true) as { tokens: TokenSeedEntry[] } | null;
+  return attach(SEED_CACHE_KEY, 'the seeder for list other tokens has not written this key', (raw) => {
+    const seedData = raw as { tokens: TokenSeedEntry[] } | null;
     if (!seedData?.tokens?.length) return { tokens: [] };
     const tokens: CryptoQuote[] = seedData.tokens.map(t => ({
       name: t.name,
@@ -30,7 +30,5 @@ export async function listOtherTokens(
       sparkline: [],
     }));
     return { tokens };
-  } catch {
-    return { tokens: [] };
-  }
+  });
 }

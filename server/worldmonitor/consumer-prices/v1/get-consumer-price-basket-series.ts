@@ -3,7 +3,7 @@ import type {
   GetConsumerPriceBasketSeriesResponse,
 } from '../../../../src/generated/server/worldmonitor/consumer_prices/v1/service_server';
 
-import { getCachedJson } from '../../../_shared/redis';
+import { attach } from '../../../_shared/data-status';
 
 const DEFAULT_MARKET = 'ae';
 const DEFAULT_BASKET = 'essentials-ae';
@@ -32,10 +32,8 @@ export async function getConsumerPriceBasketSeries(
     upstreamUnavailable: true,
   };
 
-  try {
-    const result = await getCachedJson(key, true) as GetConsumerPriceBasketSeriesResponse | null;
+  return attach(key, 'the seeder for get consumer price basket series has not written this key', (raw) => {
+    const result = raw as GetConsumerPriceBasketSeriesResponse | null;
     return result ?? EMPTY;
-  } catch {
-    return EMPTY;
-  }
+  });
 }

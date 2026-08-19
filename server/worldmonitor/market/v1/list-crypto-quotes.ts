@@ -10,7 +10,7 @@ import type {
   CryptoQuote,
 } from '../../../../src/generated/server/worldmonitor/market/v1/service_server';
 import { CRYPTO_META, parseStringArray } from './_shared';
-import { getCachedJson } from '../../../_shared/redis';
+import { attach } from '../../../_shared/data-status';
 
 const SEED_CACHE_KEY = 'market:crypto:v1';
 
@@ -23,8 +23,8 @@ export async function listCryptoQuotes(
   const parsedIds = parseStringArray(req.ids);
   const ids = parsedIds.length > 0 ? parsedIds : Object.keys(CRYPTO_META);
 
-  try {
-    const seedData = await getCachedJson(SEED_CACHE_KEY, true) as { quotes: CryptoQuote[] } | null;
+  return attach(SEED_CACHE_KEY, 'the seeder for list crypto quotes has not written this key', (raw) => {
+    const seedData = raw as { quotes: CryptoQuote[] } | null;
     if (!seedData?.quotes?.length) return { quotes: [] };
 
     const allIds = new Set(ids);
@@ -33,7 +33,5 @@ export async function listCryptoQuotes(
       : seedData.quotes.filter((q) => allIds.has(SYMBOL_TO_ID.get(q.symbol) ?? ''));
 
     return { quotes: filtered };
-  } catch {
-    return { quotes: [] };
-  }
+  });
 }

@@ -5,7 +5,7 @@ import type {
   FearGreedCategory,
   FearGreedSectorPerformance,
 } from '../../../../src/generated/server/worldmonitor/market/v1/service_server';
-import { getCachedJson } from '../../../_shared/redis';
+import { attach } from '../../../_shared/data-status';
 
 const SEED_CACHE_KEY = 'market:fear-greed:v1';
 
@@ -13,8 +13,8 @@ export async function getFearGreedIndex(
   _ctx: ServerContext,
   _req: GetFearGreedIndexRequest,
 ): Promise<GetFearGreedIndexResponse> {
-  try {
-    const raw = await getCachedJson(SEED_CACHE_KEY, true) as Record<string, unknown> | null;
+  return attach(SEED_CACHE_KEY, 'the seeder for get fear greed index has not written this key', (cachedValue) => {
+    const raw = cachedValue as Record<string, unknown> | null;
     if (!raw?.composite) return { compositeScore: 0, compositeLabel: '', unavailable: true } as GetFearGreedIndexResponse;
 
     const comp = raw.composite as Record<string, unknown>;
@@ -71,7 +71,5 @@ export async function getFearGreedIndex(
       sectorPerformance,
       unavailable: false,
     };
-  } catch {
-    return { compositeScore: 0, compositeLabel: '', unavailable: true } as GetFearGreedIndexResponse;
-  }
+  });
 }

@@ -5,7 +5,7 @@ import type {
   ServerContext,
 } from '../../../../src/generated/server/worldmonitor/radiation/v1/service_server';
 
-import { getCachedJson } from '../../../_shared/redis';
+import { attach } from '../../../_shared/data-status';
 
 const REDIS_CACHE_KEY = 'radiation:observations:v1';
 const DEFAULT_MAX_ITEMS = 18;
@@ -44,15 +44,13 @@ export const listRadiationObservations: RadiationServiceHandler['listRadiationOb
   req: ListRadiationObservationsRequest,
 ): Promise<ListRadiationObservationsResponse> => {
   const maxItems = clampMaxItems(req.maxItems);
-  try {
-    const data = await getCachedJson(REDIS_CACHE_KEY, true) as ListRadiationObservationsResponse | null;
+  return attach(REDIS_CACHE_KEY, 'the seeder for list radiation observations has not written this key', (raw) => {
+    const data = raw as ListRadiationObservationsResponse | null;
     if (!Array.isArray(data?.observations)) return emptyResponse();
     return {
       ...data,
       dataAvailable: true,
       observations: (data.observations ?? []).slice(0, maxItems),
     };
-  } catch {
-    return emptyResponse();
-  }
+  });
 };

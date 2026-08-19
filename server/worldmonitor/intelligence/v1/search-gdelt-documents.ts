@@ -4,7 +4,7 @@ import type {
   SearchGdeltDocumentsResponse,
 } from '../../../../src/generated/server/worldmonitor/intelligence/v1/service_server';
 
-import { getCachedJson } from '../../../_shared/redis';
+import { attach } from '../../../_shared/data-status';
 
 const SEEDED_KEY = 'intelligence:gdelt-intel:v1';
 
@@ -35,8 +35,8 @@ export async function searchGdeltDocuments(
     return { articles: [], query: req.query || '', error: 'Query parameter required' };
   }
 
-  try {
-    const seeded = await getCachedJson(SEEDED_KEY, true) as SeededGdeltData | null;
+  return attach(SEEDED_KEY, 'the seeder for search gdelt documents has not written this key', (raw) => {
+    const seeded = raw as SeededGdeltData | null;
     if (!seeded?.topics?.length) {
       // Distinct signal: seed is missing/expired, not "no articles matched".
       // Clients should show a graceful empty state rather than retrying.
@@ -58,7 +58,5 @@ export async function searchGdeltDocuments(
       query: req.query,
       error: '',
     };
-  } catch {
-    return { articles: [], query: req.query, error: '' };
-  }
+  });
 }
