@@ -4,6 +4,7 @@ package worldmonitor.supply_chain.v1;
 import "buf/validate/validate.proto";
 import "sebuf/http/annotations.proto";
 import "worldmonitor/supply_chain/v1/get_sector_dependency.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 message StrategicProduct {
   string hs4 = 1;
@@ -46,4 +47,8 @@ message GetRouteImpactResponse {
   bool hs2_in_seeded_universe = 7;
   string comtrade_source = 8;
   string fetched_at = 9;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 10;
 }

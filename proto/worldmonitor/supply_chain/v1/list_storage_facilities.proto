@@ -4,6 +4,7 @@ package worldmonitor.supply_chain.v1;
 
 import "buf/validate/validate.proto";
 import "sebuf/http/annotations.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 // ListStorageFacilities returns the curated strategic storage registry
 // (underground gas storage, strategic petroleum reserves, LNG terminals,
@@ -28,6 +29,10 @@ message ListStorageFacilitiesResponse {
   string fetched_at = 2;
   string classifier_version = 3;
   bool upstream_unavailable = 4;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 5;
 }
 
 // GetStorageFacilityDetail returns a single facility with its full evidence
@@ -46,6 +51,10 @@ message GetStorageFacilityDetailResponse {
   repeated StorageFacilityRevisionEntry revisions = 2;
   string fetched_at = 3;
   bool unavailable = 4;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 5;
 }
 
 message StorageFacilityEntry {

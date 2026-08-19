@@ -7,7 +7,7 @@ import type {
 import { ValidationError } from '../../../../src/generated/server/worldmonitor/supply_chain/v1/service_server';
 
 import { isCallerPremium } from '../../../_shared/premium-check';
-import { getCachedJson } from '../../../_shared/redis';
+import { attach, neverSeeded } from '../../../_shared/data-status';
 
 interface BilateralHs4Payload {
   iso2: string;
@@ -32,16 +32,23 @@ export async function getCountryProducts(
 
   const isPro = await isCallerPremium(ctx.request);
   const empty: GetCountryProductsResponse = { iso2, products: [], fetchedAt: '' };
-  if (!isPro) return empty;
+  // Entitlement, not absence — the PRO-gate deny path deliberately returns an
+  // empty 200, so it must say WHY or it reads as "this country has no products".
+  if (!isPro) {
+    return { ...empty, dataStatus: neverSeeded('country product detail requires a premium caller; no lookup was performed') };
+  }
 
   // Seeder writes via raw key (no env-prefix) — match it on read.
-  const key = `comtrade:bilateral-hs4:${iso2}:v1`;
-  const payload = await getCachedJson(key, true).catch(() => null) as BilateralHs4Payload | null;
-  if (!payload) return empty;
-
-  return {
-    iso2,
-    products: Array.isArray(payload.products) ? payload.products : [],
-    fetchedAt: payload.fetchedAt ?? '',
-  };
+  // The old `.catch(() => null)` folded a Redis fault into the same empty this
+  // returns for an unseeded country.
+  return attach(`comtrade:bilateral-hs4:${iso2}:v1`,
+    `the Comtrade bilateral-HS4 seeder has not written ${iso2}`, (raw) => {
+      const payload = raw as BilateralHs4Payload | null;
+      if (!payload) return empty;
+      return {
+        iso2,
+        products: Array.isArray(payload.products) ? payload.products : [],
+        fetchedAt: payload.fetchedAt ?? '',
+      };
+    }, (out) => out.products.length);
 }

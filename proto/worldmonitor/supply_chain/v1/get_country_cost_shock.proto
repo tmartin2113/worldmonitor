@@ -4,6 +4,7 @@ package worldmonitor.supply_chain.v1;
 import "buf/validate/validate.proto";
 import "sebuf/http/annotations.proto";
 import "worldmonitor/supply_chain/v1/supply_chain_data.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 message GetCountryCostShockRequest {
   // ISO 3166-1 alpha-2 country code for the importing country.
@@ -38,4 +39,8 @@ message GetCountryCostShockResponse {
   // Null/unavailable explanation for non-energy sectors
   string unavailable_reason = 9;
   string fetched_at = 10;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 11;
 }

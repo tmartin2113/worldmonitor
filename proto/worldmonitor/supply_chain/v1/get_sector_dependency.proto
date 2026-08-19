@@ -3,6 +3,7 @@ package worldmonitor.supply_chain.v1;
 
 import "buf/validate/validate.proto";
 import "sebuf/http/annotations.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 // DependencyFlag classifies how a country+sector dependency can fail.
 enum DependencyFlag {
@@ -50,4 +51,8 @@ message GetSectorDependencyResponse {
   // Whether at least one viable bypass corridor exists for the primary chokepoint.
   bool has_viable_bypass = 9;
   string fetched_at = 10;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 11;
 }

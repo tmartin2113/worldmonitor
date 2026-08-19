@@ -4,6 +4,7 @@ package worldmonitor.consumer_prices.v1;
 
 import "sebuf/http/annotations.proto";
 import "worldmonitor/consumer_prices/v1/consumer_prices_data.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 // GetConsumerPriceFreshnessRequest parameters for the freshness RPC.
 message GetConsumerPriceFreshnessRequest {
@@ -25,4 +26,8 @@ message GetConsumerPriceFreshnessResponse {
   int32 stalled_count = 5;
   // upstream_unavailable is true when the companion service could not be reached.
   bool upstream_unavailable = 6;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 7;
 }

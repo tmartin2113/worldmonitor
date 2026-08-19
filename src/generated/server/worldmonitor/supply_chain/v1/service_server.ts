@@ -8,6 +8,7 @@ export interface GetShippingRatesResponse {
   indices: ShippingIndex[];
   fetchedAt: string;
   upstreamUnavailable: boolean;
+  dataStatus?: DataStatus;
 }
 
 export interface ShippingIndex {
@@ -26,6 +27,12 @@ export interface ShippingRatePoint {
   value: number;
 }
 
+export interface DataStatus {
+  fetchedAt: string;
+  availability: DataAvailability;
+  detail: string;
+}
+
 export interface GetChokepointStatusRequest {
 }
 
@@ -33,6 +40,7 @@ export interface GetChokepointStatusResponse {
   chokepoints: ChokepointInfo[];
   fetchedAt: string;
   upstreamUnavailable: boolean;
+  dataStatus?: DataStatus;
 }
 
 export interface ChokepointInfo {
@@ -110,6 +118,7 @@ export interface GetChokepointHistoryResponse {
   chokepointId: string;
   history: TransitDayCount[];
   fetchedAt: string;
+  dataStatus?: DataStatus;
 }
 
 export interface GetCriticalMineralsRequest {
@@ -119,6 +128,7 @@ export interface GetCriticalMineralsResponse {
   minerals: CriticalMineral[];
   fetchedAt: string;
   upstreamUnavailable: boolean;
+  dataStatus?: DataStatus;
 }
 
 export interface CriticalMineral {
@@ -146,6 +156,7 @@ export interface GetShippingStressResponse {
   stressLevel: string;
   fetchedAt: number;
   upstreamUnavailable: boolean;
+  dataStatus?: DataStatus;
 }
 
 export interface ShippingStressCarrier {
@@ -169,6 +180,7 @@ export interface GetCountryChokepointIndexResponse {
   primaryChokepointId: string;
   vulnerabilityIndex: number;
   fetchedAt: string;
+  dataStatus?: DataStatus;
 }
 
 export interface ChokepointExposureEntry {
@@ -192,6 +204,7 @@ export interface GetBypassOptionsResponse {
   options: BypassOption[];
   fetchedAt: string;
   primaryChokepointWarRiskTier: WarRiskTier;
+  dataStatus?: DataStatus;
 }
 
 export interface BypassOption {
@@ -226,6 +239,7 @@ export interface GetCountryCostShockResponse {
   hasEnergyModel: boolean;
   unavailableReason: string;
   fetchedAt: string;
+  dataStatus?: DataStatus;
 }
 
 export interface GetCountryProductsRequest {
@@ -236,6 +250,7 @@ export interface GetCountryProductsResponse {
   iso2: string;
   products: CountryProduct[];
   fetchedAt: string;
+  dataStatus?: DataStatus;
 }
 
 export interface CountryProduct {
@@ -268,6 +283,7 @@ export interface GetMultiSectorCostShockResponse {
   totalAddedCost: number;
   fetchedAt: string;
   unavailableReason: string;
+  dataStatus?: DataStatus;
 }
 
 export interface MultiSectorCostShock {
@@ -300,6 +316,7 @@ export interface GetSectorDependencyResponse {
   primaryChokepointExposure: number;
   hasViableBypass: boolean;
   fetchedAt: string;
+  dataStatus?: DataStatus;
 }
 
 export interface GetRouteExplorerLaneRequest {
@@ -324,6 +341,7 @@ export interface GetRouteExplorerLaneResponse {
   estFreightUsdPerTeuRange?: NumberRange;
   noModeledLane: boolean;
   fetchedAt: string;
+  dataStatus?: DataStatus;
 }
 
 export interface GeoPoint {
@@ -370,6 +388,7 @@ export interface GetRouteImpactResponse {
   hs2InSeededUniverse: boolean;
   comtradeSource: string;
   fetchedAt: string;
+  dataStatus?: DataStatus;
 }
 
 export interface StrategicProduct {
@@ -390,6 +409,7 @@ export interface ListPipelinesResponse {
   fetchedAt: string;
   classifierVersion: string;
   upstreamUnavailable: boolean;
+  dataStatus?: DataStatus;
 }
 
 export interface PipelineEntry {
@@ -449,6 +469,7 @@ export interface GetPipelineDetailResponse {
   revisions: PipelineRevisionEntry[];
   fetchedAt: string;
   unavailable: boolean;
+  dataStatus?: DataStatus;
 }
 
 export interface PipelineRevisionEntry {
@@ -470,6 +491,7 @@ export interface ListStorageFacilitiesResponse {
   fetchedAt: string;
   classifierVersion: string;
   upstreamUnavailable: boolean;
+  dataStatus?: DataStatus;
 }
 
 export interface StorageFacilityEntry {
@@ -528,6 +550,7 @@ export interface GetStorageFacilityDetailResponse {
   revisions: StorageFacilityRevisionEntry[];
   fetchedAt: string;
   unavailable: boolean;
+  dataStatus?: DataStatus;
 }
 
 export interface StorageFacilityRevisionEntry {
@@ -551,6 +574,7 @@ export interface ListFuelShortagesResponse {
   fetchedAt: string;
   classifierVersion: string;
   upstreamUnavailable: boolean;
+  dataStatus?: DataStatus;
 }
 
 export interface FuelShortageEntry {
@@ -591,6 +615,7 @@ export interface GetFuelShortageDetailResponse {
   shortage?: FuelShortageEntry;
   fetchedAt: string;
   unavailable: boolean;
+  dataStatus?: DataStatus;
 }
 
 export interface ListEnergyDisruptionsRequest {
@@ -604,6 +629,7 @@ export interface ListEnergyDisruptionsResponse {
   fetchedAt: string;
   classifierVersion: string;
   upstreamUnavailable: boolean;
+  dataStatus?: DataStatus;
 }
 
 export interface EnergyDisruptionEntry {
@@ -631,6 +657,8 @@ export interface EnergyDisruptionSource {
   date: string;
   sourceType: string;
 }
+
+export type DataAvailability = "DATA_AVAILABILITY_UNSPECIFIED" | "DATA_AVAILABILITY_OK" | "DATA_AVAILABILITY_EMPTY" | "DATA_AVAILABILITY_NEVER_SEEDED" | "DATA_AVAILABILITY_UPSTREAM_ERROR" | "DATA_AVAILABILITY_STALE" | "DATA_AVAILABILITY_PARTIAL";
 
 export type CorridorStatus = "CORRIDOR_STATUS_UNSPECIFIED" | "CORRIDOR_STATUS_ACTIVE" | "CORRIDOR_STATUS_PROPOSED" | "CORRIDOR_STATUS_UNAVAILABLE";
 

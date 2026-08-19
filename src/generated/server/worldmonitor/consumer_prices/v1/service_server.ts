@@ -19,6 +19,7 @@ export interface GetConsumerPriceOverviewResponse {
   freshnessLagMin: number;
   topCategories: CategorySnapshot[];
   upstreamUnavailable: boolean;
+  dataStatus?: DataStatus;
 }
 
 export interface CategorySnapshot {
@@ -30,6 +31,12 @@ export interface CategorySnapshot {
   sparkline: number[];
   coveragePct: number;
   itemCount: number;
+}
+
+export interface DataStatus {
+  fetchedAt: string;
+  availability: DataAvailability;
+  detail: string;
 }
 
 export interface GetConsumerPriceBasketSeriesRequest {
@@ -47,6 +54,7 @@ export interface GetConsumerPriceBasketSeriesResponse {
   essentialsSeries: BasketPoint[];
   valueSeries: BasketPoint[];
   upstreamUnavailable: boolean;
+  dataStatus?: DataStatus;
 }
 
 export interface BasketPoint {
@@ -66,6 +74,7 @@ export interface ListConsumerPriceCategoriesResponse {
   range: string;
   categories: CategorySnapshot[];
   upstreamUnavailable: boolean;
+  dataStatus?: DataStatus;
 }
 
 export interface ListConsumerPriceMoversRequest {
@@ -82,6 +91,7 @@ export interface ListConsumerPriceMoversResponse {
   risers: PriceMover[];
   fallers: PriceMover[];
   upstreamUnavailable: boolean;
+  dataStatus?: DataStatus;
 }
 
 export interface PriceMover {
@@ -107,6 +117,7 @@ export interface ListRetailerPriceSpreadsResponse {
   retailers: RetailerSpread[];
   spreadPct: number;
   upstreamUnavailable: boolean;
+  dataStatus?: DataStatus;
 }
 
 export interface RetailerSpread {
@@ -131,6 +142,7 @@ export interface GetConsumerPriceFreshnessResponse {
   overallFreshnessMin: number;
   stalledCount: number;
   upstreamUnavailable: boolean;
+  dataStatus?: DataStatus;
 }
 
 export interface RetailerFreshnessInfo {
@@ -141,6 +153,8 @@ export interface RetailerFreshnessInfo {
   parseSuccessRate: number;
   freshnessMin: number;
 }
+
+export type DataAvailability = "DATA_AVAILABILITY_UNSPECIFIED" | "DATA_AVAILABILITY_OK" | "DATA_AVAILABILITY_EMPTY" | "DATA_AVAILABILITY_NEVER_SEEDED" | "DATA_AVAILABILITY_UPSTREAM_ERROR" | "DATA_AVAILABILITY_STALE" | "DATA_AVAILABILITY_PARTIAL";
 
 export interface FieldViolation {
   field: string;

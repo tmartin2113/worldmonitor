@@ -4,6 +4,7 @@ package worldmonitor.supply_chain.v1;
 
 import "buf/validate/validate.proto";
 import "sebuf/http/annotations.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 // ListPipelines returns the full oil and/or gas pipeline registry with
 // evidence-based status per asset. Registry is curated (see
@@ -25,6 +26,10 @@ message ListPipelinesResponse {
   string fetched_at = 2;
   string classifier_version = 3;
   bool upstream_unavailable = 4;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 5;
 }
 
 // GetPipelineDetail returns a single pipeline with its full evidence bundle.
@@ -46,6 +51,10 @@ message GetPipelineDetailResponse {
   repeated PipelineRevisionEntry revisions = 2;
   string fetched_at = 3;
   bool unavailable = 4;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 5;
 }
 
 message PipelineEntry {

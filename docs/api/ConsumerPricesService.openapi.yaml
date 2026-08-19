@@ -47,8 +47,11 @@ paths:
                                 "asOf": "1717200000000"
                                 "coveragePct": 1.5
                                 "currencyCode": "USD"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "essentialsIndex": 1.5
-                                "freshnessLagMin": 1
                             schema:
                                 $ref: '#/components/schemas/GetConsumerPriceOverviewResponse'
                 "400":
@@ -150,10 +153,13 @@ paths:
                                 "asOf": "1717200000000"
                                 "basketSlug": "essentials-ae"
                                 "currencyCode": "USD"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "essentialsSeries":
                                     - "date": "2026-01-15"
                                       "index": 1.5
-                                "marketCode": "US"
                             schema:
                                 $ref: '#/components/schemas/GetConsumerPriceBasketSeriesResponse'
                 "400":
@@ -259,9 +265,12 @@ paths:
                                       "itemCount": 1
                                       "momPct": 1.5
                                       "name": "WorldMonitor Analyst"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "marketCode": "US"
                                 "range": "7d"
-                                "upstreamUnavailable": true
                             schema:
                                 $ref: '#/components/schemas/ListConsumerPriceCategoriesResponse'
                 "400":
@@ -369,6 +378,10 @@ paths:
                         application/json:
                             example:
                                 "asOf": "1717200000000"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fallers":
                                     - "category": "cs.AI"
                                       "changePct": 1.5
@@ -377,12 +390,6 @@ paths:
                                       "productId": "diesel"
                                 "marketCode": "US"
                                 "range": "7d"
-                                "risers":
-                                    - "category": "cs.AI"
-                                      "changePct": 1.5
-                                      "currencyCode": "USD"
-                                      "currentPrice": 75.25
-                                      "productId": "diesel"
                             schema:
                                 $ref: '#/components/schemas/ListConsumerPriceMoversResponse'
                 "400":
@@ -477,13 +484,11 @@ paths:
                                 "asOf": "1717200000000"
                                 "basketSlug": "essentials-ae"
                                 "currencyCode": "USD"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "marketCode": "US"
-                                "retailers":
-                                    - "basketTotal": 1
-                                      "currencyCode": "USD"
-                                      "deltaVsCheapest": 1.5
-                                      "deltaVsCheapestPct": 1.5
-                                      "freshnessMin": 1
                             schema:
                                 $ref: '#/components/schemas/ListRetailerPriceSpreadsResponse'
                 "400":
@@ -569,6 +574,10 @@ paths:
                         application/json:
                             example:
                                 "asOf": "1717200000000"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "marketCode": "US"
                                 "overallFreshnessMin": 1
                                 "retailers":
@@ -577,7 +586,6 @@ paths:
                                       "name": "WorldMonitor Analyst"
                                       "parseSuccessRate": 75.25
                                       "slug": "example"
-                                "stalledCount": 1
                             schema:
                                 $ref: '#/components/schemas/GetConsumerPriceFreshnessResponse'
                 "400":
@@ -809,6 +817,8 @@ components:
                 upstreamUnavailable:
                     type: boolean
                     description: upstream_unavailable is true when the companion service could not be reached.
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
             description: GetConsumerPriceOverviewResponse contains headline basket and coverage metrics.
         CategorySnapshot:
             type: object
@@ -846,6 +856,50 @@ components:
                     format: int32
                     description: item_count is the number of observed products in this category.
             description: CategorySnapshot holds price index data for a single product category.
+        DataStatus:
+            type: object
+            properties:
+                fetchedAt:
+                    type: string
+                    format: int64
+                    description: |-
+                        Unix ms when the underlying data was last successfully fetched upstream.
+                         Zero means never — which is itself the answer, and the point of this field.
+                availability:
+                    type: string
+                    enum:
+                        - DATA_AVAILABILITY_UNSPECIFIED
+                        - DATA_AVAILABILITY_OK
+                        - DATA_AVAILABILITY_EMPTY
+                        - DATA_AVAILABILITY_NEVER_SEEDED
+                        - DATA_AVAILABILITY_UPSTREAM_ERROR
+                        - DATA_AVAILABILITY_STALE
+                        - DATA_AVAILABILITY_PARTIAL
+                    description: DataAvailability separates the states that a bare empty payload collapses.
+                detail:
+                    type: string
+                    description: |-
+                        Human-readable detail, safe to surface. Never contains upstream URLs or
+                         credential fragments: 5xx messages are genericised on purpose elsewhere
+                         (see server/error-mapper.ts, H-3), and this field must not become a way
+                         around that.
+            description: |-
+                DataStatus makes an EMPTY RESPONSE FALSIFIABLE.
+
+                 Measured 2026-08-19: of 147 WorldMonitor endpoints returning 200, twenty-five
+                 answered with a bare `{}` or `{"events":[]}` carrying no timestamp and no
+                 status. `get-fred-series` returning `{}` is indistinguishable from "FRED has no
+                 such series" and "we hold no key and never fetched". Every data-integrity
+                 defect found on this box that month was that shape — get-cable-health cached
+                 "no navigational warnings on Earth" for 24h off a wrong envelope key while
+                 upstream served 386; get-country-risk answered a question it was never asked.
+                 None errored. All looked fine.
+
+                 The problem is not that a response is empty — feeds are legitimately quiet.
+                 The problem is that an empty answer does not say WHY, so a consumer cannot
+                 distinguish silence from breakage. This message is the smallest thing that
+                 fixes that, and it is deliberately additive: existing clients that ignore the
+                 field keep working unchanged.
         GetConsumerPriceBasketSeriesRequest:
             type: object
             properties:
@@ -889,6 +943,8 @@ components:
                 upstreamUnavailable:
                     type: boolean
                     description: upstream_unavailable is true when the companion service could not be reached.
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
             description: GetConsumerPriceBasketSeriesResponse contains the basket index time series.
         BasketPoint:
             type: object
@@ -934,6 +990,8 @@ components:
                 upstreamUnavailable:
                     type: boolean
                     description: upstream_unavailable is true when the companion service could not be reached.
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
             description: ListConsumerPriceCategoriesResponse holds category-level price snapshots.
         ListConsumerPriceMoversRequest:
             type: object
@@ -978,6 +1036,8 @@ components:
                 upstreamUnavailable:
                     type: boolean
                     description: upstream_unavailable is true when the companion service could not be reached.
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
             description: ListConsumerPriceMoversResponse holds the top price movers.
         PriceMover:
             type: object
@@ -1043,6 +1103,8 @@ components:
                 upstreamUnavailable:
                     type: boolean
                     description: upstream_unavailable is true when the companion service could not be reached.
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
             description: ListRetailerPriceSpreadsResponse holds cheapest-basket rankings.
         RetailerSpread:
             type: object
@@ -1109,6 +1171,8 @@ components:
                 upstreamUnavailable:
                     type: boolean
                     description: upstream_unavailable is true when the companion service could not be reached.
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
             description: GetConsumerPriceFreshnessResponse describes feed health for all retailers.
         RetailerFreshnessInfo:
             type: object

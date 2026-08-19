@@ -30,6 +30,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": "2026-01-15T12:00:00Z"
                                 "indices":
                                     - "changePct": 1.5
@@ -127,6 +131,10 @@ paths:
                                       "aisDisruptions": 1
                                       "congestionLevel": "example"
                                       "description": "Example WorldMonitor observation."
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": "2026-01-15T12:00:00Z"
                                 "upstreamUnavailable": true
                             schema:
@@ -217,6 +225,10 @@ paths:
                         application/json:
                             example:
                                 "chokepointId": "suez"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": "1717200000000"
                                 "history":
                                     - "capContainer": 1.5
@@ -301,6 +313,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": "2026-01-15T12:00:00Z"
                                 "minerals":
                                     - "globalProduction": 1.5
@@ -397,10 +413,13 @@ paths:
                                       "price": 75.25
                                       "sparkline":
                                           - 1.5
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": 1717200000000
                                 "stressLevel": "example"
                                 "stressScore": 42.5
-                                "upstreamUnavailable": true
                             schema:
                                 $ref: '#/components/schemas/GetShippingStressResponse'
                 "400":
@@ -497,6 +516,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "exposures":
                                     - "chokepointId": "suez"
                                       "chokepointName": "WorldMonitor Analyst"
@@ -506,7 +529,6 @@ paths:
                                 "fetchedAt": "2026-01-15T12:00:00Z"
                                 "hs2": "27"
                                 "iso2": "US"
-                                "primaryChokepointId": "suez"
                             schema:
                                 $ref: '#/components/schemas/GetCountryChokepointIndexResponse'
                 "400":
@@ -613,13 +635,11 @@ paths:
                                 "cargoType": "container"
                                 "chokepointId": "suez"
                                 "closurePct": 1
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": "2026-01-15T12:00:00Z"
-                                "options":
-                                    - "activationThreshold": "example"
-                                      "addedCostMultiplier": 75.25
-                                      "addedTransitDays": 7
-                                      "bypassWarRiskTier": "WAR_RISK_TIER_NORMAL"
-                                      "capacityConstraintTonnage": "1717200000000"
                             schema:
                                 $ref: '#/components/schemas/GetBypassOptionsResponse'
                 "400":
@@ -725,9 +745,12 @@ paths:
                             example:
                                 "chokepointId": "suez"
                                 "coverageDays": 7
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": "2026-01-15T12:00:00Z"
                                 "hasEnergyModel": true
-                                "hs2": "27"
                             schema:
                                 $ref: '#/components/schemas/GetCountryCostShockResponse'
                 "400":
@@ -817,6 +840,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": "2026-01-15T12:00:00Z"
                                 "iso2": "US"
                                 "products":
@@ -937,14 +964,12 @@ paths:
                             example:
                                 "chokepointId": "suez"
                                 "closureDays": 7
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": "2026-01-15T12:00:00Z"
                                 "iso2": "US"
-                                "sectors":
-                                    - "addedTransitDays": 7
-                                      "closureDays": 7
-                                      "freightAddedPctPerTon": 1.5
-                                      "hs2": "27"
-                                      "hs2Label": "27"
                             schema:
                                 $ref: '#/components/schemas/GetMultiSectorCostShockResponse'
                 "400":
@@ -1041,12 +1066,15 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": "2026-01-15T12:00:00Z"
                                 "flags":
                                     - "DEPENDENCY_FLAG_SINGLE_SOURCE_CRITICAL"
                                 "hasViableBypass": true
                                 "hs2": "27"
-                                "hs2Label": "27"
                             schema:
                                 $ref: '#/components/schemas/GetSectorDependencyResponse'
                 "400":
@@ -1176,10 +1204,11 @@ paths:
                                     - "chokepointId": "suez"
                                       "chokepointName": "WorldMonitor Analyst"
                                       "exposurePct": 1
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "disruptionScore": 42.5
-                                "estFreightUsdPerTeuRange":
-                                    "max": 1
-                                    "min": 1
                             schema:
                                 $ref: '#/components/schemas/GetRouteExplorerLaneResponse'
                 "400":
@@ -1285,11 +1314,14 @@ paths:
                         application/json:
                             example:
                                 "comtradeSource": "example"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "dependencyFlags":
                                     - "DEPENDENCY_FLAG_SINGLE_SOURCE_CRITICAL"
                                 "fetchedAt": "2026-01-15T12:00:00Z"
                                 "hs2InSeededUniverse": true
-                                "laneValueUsd": 1.5
                             schema:
                                 $ref: '#/components/schemas/GetRouteImpactResponse'
                 "400":
@@ -1379,6 +1411,10 @@ paths:
                         application/json:
                             example:
                                 "classifierVersion": "example"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": "2026-01-15T12:00:00Z"
                                 "pipelines":
                                     - "capacityBcmYr": 1.5
@@ -1483,6 +1519,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": "2026-01-15T12:00:00Z"
                                 "pipeline":
                                     "capacityBcmYr": 1.5
@@ -1600,6 +1640,10 @@ paths:
                         application/json:
                             example:
                                 "classifierVersion": "example"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "facilities":
                                     - "capacityMb": 1.5
                                       "capacityMtpa": 1.5
@@ -1699,6 +1743,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "facility":
                                     "capacityMb": 1.5
                                     "capacityMtpa": 1.5
@@ -1822,6 +1870,10 @@ paths:
                         application/json:
                             example:
                                 "classifierVersion": "example"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": "2026-01-15T12:00:00Z"
                                 "shortages":
                                     - "causeChain":
@@ -1927,6 +1979,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": "2026-01-15T12:00:00Z"
                                 "shortage":
                                     "causeChain":
@@ -2051,6 +2107,10 @@ paths:
                         application/json:
                             example:
                                 "classifierVersion": "example"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "events":
                                     - "assetId": "asset-example-1"
                                       "assetType": "pipeline"
@@ -2250,6 +2310,8 @@ components:
                     type: string
                 upstreamUnavailable:
                     type: boolean
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
         ShippingIndex:
             type: object
             properties:
@@ -2282,6 +2344,50 @@ components:
                 value:
                     type: number
                     format: double
+        DataStatus:
+            type: object
+            properties:
+                fetchedAt:
+                    type: string
+                    format: int64
+                    description: |-
+                        Unix ms when the underlying data was last successfully fetched upstream.
+                         Zero means never — which is itself the answer, and the point of this field.
+                availability:
+                    type: string
+                    enum:
+                        - DATA_AVAILABILITY_UNSPECIFIED
+                        - DATA_AVAILABILITY_OK
+                        - DATA_AVAILABILITY_EMPTY
+                        - DATA_AVAILABILITY_NEVER_SEEDED
+                        - DATA_AVAILABILITY_UPSTREAM_ERROR
+                        - DATA_AVAILABILITY_STALE
+                        - DATA_AVAILABILITY_PARTIAL
+                    description: DataAvailability separates the states that a bare empty payload collapses.
+                detail:
+                    type: string
+                    description: |-
+                        Human-readable detail, safe to surface. Never contains upstream URLs or
+                         credential fragments: 5xx messages are genericised on purpose elsewhere
+                         (see server/error-mapper.ts, H-3), and this field must not become a way
+                         around that.
+            description: |-
+                DataStatus makes an EMPTY RESPONSE FALSIFIABLE.
+
+                 Measured 2026-08-19: of 147 WorldMonitor endpoints returning 200, twenty-five
+                 answered with a bare `{}` or `{"events":[]}` carrying no timestamp and no
+                 status. `get-fred-series` returning `{}` is indistinguishable from "FRED has no
+                 such series" and "we hold no key and never fetched". Every data-integrity
+                 defect found on this box that month was that shape — get-cable-health cached
+                 "no navigational warnings on Earth" for 24h off a wrong envelope key while
+                 upstream served 386; get-country-risk answered a question it was never asked.
+                 None errored. All looked fine.
+
+                 The problem is not that a response is empty — feeds are legitimately quiet.
+                 The problem is that an empty answer does not say WHY, so a consumer cannot
+                 distinguish silence from breakage. This message is the smallest thing that
+                 fixes that, and it is deliberately additive: existing clients that ignore the
+                 field keep working unchanged.
         GetChokepointStatusRequest:
             type: object
         GetChokepointStatusResponse:
@@ -2301,6 +2407,8 @@ components:
                     description: |-
                         True when upstream seed/relay data is unavailable or partial. When true, an
                          empty chokepoints array is graceful degradation, not confirmed zero data.
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
         ChokepointInfo:
             type: object
             properties:
@@ -2524,6 +2632,8 @@ components:
                 fetchedAt:
                     type: string
                     format: int64
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
         GetCriticalMineralsRequest:
             type: object
         GetCriticalMineralsResponse:
@@ -2537,6 +2647,8 @@ components:
                     type: string
                 upstreamUnavailable:
                     type: boolean
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
         CriticalMineral:
             type: object
             properties:
@@ -2592,6 +2704,8 @@ components:
                 upstreamUnavailable:
                     type: boolean
                     description: Set to true when upstream data source is unavailable and cached data is stale.
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
         ShippingStressCarrier:
             type: object
             properties:
@@ -2655,6 +2769,8 @@ components:
                 fetchedAt:
                     type: string
                     description: ISO timestamp of when this data was last seeded.
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
             description: GetCountryChokepointIndexResponse returns exposure scores for all relevant chokepoints.
         ChokepointExposureEntry:
             type: object
@@ -2726,6 +2842,8 @@ components:
                          This is a FREE field (no PRO gate) — it exposes the existing server-internal
                          threatLevel from ChokepointConfig, making it available to clients for badges
                          and bypass corridor scoring.
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
         BypassOption:
             type: object
             properties:
@@ -2834,6 +2952,8 @@ components:
                     description: Null/unavailable explanation for non-energy sectors
                 fetchedAt:
                     type: string
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
         GetCountryProductsRequest:
             type: object
             properties:
@@ -2855,6 +2975,8 @@ components:
                 fetchedAt:
                     type: string
                     description: ISO timestamp from the seeded payload (empty when no data is cached).
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
         CountryProduct:
             type: object
             properties:
@@ -2942,6 +3064,8 @@ components:
                 unavailableReason:
                     type: string
                     description: Populated when no seeded import data is available for the country.
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
         MultiSectorCostShock:
             type: object
             properties:
@@ -3037,6 +3161,8 @@ components:
                     description: Whether at least one viable bypass corridor exists for the primary chokepoint.
                 fetchedAt:
                     type: string
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
         GetRouteExplorerLaneRequest:
             type: object
             properties:
@@ -3101,6 +3227,8 @@ components:
                          between origin and destination clusters). Signals "no modeled lane" to the UI.
                 fetchedAt:
                     type: string
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
         GeoPoint:
             type: object
             properties:
@@ -3220,6 +3348,8 @@ components:
                     type: string
                 fetchedAt:
                     type: string
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
         StrategicProduct:
             type: object
             properties:
@@ -3267,6 +3397,8 @@ components:
                     type: string
                 upstreamUnavailable:
                     type: boolean
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
         PipelineEntry:
             type: object
             properties:
@@ -3394,6 +3526,8 @@ components:
                     type: string
                 unavailable:
                     type: boolean
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
         PipelineRevisionEntry:
             type: object
             properties:
@@ -3448,6 +3582,8 @@ components:
                     type: string
                 upstreamUnavailable:
                     type: boolean
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
         StorageFacilityEntry:
             type: object
             properties:
@@ -3582,6 +3718,8 @@ components:
                     type: string
                 unavailable:
                     type: boolean
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
         StorageFacilityRevisionEntry:
             type: object
             properties:
@@ -3638,6 +3776,8 @@ components:
                     type: string
                 upstreamUnavailable:
                     type: boolean
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
         FuelShortageEntry:
             type: object
             properties:
@@ -3730,6 +3870,8 @@ components:
                     type: string
                 unavailable:
                     type: boolean
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
         ListEnergyDisruptionsRequest:
             type: object
             properties:
@@ -3769,6 +3911,8 @@ components:
                     type: string
                 upstreamUnavailable:
                     type: boolean
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
         EnergyDisruptionEntry:
             type: object
             properties:

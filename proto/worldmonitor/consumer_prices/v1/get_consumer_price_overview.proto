@@ -4,6 +4,7 @@ package worldmonitor.consumer_prices.v1;
 
 import "sebuf/http/annotations.proto";
 import "worldmonitor/consumer_prices/v1/consumer_prices_data.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 // GetConsumerPriceOverviewRequest parameters for the overview RPC.
 message GetConsumerPriceOverviewRequest {
@@ -39,4 +40,8 @@ message GetConsumerPriceOverviewResponse {
   repeated CategorySnapshot top_categories = 11;
   // upstream_unavailable is true when the companion service could not be reached.
   bool upstream_unavailable = 12;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 13;
 }

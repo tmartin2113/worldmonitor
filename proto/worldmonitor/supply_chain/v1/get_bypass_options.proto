@@ -4,6 +4,7 @@ package worldmonitor.supply_chain.v1;
 import "buf/validate/validate.proto";
 import "sebuf/http/annotations.proto";
 import "worldmonitor/supply_chain/v1/supply_chain_data.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 message GetBypassOptionsRequest {
   // Chokepoint identifier to evaluate for bypass options.
@@ -39,4 +40,8 @@ message GetBypassOptionsResponse {
   repeated BypassOption options = 4;    // ranked by live_score asc
   string fetched_at = 5;
   WarRiskTier primary_chokepoint_war_risk_tier = 6; // war risk tier of the queried chokepoint
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 7;
 }

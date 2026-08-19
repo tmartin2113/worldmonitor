@@ -3,6 +3,7 @@ syntax = "proto3";
 package worldmonitor.supply_chain.v1;
 
 import "sebuf/http/annotations.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 // ShippingStressCarrier represents market stress data for a carrier or shipping index.
 message ShippingStressCarrier {
@@ -31,4 +32,8 @@ message GetShippingStressResponse {
   int64 fetched_at = 4 [(sebuf.http.int64_encoding) = INT64_ENCODING_NUMBER];
   // Set to true when upstream data source is unavailable and cached data is stale.
   bool upstream_unavailable = 5;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 6;
 }

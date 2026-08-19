@@ -3,6 +3,7 @@ syntax = "proto3";
 package worldmonitor.supply_chain.v1;
 
 import "sebuf/http/annotations.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 // ListEnergyDisruptions returns the energy disruption event log — state
 // transitions for pipelines and storage facilities (sabotage, sanction,
@@ -30,6 +31,10 @@ message ListEnergyDisruptionsResponse {
   string fetched_at = 2;
   string classifier_version = 3;
   bool upstream_unavailable = 4;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 5;
 }
 
 message EnergyDisruptionEntry {

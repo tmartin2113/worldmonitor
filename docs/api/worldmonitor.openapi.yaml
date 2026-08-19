@@ -3076,8 +3076,11 @@ paths:
                                 "asOf": "1717200000000"
                                 "coveragePct": 1.5
                                 "currencyCode": "USD"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "essentialsIndex": 1.5
-                                "freshnessLagMin": 1
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_consumer_prices_v1_GetConsumerPriceOverviewResponse'
                 "400":
@@ -3179,10 +3182,13 @@ paths:
                                 "asOf": "1717200000000"
                                 "basketSlug": "essentials-ae"
                                 "currencyCode": "USD"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "essentialsSeries":
                                     - "date": "2026-01-15"
                                       "index": 1.5
-                                "marketCode": "US"
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_consumer_prices_v1_GetConsumerPriceBasketSeriesResponse'
                 "400":
@@ -3288,9 +3294,12 @@ paths:
                                       "itemCount": 1
                                       "momPct": 1.5
                                       "name": "WorldMonitor Analyst"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "marketCode": "US"
                                 "range": "7d"
-                                "upstreamUnavailable": true
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_consumer_prices_v1_ListConsumerPriceCategoriesResponse'
                 "400":
@@ -3398,6 +3407,10 @@ paths:
                         application/json:
                             example:
                                 "asOf": "1717200000000"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fallers":
                                     - "category": "cs.AI"
                                       "changePct": 1.5
@@ -3406,12 +3419,6 @@ paths:
                                       "productId": "diesel"
                                 "marketCode": "US"
                                 "range": "7d"
-                                "risers":
-                                    - "category": "cs.AI"
-                                      "changePct": 1.5
-                                      "currencyCode": "USD"
-                                      "currentPrice": 75.25
-                                      "productId": "diesel"
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_consumer_prices_v1_ListConsumerPriceMoversResponse'
                 "400":
@@ -3506,13 +3513,11 @@ paths:
                                 "asOf": "1717200000000"
                                 "basketSlug": "essentials-ae"
                                 "currencyCode": "USD"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "marketCode": "US"
-                                "retailers":
-                                    - "basketTotal": 1
-                                      "currencyCode": "USD"
-                                      "deltaVsCheapest": 1.5
-                                      "deltaVsCheapestPct": 1.5
-                                      "freshnessMin": 1
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_consumer_prices_v1_ListRetailerPriceSpreadsResponse'
                 "400":
@@ -3598,6 +3603,10 @@ paths:
                         application/json:
                             example:
                                 "asOf": "1717200000000"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "marketCode": "US"
                                 "overallFreshnessMin": 1
                                 "retailers":
@@ -3606,7 +3615,6 @@ paths:
                                       "name": "WorldMonitor Analyst"
                                       "parseSuccessRate": 75.25
                                       "slug": "example"
-                                "stalledCount": 1
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_consumer_prices_v1_GetConsumerPriceFreshnessResponse'
                 "400":
@@ -16114,6 +16122,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "events":
                                     - "category": "cs.AI"
                                       "count": 1
@@ -18298,6 +18310,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": "2026-01-15T12:00:00Z"
                                 "indices":
                                     - "changePct": 1.5
@@ -18395,6 +18411,10 @@ paths:
                                       "aisDisruptions": 1
                                       "congestionLevel": "example"
                                       "description": "Example WorldMonitor observation."
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": "2026-01-15T12:00:00Z"
                                 "upstreamUnavailable": true
                             schema:
@@ -18485,6 +18505,10 @@ paths:
                         application/json:
                             example:
                                 "chokepointId": "suez"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": "1717200000000"
                                 "history":
                                     - "capContainer": 1.5
@@ -18569,6 +18593,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": "2026-01-15T12:00:00Z"
                                 "minerals":
                                     - "globalProduction": 1.5
@@ -18665,10 +18693,13 @@ paths:
                                       "price": 75.25
                                       "sparkline":
                                           - 1.5
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": 1717200000000
                                 "stressLevel": "example"
                                 "stressScore": 42.5
-                                "upstreamUnavailable": true
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_supply_chain_v1_GetShippingStressResponse'
                 "400":
@@ -18765,6 +18796,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "exposures":
                                     - "chokepointId": "suez"
                                       "chokepointName": "WorldMonitor Analyst"
@@ -18774,7 +18809,6 @@ paths:
                                 "fetchedAt": "2026-01-15T12:00:00Z"
                                 "hs2": "27"
                                 "iso2": "US"
-                                "primaryChokepointId": "suez"
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_supply_chain_v1_GetCountryChokepointIndexResponse'
                 "400":
@@ -18881,13 +18915,11 @@ paths:
                                 "cargoType": "container"
                                 "chokepointId": "suez"
                                 "closurePct": 1
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": "2026-01-15T12:00:00Z"
-                                "options":
-                                    - "activationThreshold": "example"
-                                      "addedCostMultiplier": 75.25
-                                      "addedTransitDays": 7
-                                      "bypassWarRiskTier": "WAR_RISK_TIER_NORMAL"
-                                      "capacityConstraintTonnage": "1717200000000"
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_supply_chain_v1_GetBypassOptionsResponse'
                 "400":
@@ -18993,9 +19025,12 @@ paths:
                             example:
                                 "chokepointId": "suez"
                                 "coverageDays": 7
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": "2026-01-15T12:00:00Z"
                                 "hasEnergyModel": true
-                                "hs2": "27"
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_supply_chain_v1_GetCountryCostShockResponse'
                 "400":
@@ -19085,6 +19120,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": "2026-01-15T12:00:00Z"
                                 "iso2": "US"
                                 "products":
@@ -19205,14 +19244,12 @@ paths:
                             example:
                                 "chokepointId": "suez"
                                 "closureDays": 7
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": "2026-01-15T12:00:00Z"
                                 "iso2": "US"
-                                "sectors":
-                                    - "addedTransitDays": 7
-                                      "closureDays": 7
-                                      "freightAddedPctPerTon": 1.5
-                                      "hs2": "27"
-                                      "hs2Label": "27"
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_supply_chain_v1_GetMultiSectorCostShockResponse'
                 "400":
@@ -19309,12 +19346,15 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": "2026-01-15T12:00:00Z"
                                 "flags":
                                     - "DEPENDENCY_FLAG_SINGLE_SOURCE_CRITICAL"
                                 "hasViableBypass": true
                                 "hs2": "27"
-                                "hs2Label": "27"
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_supply_chain_v1_GetSectorDependencyResponse'
                 "400":
@@ -19444,10 +19484,11 @@ paths:
                                     - "chokepointId": "suez"
                                       "chokepointName": "WorldMonitor Analyst"
                                       "exposurePct": 1
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "disruptionScore": 42.5
-                                "estFreightUsdPerTeuRange":
-                                    "max": 1
-                                    "min": 1
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_supply_chain_v1_GetRouteExplorerLaneResponse'
                 "400":
@@ -19553,11 +19594,14 @@ paths:
                         application/json:
                             example:
                                 "comtradeSource": "example"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "dependencyFlags":
                                     - "DEPENDENCY_FLAG_SINGLE_SOURCE_CRITICAL"
                                 "fetchedAt": "2026-01-15T12:00:00Z"
                                 "hs2InSeededUniverse": true
-                                "laneValueUsd": 1.5
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_supply_chain_v1_GetRouteImpactResponse'
                 "400":
@@ -19647,6 +19691,10 @@ paths:
                         application/json:
                             example:
                                 "classifierVersion": "example"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": "2026-01-15T12:00:00Z"
                                 "pipelines":
                                     - "capacityBcmYr": 1.5
@@ -19751,6 +19799,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": "2026-01-15T12:00:00Z"
                                 "pipeline":
                                     "capacityBcmYr": 1.5
@@ -19868,6 +19920,10 @@ paths:
                         application/json:
                             example:
                                 "classifierVersion": "example"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "facilities":
                                     - "capacityMb": 1.5
                                       "capacityMtpa": 1.5
@@ -19967,6 +20023,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "facility":
                                     "capacityMb": 1.5
                                     "capacityMtpa": 1.5
@@ -20090,6 +20150,10 @@ paths:
                         application/json:
                             example:
                                 "classifierVersion": "example"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": "2026-01-15T12:00:00Z"
                                 "shortages":
                                     - "causeChain":
@@ -20195,6 +20259,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": "2026-01-15T12:00:00Z"
                                 "shortage":
                                     "causeChain":
@@ -20319,6 +20387,10 @@ paths:
                         application/json:
                             example:
                                 "classifierVersion": "example"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "events":
                                     - "assetId": "asset-example-1"
                                       "assetType": "pipeline"
@@ -23841,6 +23913,8 @@ components:
                 upstreamUnavailable:
                     type: boolean
                     description: upstream_unavailable is true when the companion service could not be reached.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: GetConsumerPriceOverviewResponse contains headline basket and coverage metrics.
         worldmonitor_consumer_prices_v1_CategorySnapshot:
             type: object
@@ -23921,6 +23995,8 @@ components:
                 upstreamUnavailable:
                     type: boolean
                     description: upstream_unavailable is true when the companion service could not be reached.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: GetConsumerPriceBasketSeriesResponse contains the basket index time series.
         worldmonitor_consumer_prices_v1_BasketPoint:
             type: object
@@ -23966,6 +24042,8 @@ components:
                 upstreamUnavailable:
                     type: boolean
                     description: upstream_unavailable is true when the companion service could not be reached.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: ListConsumerPriceCategoriesResponse holds category-level price snapshots.
         worldmonitor_consumer_prices_v1_ListConsumerPriceMoversRequest:
             type: object
@@ -24010,6 +24088,8 @@ components:
                 upstreamUnavailable:
                     type: boolean
                     description: upstream_unavailable is true when the companion service could not be reached.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: ListConsumerPriceMoversResponse holds the top price movers.
         worldmonitor_consumer_prices_v1_PriceMover:
             type: object
@@ -24075,6 +24155,8 @@ components:
                 upstreamUnavailable:
                     type: boolean
                     description: upstream_unavailable is true when the companion service could not be reached.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: ListRetailerPriceSpreadsResponse holds cheapest-basket rankings.
         worldmonitor_consumer_prices_v1_RetailerSpread:
             type: object
@@ -24141,6 +24223,8 @@ components:
                 upstreamUnavailable:
                     type: boolean
                     description: upstream_unavailable is true when the companion service could not be reached.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: GetConsumerPriceFreshnessResponse describes feed health for all retailers.
         worldmonitor_consumer_prices_v1_RetailerFreshnessInfo:
             type: object
@@ -33353,6 +33437,8 @@ components:
                          cache because the upstream source is unavailable or returned stale
                          data. Clients can surface a "data may be out of date" indicator. See
                          issue #3706.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_positive_events_v1_PositiveGeoEvent:
             type: object
             properties:
@@ -34872,6 +34958,8 @@ components:
                     type: string
                 upstreamUnavailable:
                     type: boolean
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_supply_chain_v1_ShippingIndex:
             type: object
             properties:
@@ -34923,6 +35011,8 @@ components:
                     description: |-
                         True when upstream seed/relay data is unavailable or partial. When true, an
                          empty chokepoints array is graceful degradation, not confirmed zero data.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_supply_chain_v1_ChokepointInfo:
             type: object
             properties:
@@ -35146,6 +35236,8 @@ components:
                 fetchedAt:
                     type: string
                     format: int64
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_supply_chain_v1_GetCriticalMineralsRequest:
             type: object
         worldmonitor_supply_chain_v1_GetCriticalMineralsResponse:
@@ -35159,6 +35251,8 @@ components:
                     type: string
                 upstreamUnavailable:
                     type: boolean
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_supply_chain_v1_CriticalMineral:
             type: object
             properties:
@@ -35214,6 +35308,8 @@ components:
                 upstreamUnavailable:
                     type: boolean
                     description: Set to true when upstream data source is unavailable and cached data is stale.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_supply_chain_v1_ShippingStressCarrier:
             type: object
             properties:
@@ -35277,6 +35373,8 @@ components:
                 fetchedAt:
                     type: string
                     description: ISO timestamp of when this data was last seeded.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: GetCountryChokepointIndexResponse returns exposure scores for all relevant chokepoints.
         worldmonitor_supply_chain_v1_ChokepointExposureEntry:
             type: object
@@ -35348,6 +35446,8 @@ components:
                          This is a FREE field (no PRO gate) — it exposes the existing server-internal
                          threatLevel from ChokepointConfig, making it available to clients for badges
                          and bypass corridor scoring.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_supply_chain_v1_BypassOption:
             type: object
             properties:
@@ -35456,6 +35556,8 @@ components:
                     description: Null/unavailable explanation for non-energy sectors
                 fetchedAt:
                     type: string
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_supply_chain_v1_GetCountryProductsRequest:
             type: object
             properties:
@@ -35477,6 +35579,8 @@ components:
                 fetchedAt:
                     type: string
                     description: ISO timestamp from the seeded payload (empty when no data is cached).
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_supply_chain_v1_CountryProduct:
             type: object
             properties:
@@ -35564,6 +35668,8 @@ components:
                 unavailableReason:
                     type: string
                     description: Populated when no seeded import data is available for the country.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_supply_chain_v1_MultiSectorCostShock:
             type: object
             properties:
@@ -35659,6 +35765,8 @@ components:
                     description: Whether at least one viable bypass corridor exists for the primary chokepoint.
                 fetchedAt:
                     type: string
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_supply_chain_v1_GetRouteExplorerLaneRequest:
             type: object
             properties:
@@ -35723,6 +35831,8 @@ components:
                          between origin and destination clusters). Signals "no modeled lane" to the UI.
                 fetchedAt:
                     type: string
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_supply_chain_v1_GeoPoint:
             type: object
             properties:
@@ -35842,6 +35952,8 @@ components:
                     type: string
                 fetchedAt:
                     type: string
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_supply_chain_v1_StrategicProduct:
             type: object
             properties:
@@ -35889,6 +36001,8 @@ components:
                     type: string
                 upstreamUnavailable:
                     type: boolean
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_supply_chain_v1_PipelineEntry:
             type: object
             properties:
@@ -36016,6 +36130,8 @@ components:
                     type: string
                 unavailable:
                     type: boolean
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_supply_chain_v1_PipelineRevisionEntry:
             type: object
             properties:
@@ -36070,6 +36186,8 @@ components:
                     type: string
                 upstreamUnavailable:
                     type: boolean
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_supply_chain_v1_StorageFacilityEntry:
             type: object
             properties:
@@ -36204,6 +36322,8 @@ components:
                     type: string
                 unavailable:
                     type: boolean
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_supply_chain_v1_StorageFacilityRevisionEntry:
             type: object
             properties:
@@ -36260,6 +36380,8 @@ components:
                     type: string
                 upstreamUnavailable:
                     type: boolean
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_supply_chain_v1_FuelShortageEntry:
             type: object
             properties:
@@ -36352,6 +36474,8 @@ components:
                     type: string
                 unavailable:
                     type: boolean
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_supply_chain_v1_ListEnergyDisruptionsRequest:
             type: object
             properties:
@@ -36391,6 +36515,8 @@ components:
                     type: string
                 upstreamUnavailable:
                     type: boolean
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_supply_chain_v1_EnergyDisruptionEntry:
             type: object
             properties:

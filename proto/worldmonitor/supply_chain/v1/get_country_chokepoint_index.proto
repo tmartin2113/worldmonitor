@@ -4,6 +4,7 @@ package worldmonitor.supply_chain.v1;
 
 import "buf/validate/validate.proto";
 import "sebuf/http/annotations.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 // GetCountryChokepointIndexRequest specifies the country and optional HS2 chapter.
 message GetCountryChokepointIndexRequest {
@@ -49,4 +50,8 @@ message GetCountryChokepointIndexResponse {
   double vulnerability_index = 5;
   // ISO timestamp of when this data was last seeded.
   string fetched_at = 6;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 7;
 }

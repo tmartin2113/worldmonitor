@@ -5,7 +5,7 @@ import type {
   GetShippingStressResponse,
 } from '../../../../src/generated/server/worldmonitor/supply_chain/v1/service_server';
 
-import { getCachedJson } from '../../../_shared/redis';
+import { attach } from '../../../_shared/data-status';
 
 const REDIS_KEY = 'supply_chain:shipping_stress:v1';
 
@@ -13,6 +13,8 @@ export const getShippingStress: SupplyChainServiceHandler['getShippingStress'] =
   _ctx: ServerContext,
   _req: GetShippingStressRequest,
 ): Promise<GetShippingStressResponse> => {
-  const data = (await getCachedJson(REDIS_KEY, true)) as GetShippingStressResponse | null;
-  return data ?? { carriers: [], stressScore: 0, stressLevel: 'low', fetchedAt: 0, upstreamUnavailable: true };
+  return attach(REDIS_KEY, 'the shipping-stress seeder has not written this key', (raw) => {
+    const data = raw as GetShippingStressResponse | null;
+    return data ?? { carriers: [], stressScore: 0, stressLevel: 'low', fetchedAt: 0, upstreamUnavailable: true };
+  }, (out) => out.carriers.length);
 };
