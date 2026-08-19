@@ -24,6 +24,32 @@ services:
         VITE_SELF_HOST_API_KEY: "${WORLDMONITOR_VALID_KEYS:-}"
     image: worldmonitor:latest
     container_name: worldmonitor
+    # ── HEALTHCHECK OVERRIDE (added 2026-08-15) ────────────────────────────
+    # The image bakes in `wget /api/health`, which is the ONE route that cannot
+    # fail. On 2026-08-15 the app stopped answering every data route — nginx
+    # returned 504 after 120s — while /api/health kept replying in 1ms, so Docker
+    # reported "Up 2 days (healthy)" through the entire outage and nothing
+    # alerted. A check that cannot observe the failure mode it exists to catch is
+    # worse than no check, because it certifies.
+    #
+    # This probes a real DATA route instead. earthquakes is chosen because it is
+    # keyless, seeded every 15 minutes, and returns a list whose emptiness would
+    # itself be a problem — so a hung app, a dead upstream and an empty cache all
+    # register as unhealthy rather than as silence.
+    #
+    # timeout 10s: healthy responses measured at ~25ms, and the failure mode is a
+    # 120s hang, so 10s cleanly separates them without flapping on a slow moment.
+    healthcheck:
+      # No variable interpolation: compose rejects ${VAR%%,*} bash expansion, and
+      # the first attempt at this failed with "invalid interpolation format" while
+      # the container kept reporting healthy on its OLD check — a change that did
+      # not apply, verifying itself green. Measured: this route returns 200
+      # WITHOUT a key, so none is needed.
+      test: ["CMD-SHELL", "wget -qO- --timeout=10 http://127.0.0.1:8080/api/seismology/v1/list-earthquakes 2>/dev/null | grep -q earthquakes || exit 1"]
+      interval: 60s
+      timeout: 15s
+      start_period: 30s
+      retries: 3
     ports:
       # Bind loopback-only: the agent reaches worldmonitor via localhost; no LAN
       # exposure. (audit 2026-07-16 network-segmentation) Was "${WM_PORT:-3000}:8080".
@@ -89,6 +115,13 @@ services:
       AISSTREAM_API_KEY: "${AISSTREAM_API_KEY:-}"
       FINNHUB_API_KEY: "${FINNHUB_API_KEY:-}"
       EIA_API_KEY: "${EIA_API_KEY:-}"
+      # Relay -> gateway warm-ping secret. The gateway VALIDATES it here; the
+      # ais-relay service SENDS it. Both must resolve to the same .env value or
+      # isRelayWarmPingRequest() fails closed and the warm-pings 401 — as they did
+      # 96/96 times over 48h while this was unwired on both ends.
+      WORLDMONITOR_RELAY_KEY: "${WORLDMONITOR_RELAY_KEY:-}"
+      # Seeder -> gateway secret for the resilience-ranking refresh path.
+      WORLDMONITOR_SEED_REFRESH_KEY: "${WORLDMONITOR_SEED_REFRESH_KEY:-}"
       FRED_API_KEY: "${FRED_API_KEY:-}"
       ACLED_EMAIL: "${ACLED_EMAIL:-}"
       ACLED_PASSWORD: "${ACLED_PASSWORD:-}"
@@ -132,6 +165,10 @@ services:
       # requests (x-relay-key header). MUST match the value the worldmonitor app
       # sends. Without it the relay FATALs on startup.
       RELAY_SHARED_SECRET: "${RELAY_SHARED_SECRET:?RELAY_SHARED_SECRET required — generate with: openssl rand -hex 32}"
+      # DIFFERENT SECRET, DIFFERENT DIRECTION. RELAY_SHARED_SECRET above is
+      # app -> relay (x-relay-key). This one is relay -> gateway
+      # (X-WorldMonitor-Key), used only to warm four free endpoints' caches.
+      WORLDMONITOR_RELAY_KEY: "${WORLDMONITOR_RELAY_KEY:-}"
       UPSTASH_REDIS_REST_URL: "http://redis-rest:80"
       UPSTASH_REDIS_REST_TOKEN: "${REDIS_TOKEN:?REDIS_TOKEN required — generate with: openssl rand -hex 32}"
       UPSTASH_ALLOW_INSECURE_HTTP: "true"

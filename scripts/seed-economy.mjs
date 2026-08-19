@@ -21,11 +21,24 @@ const KEYS = {
 
 const FRED_KEY_PREFIX = 'economic:fred:v1';
 const STRESS_INDEX_KEY = 'economic:stress-index:v1';
-const STRESS_INDEX_TTL = 21600; // 6h
-const FRED_TTL = 93600; // 26h — survive daily cron scheduling drift
-const ENERGY_TTL = 3600;
-const CAPACITY_TTL = 86400;
-const MACRO_TTL = 21600; // 6h — survive extended Yahoo outages
+// TTL MUST EXCEED THE SEEDING CADENCE, WITH BUFFER.
+// This seeder is driven by run-seeders.sh, which globs seed-*.mjs from ONE daily
+// 04:00 cron. A TTL shorter than 24h therefore does not mean "serve slightly
+// stale data" -- it means the key is ABSENT for the rest of the day, and the
+// endpoint answers 200 with nothing in it. Measured 2026-08-18: macro:signals:v1
+// and energy:prices:v1 were both absent, which is ~18h/24h and ~23h/24h of empty
+// success responses respectively.
+// FRED_TTL already had this right at 26h; the others were written as if something
+// refreshed them hourly. Nothing does. 26h gives a 2h buffer over the cadence so
+// one late or slow cron run cannot open a gap.
+// If any of these ever moves to tier-hourly.txt, these numbers can come back down
+// -- but the TTL must be changed WITH the cadence, never independently.
+const DAILY_CADENCE_TTL = 93600; // 26h — daily cron + 2h drift buffer
+const STRESS_INDEX_TTL = DAILY_CADENCE_TTL; // was 21600 (6h): absent ~18h/day
+const FRED_TTL = DAILY_CADENCE_TTL; // was already 93600
+const ENERGY_TTL = DAILY_CADENCE_TTL; // was 3600 (1h): absent ~23h/day
+const CAPACITY_TTL = DAILY_CADENCE_TTL; // was 86400 (24h): expires exactly as the next run starts
+const MACRO_TTL = DAILY_CADENCE_TTL; // was 21600 (6h) "survive extended Yahoo outages" — it did not survive its own cron
 const CRUDE_INVENTORIES_TTL = 1_814_400; // 21 days — EIA publishes weekly; 3x cadence per gold standard
 const CRUDE_MIN_WEEKS = 4; // require at least 4 weeks to guard against quota-hit empty responses
 const NAT_GAS_TTL = 1_814_400; // 21 days — EIA publishes weekly; 3x cadence per gold standard

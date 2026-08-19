@@ -176,7 +176,25 @@ async function fetchNgaWarnings(): Promise<NgaWarning[] | null> {
     );
     if (!res.ok) return null; // fetch failed — don't cache, let sentinel TTL govern retry
     const data = await res.json();
-    return Array.isArray(data) ? data : (data as { warnings?: NgaWarning[] })?.warnings ?? [];
+    // THE ENVELOPE KEY IS `broadcast-warn`, NOT `warnings`.
+    // NGA returns {"broadcast-warn": [...386 items...]}. This read `data.warnings`,
+    // got undefined, and `?? []` turned that into "there are no navigational
+    // warnings anywhere in the world" — which was then cached for TWENTY-FOUR
+    // HOURS (NGA_CACHE_TTL) and computed into an empty cable map. The endpoint
+    // answered 200 with {"cables":{}} and nothing looked broken. Measured
+    // 2026-08-19: the upstream was returning 206KB and 386 active warnings the
+    // whole time, reachable from inside the container in 0.5s.
+    //
+    // `?? []` was the real defect. An UNRECOGNISED SHAPE IS A FAILURE, not an
+    // empty world: returning null here lets the caller's short negative-sentinel
+    // TTL govern a retry, instead of poisoning a 24h cache with a fabricated
+    // emptiness. If NGA renames the key again this now fails loudly.
+    const arr = Array.isArray(data)
+      ? data
+      : (data as Record<string, unknown>)?.['broadcast-warn']
+        ?? (data as { warnings?: NgaWarning[] })?.warnings;
+    if (!Array.isArray(arr)) return null;
+    return arr as NgaWarning[];
   } catch {
     return null; // network error — don't poison NGA cache with empty data
   }

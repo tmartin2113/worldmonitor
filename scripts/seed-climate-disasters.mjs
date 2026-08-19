@@ -12,8 +12,15 @@ const CANONICAL_KEY = 'climate:disasters:v1';
 const NATURAL_EVENTS_KEY = 'natural:events:v1';
 const CACHE_TTL = 64800; // 18h — 3x the 6h cron interval (gold standard)
 
+// v1 IS DECOMMISSIONED — it is not a fallback, it is a guaranteed wasted request.
+// Measured 2026-08-19: v1 returns HTTP 410 with
+//   "The API version 'v1' has been decommissioned. Please use version 'v2' instead."
+// Listing it FIRST meant every fetch burned a round-trip on a dead endpoint before
+// reaching the live one. Harmless-looking while the seeder was blocked on a missing
+// appname anyway, which is exactly why it would have survived: a latent defect
+// behind a credential gate, invisible until someone fixes the credential and then
+// wonders why it is slow. v2 first; v1 kept only as an explicit tombstone.
 const RELIEFWEB_ENDPOINTS = [
-  'https://api.reliefweb.int/v1/disasters',
   'https://api.reliefweb.int/v2/disasters',
 ];
 

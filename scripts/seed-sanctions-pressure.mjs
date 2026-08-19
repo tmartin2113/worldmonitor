@@ -570,23 +570,52 @@ runSeed('sanctions', 'pressure', CANONICAL_KEY, fetchSanctionsPressure, {
     },
   ],
   afterPublish: async (data, _ctx) => {
-    // Write entity lookup index with seed-meta so health.js can monitor it.
-    // Uses writeExtraKeyWithMeta rather than extraKeys because runSeed's extraKeys
-    // calls writeExtraKey (no meta), and we need a seed-meta key for health tracking.
+    // EACH extra key is written INDEPENDENTLY. Previously these two awaits sat
+    // bare in the callback, so the first one to reject took the whole process
+    // down as an unhandled rejection -- and it rejected every single run.
+    //
+    // The entity index is ~2.1 MB of JSON; the local redis-rest proxy caps a
+    // request body at MAX_BODY_BYTES = 1 MB and DESTROYS the socket rather than
+    // answering 413, so the seeder died with a bare `SocketError: other side
+    // closed` after ~2.7 MB written. Nothing in that message says "too large",
+    // which is why this read as a mysterious partial write for weeks.
+    //
+    // The cost was borne entirely by a DIFFERENT key: country-counts is a few KB
+    // and would always have succeeded, but it is written second, so it never ran
+    // at all -- and get-country-risk fails closed for EVERY country without it.
+    // One oversized write must not be able to silently delete an unrelated
+    // feature. Failures are now reported per key and the run continues.
+    const writeExtra = async (label, key, value, count) => {
+      try {
+        await writeExtraKeyWithMeta(key, value, CACHE_TTL, count);
+      } catch (err) {
+        const bytes = (() => { try { return JSON.stringify(value).length; } catch { return -1; } })();
+        console.error(
+          `  Extra key ${key}: FAILED (${label}, ~${Math.round(bytes / 1024)}KB): ${err?.message || err}`,
+        );
+        if (bytes > 1024 * 1024) {
+          console.error(
+            `  ^ exceeds the redis-rest proxy's 1MB body cap; it closes the socket ` +
+            `instead of returning 413, so the error above will not say so.`,
+          );
+        }
+        return false;
+      }
+      return true;
+    };
+
+    // Entity lookup index, with seed-meta so health.js can monitor it.
+    // writeExtraKeyWithMeta rather than runSeed's extraKeys because the latter
+    // calls writeExtraKey (no meta) and health tracking needs the meta key.
     if (data._entityIndex) {
-      await writeExtraKeyWithMeta(
-        ENTITY_INDEX_KEY,
-        data._entityIndex,
-        CACHE_TTL,
-        data._entityIndex.length,
-      );
+      await writeExtra('entity index', ENTITY_INDEX_KEY, data._entityIndex, data._entityIndex.length);
     }
-    // Write full ISO2→count map for per-country sanctions lookup (no top-12 truncation).
+    // Full ISO2 -> count map for per-country lookup (no top-12 truncation).
     if (data._countryCounts) {
-      await writeExtraKeyWithMeta(
+      await writeExtra(
+        'country counts',
         COUNTRY_COUNTS_KEY,
         data._countryCounts,
-        CACHE_TTL,
         Object.keys(data._countryCounts).length,
       );
     }

@@ -114,6 +114,22 @@ for f in "$SCRIPT_DIR"/seed-*.mjs; do
   if caps_seed "$f" && { [ "$rc" -eq 124 ] || [ "$rc" -eq 137 ]; }; then
     printf "TIMEOUT (killed after %ss)\n" "$SEED_TIMEOUT"
     timedout=$((timedout + 1))
+  # A BUNDLE THAT REPORTS FAILURES IS NOT A SKIP. Bundle seeders end with a
+  # summary line like "Finished in 254.3s, ran:0 skipped:2 deferred:0 failed:3",
+  # and the skip branch below greps the last line for "skip" — which "skipped:2"
+  # matches. Because that branch sits ABOVE the exit-code check, a bundle with
+  # three dead sections was printed as SKIP and counted as a skip. Measured
+  # 2026-08-19: 9 of 27 SKIP entries were hiding 11 failed sections between them
+  # (climate failed:3, energy-sources failed:2, seven more at failed:1), and those
+  # sections own domains that /api/seed-health separately reports as MISSING.
+  # The harness was the reason nobody connected the two.
+  #
+  # Same class as run-tier.sh counting exit-0 as success, fixed the same morning:
+  # a classifier that reads a summary line for a keyword instead of for its
+  # numbers. Check the numbers first.
+  elif echo "$last" | grep -qE 'failed:[1-9]'; then
+    printf "FAIL (%s)\n" "$last"
+    fail=$((fail + 1))
   elif echo "$last" | grep -qi "skip\|not set\|missing.*key\|not found"; then
     printf "SKIP (%s)\n" "$last"
     skip=$((skip + 1))

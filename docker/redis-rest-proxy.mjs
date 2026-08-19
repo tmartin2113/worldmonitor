@@ -89,7 +89,22 @@ async function runCommand(args) {
   return client.sendCommand([cmd, ...cmdArgs.map(String)]);
 }
 
-const MAX_BODY_BYTES = 1024 * 1024; // 1 MB
+// 1 MB was too small for real payloads and the way it failed was worse than the
+// limit itself: `req.destroy()` killed the socket with no response, so the
+// client saw `SocketError: other side closed` — a message that says nothing
+// about size. seed-sanctions-pressure writes a ~2.1 MB entity index; it blew
+// the cap every run, threw an unhandled rejection, and took the process down
+// BEFORE writing sanctions:country-counts (a few KB, written second), which
+// left get-country-risk failing closed for every country. Weeks of a silent
+// partial write, from an error that could not name its own cause.
+const MAX_BODY_BYTES = Number(process.env.REDIS_REST_MAX_BODY_BYTES || 8 * 1024 * 1024); // 8 MB
+
+class BodyTooLarge extends Error {
+  constructor(limit) {
+    super(`Request body too large (limit ${limit} bytes)`);
+    this.statusCode = 413;
+  }
+}
 
 async function readBody(req) {
   const chunks = [];
@@ -97,8 +112,11 @@ async function readBody(req) {
   for await (const chunk of req) {
     totalLength += chunk.length;
     if (totalLength > MAX_BODY_BYTES) {
-      req.destroy();
-      throw new Error('Request body too large');
+      // ANSWER, then stop reading. Destroying the socket first is what made
+      // this undiagnosable. Draining lets the response actually reach the
+      // client instead of racing a reset.
+      req.pause();
+      throw new BodyTooLarge(MAX_BODY_BYTES);
     }
     chunks.push(chunk);
   }
@@ -208,8 +226,11 @@ const server = http.createServer(async (req, res) => {
     res.writeHead(404);
     res.end(JSON.stringify({ error: 'Not found' }));
   } catch (err) {
-    res.writeHead(500);
+    const code = err?.statusCode || 500;
+    res.writeHead(code);
     res.end(JSON.stringify({ error: err.message }));
+    // Only now discard whatever the client is still sending.
+    if (code === 413) { try { req.destroy(); } catch { /* already gone */ } }
   }
 });
 

@@ -4,6 +4,7 @@ import type {
   GetCountryRiskResponse,
   CiiScore,
 } from '../../../../src/generated/server/worldmonitor/intelligence/v1/service_server';
+import { ValidationError } from '../../../../src/generated/server/worldmonitor/intelligence/v1/service_server';
 
 import { getCachedJson } from '../../../_shared/redis';
 import { CII_RISK_SCORE_CACHE_KEYS } from '../../../_shared/cache-keys';
@@ -28,17 +29,27 @@ export async function getCountryRisk(
 ): Promise<GetCountryRiskResponse> {
   const code = req.countryCode?.toUpperCase() ?? '';
 
-  if (!code) {
-    return {
-      countryCode: code,
-      countryName: '',
-      cii: undefined,
-      advisoryLevel: '',
-      sanctionsActive: false,
-      sanctionsCount: 0,
-      fetchedAt: UNKNOWN_CII_COMPUTED_AT,
-      upstreamUnavailable: false,
-    };
+  // ENFORCE THE CONTRACT THE PROTO ALREADY DECLARES. get_country_risk.proto
+  // marks country_code required, len = 2, pattern ^[A-Z]{2}$ — but nothing
+  // enforced it here, so a missing or malformed code fell through to a response
+  // of sanctionsActive:false / sanctionsCount:0 / upstreamUnavailable:FALSE.
+  //
+  // That is not a null answer, it is a confident wrong one: it states that the
+  // country has no sanctions and that every upstream was reachable. Found
+  // 2026-08-18 while probing with `?country=RU` instead of `?country_code=RU` —
+  // the endpoint reported Russia clean, and the payload gave no hint that it had
+  // simply never been told which country to look up.
+  //
+  // ValidationError is the mechanism sibling endpoints already use
+  // (list-company-signals, get-company-enrichment) and surfaces as a 400.
+  if (!/^[A-Z]{2}$/.test(code)) {
+    throw new ValidationError([
+      {
+        field: 'country_code',
+        description:
+          'country_code is required and must be an ISO 3166-1 alpha-2 code (two letters, e.g. "RU").',
+      },
+    ]);
   }
 
   const [riskRaw, advisoriesRaw, sanctionsRaw] = await Promise.all([

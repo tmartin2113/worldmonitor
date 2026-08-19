@@ -70,6 +70,15 @@ async function fetchGedPage(version, page, token) {
 
 async function discoverVersion(token, fetchPage = fetchGedPage, candidates = buildVersionCandidates()) {
   console.log(`  Probing versions sequentially: ${candidates.join(', ')}`);
+  // TELL THE TRUTH ABOUT WHY EVERY CANDIDATE FAILED. This loop swallowed the
+  // per-version error and threw "No valid UCDP GED version found" regardless of
+  // cause — so an AUTH failure was reported as a VERSION problem, sending the
+  // reader hunting for a newer GED release that was never the issue. Measured
+  // 2026-08-19: 26.1, 25.1 and 24.1 ALL returned 401, because UCDP_ACCESS_TOKEN
+  // is unset and the API now requires x-ucdp-access-token. When every candidate
+  // fails identically, the candidate list is not what is wrong.
+  let authFailures = 0;
+  const seen = [];
   for (const version of candidates) {
     try {
       console.log(`  Trying v${version}...`);
@@ -78,10 +87,20 @@ async function discoverVersion(token, fetchPage = fetchGedPage, candidates = bui
       console.log(`  Found v${version} with ${page0.Result.length} events on page 0`);
       return { version, page0 };
     } catch (err) {
-      console.warn(`  v${version} failed: ${err.message}`);
+      const msg = err?.message || String(err);
+      seen.push(`${version}: ${msg}`);
+      if (/\b(401|403)\b/.test(msg)) authFailures += 1;
+      console.warn(`  v${version} failed: ${msg}`);
     }
   }
-  throw new Error('No valid UCDP GED version found');
+  if (candidates.length > 0 && authFailures === candidates.length) {
+    throw new Error(
+      `UCDP GED rejected EVERY candidate version with an auth error (${seen.join('; ')}). ` +
+      `This is NOT a version problem — set UCDP_ACCESS_TOKEN (or UC_DP_KEY); ` +
+      `the API requires the x-ucdp-access-token header.`,
+    );
+  }
+  throw new Error(`No valid UCDP GED version found (tried: ${seen.join('; ')})`);
 }
 
 function parseDateMs(value) {
