@@ -26,7 +26,8 @@ export async function getChokepointHistory(
   if (!id || !VALID_IDS.has(id)) {
     // Invalid ID: mark no-cache so junk IDs don't pin a 30-min empty on CF.
     markNoCacheResponse(ctx.request);
-    return { chokepointId: '', history: [], fetchedAt: '0' };
+    return { chokepointId: '', history: [], fetchedAt: '0',
+      dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: 'chokepoint_id was missing or not recognised; nothing was looked up' } };
   }
 
   return attach(`${HISTORY_KEY_PREFIX}${id}`, 'the seeder for get chokepoint history has not written this key', (raw) => {

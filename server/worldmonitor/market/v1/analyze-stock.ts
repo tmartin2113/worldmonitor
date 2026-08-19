@@ -13,6 +13,7 @@ import { CHROME_UA, yahooGate } from '../../../_shared/constants';
 import { UPSTREAM_TIMEOUT_MS, sanitizeSymbol } from './_shared';
 import { storeStockAnalysisSnapshot } from './premium-stock-store';
 import { searchRecentStockHeadlines } from './stock-news-search';
+import { answeredDirectly } from '../../../_shared/data-status';
 
 export type Candle = {
   timestamp: number;
@@ -1405,7 +1406,8 @@ export async function analyzeStock(
 ): Promise<AnalyzeStockResponse> {
   const symbol = sanitizeSymbol(req.symbol || '');
   if (!symbol) {
-    return buildEmptyAnalysisResponse('', '', false);
+    return { ...buildEmptyAnalysisResponse('', '', false),
+      dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: 'no symbol supplied; nothing was analysed' } };
   }
 
   const name = (req.name || symbol).trim().slice(0, 120) || symbol;
@@ -1469,7 +1471,13 @@ export async function analyzeStock(
         timeoutMs: 60_000,
       });
 
-  if (cached) return cached;
+  if (cached) return { ...cached, dataStatus: answeredDirectly() };
 
-  return buildEmptyAnalysisResponse(symbol, name, includeNews);
+  // `fetchFreshAnalysis` returns null when Yahoo gives no price history — and the
+  // empty analysis it falls back to has the full response shape: zeroed technical
+  // indicators, no headlines, no overlay. For a stock-analysis endpoint that is
+  // the most consequential empty on this box, because a reader sees a complete
+  // form and no reason to distrust its numbers.
+  return { ...buildEmptyAnalysisResponse(symbol, name, includeNews),
+    dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: `no price history is available for ${symbol}; the indicators in this response are placeholders, not measurements` } };
 }

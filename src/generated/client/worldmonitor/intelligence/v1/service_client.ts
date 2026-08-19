@@ -282,6 +282,7 @@ export interface ListTelegramFeedResponse {
   messages: TelegramMessage[];
   count: number;
   error: string;
+  dataStatus?: DataStatus;
 }
 
 export interface TelegramMessage {

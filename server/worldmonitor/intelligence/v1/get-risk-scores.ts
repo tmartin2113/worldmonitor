@@ -28,6 +28,7 @@ import {
   DEFAULT_CII_BASELINE_RISK,
   DEFAULT_CII_EVENT_MULTIPLIER,
 } from '../../../../shared/cii-weights';
+import { answeredDirectly } from '../../../_shared/data-status';
 
 // ========================================================================
 // Country risk baselines and multipliers
@@ -1619,20 +1620,38 @@ export async function getRiskScores(
           liveCache: liveCacheBackfill,
         });
       }
-      return filterRiskScoresResponse(freshResult, req.region);
+      return {
+        ...filterRiskScoresResponse(freshResult, req.region),
+        dataStatus: answeredDirectly(),
+      };
     }
   } catch { /* upstream failed, fall through to stale */ }
 
   const stale = (await getCachedJson(RISK_STALE_CACHE_KEY)) as GetRiskScoresResponse | null;
   if (stale) {
-    return filterRiskScoresResponse(
-      withRiskScoreRuntimeState(normalizeRiskScoreAdvisoryDisclosure(stale), { degraded: true, stale: true }),
-      req.region,
-    );
+    return {
+      ...filterRiskScoresResponse(
+        withRiskScoreRuntimeState(normalizeRiskScoreAdvisoryDisclosure(stale), { degraded: true, stale: true }),
+        req.region,
+      ),
+      dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_STALE', detail: 'the live risk-score build failed; serving the stale snapshot' },
+    };
   }
+  // THE LAST RESORT PATH, and the one worth naming. `computeCIIScores([], empty)`
+  // synthesises a full response out of NO INPUTS — every country scored from an
+  // empty auxiliary set. It is well-formed, it is the right shape, and it is not
+  // a measurement of anything. `degraded: true` was the only marker, in a payload
+  // whose numbers otherwise look exactly like real ones.
   const ciiScores = computeCIIScores([], emptyAuxiliarySources());
-  return filterRiskScoresResponse(
-    { ciiScores, strategicRisks: computeStrategicRisks(ciiScores), degraded: true, stale: false },
-    req.region,
-  );
+  return {
+    ...filterRiskScoresResponse(
+      { ciiScores, strategicRisks: computeStrategicRisks(ciiScores), degraded: true, stale: false },
+      req.region,
+    ),
+    dataStatus: {
+      fetchedAt: '0',
+      availability: 'DATA_AVAILABILITY_NEVER_SEEDED',
+      detail: 'no risk inputs were available and no stale snapshot exists; these scores are computed from an empty input set and are not a measurement',
+    },
+  };
 }

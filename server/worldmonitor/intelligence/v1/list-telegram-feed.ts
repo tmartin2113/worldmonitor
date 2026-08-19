@@ -5,6 +5,7 @@ import type {
   ListTelegramFeedResponse,
 } from '../../../../src/generated/server/worldmonitor/intelligence/v1/service_server';
 import { getRelayBaseUrl, getRelayHeaders } from './_relay';
+import { answeredDirectly, neverSeeded, upstreamError } from '../../../_shared/data-status';
 
 interface TelegramRelayMessage {
   id?: string | number;
@@ -65,8 +66,11 @@ export const listTelegramFeed: IntelligenceServiceHandler['listTelegramFeed'] = 
   req: ListTelegramFeedRequest,
 ): Promise<ListTelegramFeedResponse> => {
   const relayBaseUrl = getRelayBaseUrl();
+  // No relay configured means nothing was ever asked — a provisioning gap, not
+  // an OSINT feed that happens to be quiet.
   if (!relayBaseUrl) {
-    return { enabled: false, messages: [], count: 0, error: 'WS_RELAY_URL not configured' };
+    return { enabled: false, messages: [], count: 0, error: 'WS_RELAY_URL not configured',
+      dataStatus: neverSeeded('no Telegram relay is configured on this deployment; no fetch was attempted') };
   }
 
   const params = new URLSearchParams();
@@ -82,7 +86,8 @@ export const listTelegramFeed: IntelligenceServiceHandler['listTelegramFeed'] = 
       signal: AbortSignal.timeout(10_000),
     });
     if (!response.ok) {
-      return { enabled: false, messages: [], count: 0, error: `Relay HTTP ${response.status}` };
+      return { enabled: false, messages: [], count: 0, error: `Relay HTTP ${response.status}`,
+        dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_UPSTREAM_ERROR', detail: `the Telegram relay returned HTTP ${response.status}` } };
     }
 
     const data = (await response.json()) as TelegramRelayResponse;
@@ -103,8 +108,12 @@ export const listTelegramFeed: IntelligenceServiceHandler['listTelegramFeed'] = 
       messages,
       count: messages.length,
       error: data.error || '',
+      dataStatus: messages.length
+        ? answeredDirectly()
+        : { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: 'the relay answered with no messages for these filters' },
     };
   } catch (error) {
-    return { enabled: false, messages: [], count: 0, error: String(error) };
+    return { enabled: false, messages: [], count: 0, error: String(error),
+      dataStatus: upstreamError(error, 'Telegram relay fetch failed') };
   }
 };

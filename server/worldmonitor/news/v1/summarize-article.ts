@@ -17,6 +17,7 @@ import { sanitizeHeadlinesLight, sanitizeHeadlines, sanitizeForPrompt } from '..
 import { isCallerPremium } from '../../../_shared/premium-check';
 import { stripThinkingTags } from '../../../_shared/llm';
 import { buildLlmCallEvent, deliverUsageEvents } from '../../../_shared/usage';
+import { upstreamError } from '../../../_shared/data-status';
 
 // Best-effort llm_call telemetry (#4895). This handler bypasses callLlm (the
 // client picks the provider), so it emits its own events.
@@ -294,6 +295,7 @@ export async function summarizeArticle(
       errorType: error.name,
       status: 'SUMMARIZE_STATUS_ERROR',
       statusDetail: `${error.name}: ${error.message}`,
+      dataStatus: upstreamError(error, `summarization via ${provider} failed`),
     };
   }
 }

@@ -33,6 +33,7 @@ import {
 } from '../../../_shared/cache-keys';
 import { getRelayBaseUrl, getRelayHeaders } from '../../../_shared/relay';
 import diplomacyKeywordsData from '../../../../shared/diplomacy-keywords.json';
+import { answeredDirectly, upstreamError } from '../../../_shared/data-status';
 
 const RSS_ACCEPT = 'application/rss+xml, application/xml, text/xml, */*';
 
@@ -1043,17 +1044,27 @@ export async function listFeedDigest(
       { timeoutMs: DIGEST_RESPONSE_TIMEOUT_MS },
     );
 
+    // `buildDigest` returns null when EVERY category came back empty, which is
+    // how a total RSS outage is signalled — and the response for that is the
+    // same `empty()` a quiet news hour would produce: `categories: {}` with a
+    // fresh `generatedAt` stamp that makes it look newly computed.
     if (fresh === null) {
       markNoCacheResponse(ctx.request);
-      return fallbackDigestCache.get(fallbackKey)?.data ?? empty();
+      const stale = fallbackDigestCache.get(fallbackKey);
+      return stale
+        ? { ...stale.data, dataStatus: { fetchedAt: String(stale.ts), availability: 'DATA_AVAILABILITY_STALE', detail: 'no feed returned items this cycle; serving the last good digest' } }
+        : { ...empty(), dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: 'no feed returned any items this cycle and no previous digest exists' } };
     }
 
     if (fallbackDigestCache.size > 50) fallbackDigestCache.clear();
     fallbackDigestCache.set(fallbackKey, { data: fresh, ts: Date.now() });
-    return fresh;
-  } catch {
+    return { ...fresh, dataStatus: answeredDirectly() };
+  } catch (err) {
     markNoCacheResponse(ctx.request);
-    return fallbackDigestCache.get(fallbackKey)?.data ?? empty();
+    const stale = fallbackDigestCache.get(fallbackKey);
+    return stale
+      ? { ...stale.data, dataStatus: { fetchedAt: String(stale.ts), availability: 'DATA_AVAILABILITY_STALE', detail: 'the digest build failed; serving the last good digest' } }
+      : { ...empty(), dataStatus: upstreamError(err, 'news digest build failed') };
   }
 }
 

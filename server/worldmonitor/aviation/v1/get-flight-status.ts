@@ -64,8 +64,11 @@ export async function getFlightStatus(
     const cacheKey = `aviation:status:${flightNumber}:${date}:${origin}:v1:${aviationStackBudgetMonth()}`;
     const now = Date.now();
 
+    // `source: 'error'` for a MALFORMED REQUEST blamed the upstream for the
+    // caller's mistake, and looked identical to a real lookup that found nothing.
     if (!flightNumber || flightNumber.length > 10) {
-        return { flights: [], source: 'error', cacheHit: false };
+        return { flights: [], source: 'error', cacheHit: false,
+            dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: 'flight_number was missing or malformed; nothing was looked up' } };
     }
 
     try {

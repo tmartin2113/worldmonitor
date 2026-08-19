@@ -10132,6 +10132,10 @@ paths:
                         application/json:
                             example:
                                 "count": 1
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "enabled": true
                                 "error": "example"
                                 "messages":
@@ -28663,6 +28667,8 @@ components:
                 error:
                     type: string
                     description: Detailed error message if the fetch failed.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: OSINT feed containing validated Telegram messages.
         worldmonitor_intelligence_v1_TelegramMessage:
             type: object

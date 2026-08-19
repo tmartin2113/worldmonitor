@@ -25,6 +25,7 @@ import type {
   NarrativeSection,
 } from '../../../../src/generated/server/worldmonitor/intelligence/v1/service_server';
 import { getCachedJson, getCachedRawString } from '../../../_shared/redis';
+import { answeredDirectly } from '../../../_shared/data-status';
 
 const LATEST_KEY_PREFIX = 'intelligence:snapshot:v1:';
 const BY_ID_KEY_PREFIX = 'intelligence:snapshot-by-id:v1:';
@@ -482,7 +483,7 @@ export const getRegionalSnapshot: IntelligenceServiceHandler['getRegionalSnapsho
 ): Promise<GetRegionalSnapshotResponse> => {
   const regionId = req.regionId;
   if (!regionId || typeof regionId !== 'string') {
-    return {};
+    return { dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: 'no region_id supplied; nothing was looked up' } };
   }
 
   // Step 1: resolve latest pointer -> snapshot_id.
@@ -498,19 +499,25 @@ export const getRegionalSnapshot: IntelligenceServiceHandler['getRegionalSnapsho
   // the writer's own reader at persist-snapshot.mjs:97.
   const latestKey = `${LATEST_KEY_PREFIX}${regionId}:latest`;
   const snapshotId = await getCachedRawString(latestKey);
+  // The bare `{}` here is what showed "No snapshot available yet" on every panel
+  // for as long as the JSON.parse bug above went unnoticed — a failure mode with
+  // no symptom other than an empty panel.
   if (!snapshotId) {
-    return {};
+    return { dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_NEVER_SEEDED', detail: `no snapshot has been published for region ${regionId}` } };
   }
 
   // Step 2: resolve snapshot_id -> full snapshot
   const snapKey = `${BY_ID_KEY_PREFIX}${snapshotId}`;
   const persisted = await getCachedJson(snapKey, true) as PersistedSnapshot | null;
+  // A DANGLING POINTER: the latest-pointer names a snapshot whose body is gone
+  // (expired, or never written). That is a different fault from "no snapshot
+  // yet", and it previously produced the identical empty object.
   if (!persisted || typeof persisted !== 'object') {
-    return {};
+    return { dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_UPSTREAM_ERROR', detail: `the latest pointer for ${regionId} names snapshot ${snapshotId}, but its body is missing` } };
   }
 
   // Step 3: adapt snake_case -> camelCase
   const snapshot = adaptSnapshot(persisted);
 
-  return { snapshot };
+  return { snapshot, dataStatus: answeredDirectly() };
 };
