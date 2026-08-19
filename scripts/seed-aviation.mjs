@@ -757,6 +757,14 @@ async function seedAviationNews() {
   const now = Date.now();
   const cutoff = now - 24 * 60 * 60 * 1000;
   const allItems = [];
+  // Count what actually succeeded. Skipping a dead feed is right — one flaky
+  // source should not sink the run — but skipping ALL of them and returning
+  // `{items: []}` is not. This seeder declares `zeroIsValid: true`, so a zero
+  // publishes as OK_ZERO, and the API's data_status then reports EMPTY, whose
+  // documented meaning is "fetched successfully and there genuinely is
+  // nothing". Total upstream failure would be indistinguishable from a quiet
+  // news day. Throwing instead leaves the previous envelope in place.
+  let feedsOk = 0;
   await Promise.allSettled(
     AVIATION_RSS_FEEDS.map(async (feed) => {
       try {
@@ -766,10 +774,17 @@ async function seedAviationNews() {
         });
         if (!resp.ok) return;
         const xml = await resp.text();
+        feedsOk += 1;
         allItems.push(...parseRssItems(xml, feed.name));
       } catch { /* skip */ }
     }),
   );
+  if (AVIATION_RSS_FEEDS.length > 0 && feedsOk === 0) {
+    throw new Error(
+      `all ${AVIATION_RSS_FEEDS.length} aviation RSS feeds failed — refusing to publish an empty ` +
+      'news set that would be read as "no aviation news"',
+    );
+  }
 
   const items = allItems.map((item) => {
     let publishedAt = 0;
@@ -782,7 +797,7 @@ async function seedAviationNews() {
       publishedAt: publishedAt || now, snippet, matchedEntities: [], imageUrl: '',
     };
   }).filter(Boolean).sort((a, b) => b.publishedAt - a.publishedAt);
-  console.log(`[News] ${items.length} articles from ${AVIATION_RSS_FEEDS.length} feeds in ${((Date.now() - t0) / 1000).toFixed(1)}s`);
+  console.log(`[News] ${items.length} articles from ${feedsOk}/${AVIATION_RSS_FEEDS.length} feeds reachable in ${((Date.now() - t0) / 1000).toFixed(1)}s`);
   return { items };
 }
 
