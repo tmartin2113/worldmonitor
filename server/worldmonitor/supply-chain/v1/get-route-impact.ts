@@ -26,6 +26,7 @@ import { CHOKEPOINT_REGISTRY } from '../../../_shared/chokepoint-registry';
 import { BYPASS_CORRIDORS_BY_CHOKEPOINT } from '../../../_shared/bypass-corridors';
 import { RESILIENCE_SCORE_CACHE_PREFIX, getCurrentCacheFormula } from '../../resilience/v1/_shared';
 import COUNTRY_PORT_CLUSTERS from '../../../../scripts/shared/country-port-clusters.json';
+import { attachLive, neverSeeded } from '../../../_shared/data-status';
 
 const CACHE_TTL_SECONDS = 86400; // 24h
 
@@ -154,7 +155,8 @@ async function computeImpact(req: GetRouteImpactRequest): Promise<GetRouteImpact
   const hs2 = req.hs2.trim().replace(/\D/g, '') || '27';
 
   if (!/^[A-Z]{2}$/.test(fromIso2) || !/^[A-Z]{2}$/.test(toIso2)) {
-    return emptyResponse(req, 'missing');
+    return { ...emptyResponse(req, 'missing'),
+      dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: 'from_iso2/to_iso2 were malformed; nothing was computed' } };
   }
 
   const bilateralKey = `comtrade:bilateral-hs4:${toIso2}:v1`;
@@ -235,7 +237,12 @@ export async function getRouteImpact(
   req: GetRouteImpactRequest,
 ): Promise<GetRouteImpactResponse> {
   const isPro = await isCallerPremium(ctx.request);
-  if (!isPro) return emptyResponse(req, 'missing');
+  // `'missing'` was the reason string for BOTH "not entitled" and "malformed
+  // request" — neither of which means the route has no impact.
+  if (!isPro) {
+    return { ...emptyResponse(req, 'missing'),
+      dataStatus: neverSeeded('route impact requires a premium caller; nothing was computed') };
+  }
 
   const fromIso2 = req.fromIso2?.trim().toUpperCase() ?? '';
   const toIso2 = req.toIso2?.trim().toUpperCase() ?? '';
@@ -246,10 +253,11 @@ export async function getRouteImpact(
   }
 
   const cacheKey = ROUTE_IMPACT_KEY(fromIso2, toIso2, hs2);
-  const result = await cachedFetchJson<GetRouteImpactResponse>(
-    cacheKey,
-    CACHE_TTL_SECONDS,
-    async () => computeImpact({ fromIso2, toIso2, hs2 }),
-  );
-  return result ?? emptyResponse(req, 'lazy');
+  return attachLive(`route impact ${fromIso2}->${toIso2}`,
+    () => cachedFetchJson<GetRouteImpactResponse>(
+      cacheKey,
+      CACHE_TTL_SECONDS,
+      async () => computeImpact({ fromIso2, toIso2, hs2 }),
+    ),
+    () => emptyResponse(req, 'lazy'));
 }

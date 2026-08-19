@@ -7,6 +7,7 @@ import type {
 import { getRelayBaseUrl, getRelayHeaders } from './_shared';
 import { CHROME_UA } from '../../../_shared/constants';
 import { cachedFetchJson } from '../../../_shared/redis';
+import { attachLive } from '../../../_shared/data-status';
 
 const POSITIVE_TTL = 60;
 const NEGATIVE_TTL = 30;
@@ -189,13 +190,14 @@ export const getYoutubeLiveStreamInfo: AviationServiceHandler['getYoutubeLiveStr
   const normalizedChannel = channel.replace(/^@/, '');
   const cacheKey = `aviation:yt-live:vid:${videoId}:ch:${normalizedChannel}:v1`;
 
-  const cached = await cachedFetchJson<GetYoutubeLiveStreamInfoResponse>(
-    cacheKey,
-    POSITIVE_TTL,
-    () => fetchLiveStreamInfo(channel, videoId, params.toString()),
-    NEGATIVE_TTL,
-  );
-  if (cached) return cached;
-
-  return emptyResult('Failed to detect live status', Boolean(channel));
+  return attachLive(`youtube live status for ${normalizedChannel || videoId}`,
+    () => cachedFetchJson<GetYoutubeLiveStreamInfoResponse>(
+      cacheKey,
+      POSITIVE_TTL,
+      () => fetchLiveStreamInfo(channel, videoId, params.toString()),
+      NEGATIVE_TTL,
+    ),
+    // 'Failed to detect live status' covered both a genuine not-live result and
+    // an upstream that never answered.
+    () => emptyResult('Failed to detect live status', Boolean(channel)));
 };

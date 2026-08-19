@@ -20,6 +20,7 @@ import {
   SIMULATION_OUTCOME_BY_RUN_KEY_PREFIX,
 } from '../../../../scripts/_simulation-queue-constants.mjs';
 import { listProcessingRunIds } from '../../../_shared/simulation-queue';
+import { answeredDirectly, upstreamError } from '../../../_shared/data-status';
 
 type OutcomePointer = { runId: string; outcomeKey: string; schemaVersion: string; theaterCount: number; generatedAt: number; uiTheaters?: unknown[] };
 type TombstonePayload = { runId: string; error: string; tombstoneAt: number };
@@ -127,15 +128,25 @@ export const getSimulationOutcome: ForecastServiceHandler['getSimulationOutcome'
     const pointer = isOutcomePointer(raw) ? raw : null;
     if (!pointer?.outcomeKey) {
       markNoCacheResponse(ctx.request);
-      return NOT_FOUND;
+      return { ...NOT_FOUND,
+        dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_NEVER_SEEDED', detail: 'no simulation outcome has been published yet' } };
     }
-    const note = req.runId && req.runId !== pointer.runId
+    const substituted = Boolean(req.runId && req.runId !== pointer.runId);
+    const note = substituted
       ? 'requested runId not found (may have expired beyond 24h retention); returned latest available outcome instead'
       : '';
-    return outcomeToResponse(pointer, note);
+    // Answering a DIFFERENT run than the one asked for is the important case:
+    // the payload is valid, it is simply not the run the caller named, and only
+    // a prose `note` said so.
+    return {
+      ...outcomeToResponse(pointer, note),
+      dataStatus: substituted
+        ? { fetchedAt: '0', availability: 'DATA_AVAILABILITY_STALE', detail: 'the requested run was not found; this is the latest available outcome, not the one requested' }
+        : answeredDirectly(),
+    };
   } catch (err) {
     console.warn('[getSimulationOutcome] Redis error:', err instanceof Error ? err.message : String(err));
     markNoCacheResponse(ctx.request);
-    return { ...NOT_FOUND, error: 'redis_unavailable' };
+    return { ...NOT_FOUND, error: 'redis_unavailable', dataStatus: upstreamError(err, 'simulation outcome lookup failed') };
   }
 };

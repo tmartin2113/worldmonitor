@@ -21,6 +21,7 @@ import {
   storeStockBacktestSnapshot,
 } from './premium-stock-store';
 import { sanitizeSymbol } from './_shared';
+import { answeredDirectly, upstreamError } from '../../../_shared/data-status';
 
 const CACHE_TTL_SECONDS = 900;
 const DEFAULT_WINDOW_DAYS = 10;
@@ -253,15 +254,23 @@ export const backtestStock: MarketServiceHandler['backtestStock'] = async (
       await storeStockBacktestSnapshot(response);
       return response;
     });
-    if (cached) return cached;
+    if (cached) return { ...cached, dataStatus: answeredDirectly() };
   } catch (err) {
     console.warn(`[backtestStock] ${symbol} failed:`, (err as Error).message);
+    // A backtest that could not run and a symbol with too little history both
+    // produced `available: false` with the same summary text.
+    return { ...unavailableBacktest(symbol, req.name || symbol, evalWindowDays), dataStatus: upstreamError(err, `backtest for ${symbol} failed`) };
   }
 
+  return { ...unavailableBacktest(symbol, req.name || symbol, evalWindowDays),
+    dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: `not enough price history to backtest ${symbol}` } };
+};
+
+function unavailableBacktest(symbol: string, name: string, evalWindowDays: number): BacktestStockResponse {
   return {
     available: false,
     symbol,
-    name: req.name || symbol,
+    name,
     display: symbol,
     currency: 'USD',
     evalWindowDays,
@@ -278,4 +287,4 @@ export const backtestStock: MarketServiceHandler['backtestStock'] = async (
     evaluations: [],
     engineVersion: STOCK_ANALYSIS_ENGINE_VERSION,
   };
-};
+}
