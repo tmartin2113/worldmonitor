@@ -5,6 +5,7 @@ import type {
 } from '../../../../src/generated/server/worldmonitor/intelligence/v1/service_server';
 
 import { cachedFetchJson } from '../../../_shared/redis';
+import { answeredDirectly } from '../../../_shared/data-status';
 import { CHROME_UA } from '../../../_shared/constants';
 
 const FACTS_TTL = 86400;
@@ -51,7 +52,9 @@ export async function getCountryFacts(
   _ctx: ServerContext,
   req: GetCountryFactsRequest,
 ): Promise<GetCountryFactsResponse> {
-  if (!req.countryCode) return EMPTY;
+  if (!req.countryCode) {
+    return { ...EMPTY, dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: 'no country_code supplied; nothing was looked up' } };
+  }
 
   const code = req.countryCode.toUpperCase();
 
@@ -77,6 +80,26 @@ export async function getCountryFacts(
       : [],
     areaSqKm: rcData?.area ?? 0,
     countryName,
+    // THREE independent sources merged into one payload. Each `?? ''` silently
+    // blanks a field when its source failed, so a partial merge was
+    // indistinguishable from a country with no head of state recorded.
+    dataStatus: (() => {
+      const sources: Array<[string, boolean]> = [
+        ['RestCountries', rcData != null],
+        ['Wikidata', wikiData != null],
+        ['Wikipedia', wikiSummary != null],
+      ];
+      const missing = sources.filter(([, ok]) => !ok).map(([n]) => n);
+      if (missing.length === 0) return answeredDirectly();
+      if (missing.length === sources.length) {
+        return { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY' as const, detail: `no source returned facts for ${code}` };
+      }
+      return {
+        fetchedAt: '0',
+        availability: 'DATA_AVAILABILITY_PARTIAL' as const,
+        detail: `${missing.join(' and ')} did not answer; the corresponding fields are blank rather than unknown`,
+      };
+    })(),
   };
 }
 

@@ -5,6 +5,7 @@ import type {
   InsiderTransaction,
 } from '../../../../src/generated/server/worldmonitor/market/v1/service_server';
 import { cachedFetchJson } from '../../../_shared/redis';
+import { answeredDirectly, upstreamError } from '../../../_shared/data-status';
 import { CHROME_UA, finnhubGate } from '../../../_shared/constants';
 import { UPSTREAM_TIMEOUT_MS, sanitizeSymbol } from './_shared';
 
@@ -126,8 +127,11 @@ export async function getInsiderTransactions(
       };
     });
 
+    // `unavailable: true` covered both "no insider filings for this symbol" and
+    // "the fetch failed" — for insider activity those are opposite conclusions.
     if (!result) {
-      return { unavailable: true, symbol, totalBuys: 0, totalSells: 0, netValue: 0, transactions: [], fetchedAt: '' };
+      return { unavailable: true, symbol, totalBuys: 0, totalSells: 0, netValue: 0, transactions: [], fetchedAt: '',
+        dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: `no insider transactions reported for ${symbol}` } };
     }
 
     return {
@@ -138,8 +142,12 @@ export async function getInsiderTransactions(
       netValue: result.netValue,
       transactions: result.transactions,
       fetchedAt: result.fetchedAt,
+      dataStatus: result.transactions.length
+        ? answeredDirectly()
+        : { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: `no insider transactions reported for ${symbol}` },
     };
-  } catch {
-    return { unavailable: true, symbol, totalBuys: 0, totalSells: 0, netValue: 0, transactions: [], fetchedAt: '' };
+  } catch (err) {
+    return { unavailable: true, symbol, totalBuys: 0, totalSells: 0, netValue: 0, transactions: [], fetchedAt: '',
+      dataStatus: upstreamError(err, `insider transaction fetch for ${symbol} failed`) };
   }
 }

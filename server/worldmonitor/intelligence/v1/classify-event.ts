@@ -6,6 +6,7 @@ import type {
 } from '../../../../src/generated/server/worldmonitor/intelligence/v1/service_server';
 
 import { cachedFetchJson } from '../../../_shared/redis';
+import { answeredDirectly, upstreamError } from '../../../_shared/data-status';
 import { markNoCacheResponse } from '../../../_shared/response-headers';
 import { UPSTREAM_TIMEOUT_MS, buildClassifyCacheKey } from './_shared';
 import { callLlm } from '../../../_shared/llm';
@@ -115,12 +116,20 @@ Return: {"level":"...","category":"..."}`;
         return { level: vr.level, category: vr.category, timestamp: Date.now() };
       },
     );
-  } catch {
+  } catch (err) {
     markNoCacheResponse(ctx.request);
-    return { classification: undefined };
+    return { classification: undefined, dataStatus: upstreamError(err, 'event classification failed') };
   }
 
-  if (!cached?.level || !cached?.category) { markNoCacheResponse(ctx.request); return { classification: undefined }; }
+  // An unclassifiable event and a classifier that could not be reached both
+  // returned a bare `{}`, which reads as "this event is not noteworthy".
+  if (!cached?.level || !cached?.category) {
+    markNoCacheResponse(ctx.request);
+    return {
+      classification: undefined,
+      dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: 'the classifier returned no usable level/category for this event' },
+    };
+  }
 
   return {
     classification: {
@@ -131,5 +140,6 @@ Return: {"level":"...","category":"..."}`;
       analysis: '',
       entities: [],
     },
+    dataStatus: answeredDirectly(),
   };
 }

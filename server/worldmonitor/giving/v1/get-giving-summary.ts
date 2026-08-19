@@ -22,6 +22,7 @@ import type {
 } from '../../../../src/generated/server/worldmonitor/giving/v1/service_server';
 
 import { cachedFetchJson } from '../../../_shared/redis';
+import { answeredDirectly, upstreamError } from '../../../_shared/data-status';
 
 const REDIS_CACHE_KEY = 'giving:summary:v1';
 const REDIS_CACHE_TTL = 3600; // 1 hour
@@ -212,7 +213,10 @@ export async function getGivingSummary(
     if (!result) return { summary: undefined as unknown as GivingSummary, fetchedAt: 0, dataAvailable: false };
 
     const summary = result.summary;
-    if (!summary) return { summary, fetchedAt: 0, dataAvailable: false };
+    if (!summary) {
+      return { summary, fetchedAt: 0, dataAvailable: false,
+        dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: 'the giving feed returned no summary' } };
+    }
 
     return {
       summary: {
@@ -226,8 +230,12 @@ export async function getGivingSummary(
       },
       fetchedAt: result.fetchedAt || responseFetchedAt(summary),
       dataAvailable: true,
+      dataStatus: answeredDirectly(),
     };
-  } catch {
-    return { summary: undefined as unknown as GivingSummary, fetchedAt: 0, dataAvailable: false };
+  } catch (err) {
+    // `dataAvailable: false` meant both "nothing to report" and "the fetch blew
+    // up"; for a giving/aid feed those are not the same news.
+    return { summary: undefined as unknown as GivingSummary, fetchedAt: 0, dataAvailable: false,
+      dataStatus: upstreamError(err, 'giving summary fetch failed') };
   }
 }
