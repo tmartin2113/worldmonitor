@@ -11,6 +11,7 @@ import type {
 } from '../../../../src/generated/server/worldmonitor/economic/v1/service_server';
 
 import { getCachedJsonBatch } from '../../../_shared/redis';
+import { upstreamError } from '../../../_shared/data-status';
 import { toUniqueSortedLimited } from '../../../_shared/normalize-list';
 import { applyFredObservationLimit, fredSeedKey, normalizeFredLimit } from './_fred-shared';
 
@@ -44,12 +45,27 @@ export async function getFredSeriesBatch(
       if (cached?.series) results[id] = applyFredObservationLimit(cached.series, limit);
     }
 
+    // This handler already counted fetched-vs-requested; PARTIAL is the word for
+    // the gap. Every absent series here is one seed-economy.mjs could not write
+    // without FRED_API_KEY, which is a provisioning gap, not FRED having no data.
+    const fetched = Object.keys(results).length;
+    const missing = limitedList.filter((id) => !results[id]);
+    const shown = missing.length <= 5 ? missing.join(', ') : `${missing.slice(0, 5).join(', ')} and ${missing.length - 5} more`;
     return {
       results,
-      fetched: Object.keys(results).length,
+      fetched,
       requested: limitedList.length,
+      dataStatus: limitedList.length === 0
+        ? { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: 'no recognised series_ids requested; nothing was looked up' }
+        : fetched === 0
+          ? { fetchedAt: '0', availability: 'DATA_AVAILABILITY_NEVER_SEEDED',
+              detail: `none of the ${limitedList.length} requested FRED series has been written (seed-economy.mjs requires FRED_API_KEY)` }
+          : missing.length
+            ? { fetchedAt: '0', availability: 'DATA_AVAILABILITY_PARTIAL',
+                detail: `${missing.length} of ${limitedList.length} series missing (${shown}); the rest were read normally` }
+            : { fetchedAt: '0', availability: 'DATA_AVAILABILITY_OK', detail: '' },
     };
-  } catch {
-    return { results: {}, fetched: 0, requested: 0 };
+  } catch (err) {
+    return { results: {}, fetched: 0, requested: 0, dataStatus: upstreamError(err, 'FRED batch read failed') };
   }
 }
