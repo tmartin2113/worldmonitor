@@ -9,6 +9,7 @@ import type {
 import { UPSTREAM_TIMEOUT_MS } from './_shared';
 import { cachedFetchJsonWithMeta, setCachedJson } from '../../../_shared/redis';
 import { CHROME_UA } from '../../../_shared/constants';
+import { answeredDirectly, upstreamError } from '../../../_shared/data-status';
 
 // ========================================================================
 // Service status page definitions and parsers
@@ -325,8 +326,24 @@ export async function listServiceStatuses(
       }
     }
 
-    return { statuses: filterAndSortStatuses(effective, req) };
-  } catch {
-    return { statuses: filterAndSortStatuses(fallbackStatusesCache?.data || [], req) };
+    // Serving the in-process fallback is not the same answer as a fresh probe:
+    // a status page rendering "all systems operational" from a stale snapshot is
+    // the specific failure this endpoint exists to prevent.
+    return {
+      statuses: filterAndSortStatuses(effective, req),
+      dataStatus: results
+        ? answeredDirectly()
+        : effective.length
+          ? { fetchedAt: String(fallbackStatusesCache?.ts ?? 0), availability: 'DATA_AVAILABILITY_STALE', detail: 'the service probes did not complete; serving the last good snapshot' }
+          : { fetchedAt: '0', availability: 'DATA_AVAILABILITY_NEVER_SEEDED', detail: 'no service statuses have been probed successfully yet' },
+    };
+  } catch (err) {
+    const stale = fallbackStatusesCache?.data || [];
+    return {
+      statuses: filterAndSortStatuses(stale, req),
+      dataStatus: stale.length
+        ? { fetchedAt: String(fallbackStatusesCache?.ts ?? 0), availability: 'DATA_AVAILABILITY_STALE', detail: 'the service probe run failed; serving the last good snapshot' }
+        : upstreamError(err, 'service status probe failed'),
+    };
   }
 }

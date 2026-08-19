@@ -47,6 +47,7 @@ import {
   FREIGHT_USD_FALLBACK,
   getCorridorGeometryOrFallback,
 } from './_route-explorer-static-tables';
+import { attachLive, neverSeeded } from '../../../_shared/data-status';
 
 const CACHE_TTL_SECONDS = 60; // matches vendor endpoint cadence
 
@@ -309,19 +310,24 @@ export async function getRouteExplorerLane(
   const cargo = CARGO_TYPES.has(req.cargoType?.trim().toLowerCase() ?? '')
     ? req.cargoType.trim().toLowerCase()
     : 'container';
-  if (!isPro) return emptyResponse(req, hs2, cargo);
+  if (!isPro) {
+    return { ...emptyResponse(req, hs2, cargo),
+      dataStatus: neverSeeded('the route explorer requires a premium caller; nothing was computed') };
+  }
 
   const fromIso2 = req.fromIso2?.trim().toUpperCase() ?? '';
   const toIso2 = req.toIso2?.trim().toUpperCase() ?? '';
   if (!/^[A-Z]{2}$/.test(fromIso2) || !/^[A-Z]{2}$/.test(toIso2)) {
-    return emptyResponse(req, hs2, cargo);
+    return { ...emptyResponse(req, hs2, cargo),
+      dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: 'from_iso2/to_iso2 were malformed; nothing was computed' } };
   }
 
   const cacheKey = ROUTE_EXPLORER_LANE_KEY(fromIso2, toIso2, hs2, cargo);
-  const result = await cachedFetchJson<GetRouteExplorerLaneResponse>(
-    cacheKey,
-    CACHE_TTL_SECONDS,
-    async () => computeLane({ fromIso2, toIso2, hs2, cargoType: cargo }),
-  );
-  return result ?? emptyResponse(req, hs2, cargo);
+  return attachLive(`route explorer lane ${fromIso2}->${toIso2}`,
+    () => cachedFetchJson<GetRouteExplorerLaneResponse>(
+      cacheKey,
+      CACHE_TTL_SECONDS,
+      async () => computeLane({ fromIso2, toIso2, hs2, cargoType: cargo }),
+    ),
+    () => emptyResponse(req, hs2, cargo));
 }

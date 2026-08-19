@@ -10,6 +10,7 @@ import type {
 import { cachedFetchJson, setCachedJson } from '../../../_shared/redis';
 import { UPSTREAM_TIMEOUT_MS } from './_shared';
 import { CHROME_UA } from '../../../_shared/constants';
+import { answeredDirectly, upstreamError } from '../../../_shared/data-status';
 
 // ========================================================================
 // Constants
@@ -469,7 +470,7 @@ export async function getCableHealth(
       const count = result.cables ? Object.keys(result.cables).length : 0;
       setCachedJson('seed-meta:cable-health', { fetchedAt: Date.now(), recordCount: count }, 604800).catch(() => {});
       fallbackCache = result;
-      return result;
+      return { ...result, dataStatus: answeredDirectly() };
     }
 
     // NGA upstream failed (cachedFetchJson stored NEG_SENTINEL in cable-health-v1
@@ -483,9 +484,23 @@ export async function getCableHealth(
     const fbCount = fallback.cables ? Object.keys(fallback.cables).length : 0;
     setCachedJson(CACHE_KEY, fallback, 120).catch(() => {});
     setCachedJson('seed-meta:cable-health', { fetchedAt: Date.now(), recordCount: fbCount }, 604800).catch(() => {});
-    return fallback;
-  } catch {
-    if (fallbackCache) return fallbackCache;
-    return { generatedAt: Date.now(), cables: {} };
+    // THE ENDPOINT THAT STARTED THIS. It read `.warnings` from an NGA envelope
+    // keyed `broadcast-warn`, and `?? []` turned the unrecognised shape into "no
+    // navigational warnings on Earth" — cached for 24h while upstream served 386.
+    // The key bug is fixed; this is the remaining half. `cables: {}` is still
+    // returned when NGA fails, and it still looks exactly like a calm ocean.
+    return {
+      ...fallback,
+      dataStatus: fallbackCache
+        ? { fetchedAt: String(fallback.generatedAt ?? 0), availability: 'DATA_AVAILABILITY_STALE',
+            detail: 'the NGA fetch failed; serving the last good cable-health snapshot' }
+        : { fetchedAt: '0', availability: 'DATA_AVAILABILITY_UPSTREAM_ERROR',
+            detail: 'the NGA fetch failed and no previous snapshot exists; an empty cable map here is not a claim that every cable is healthy' },
+    };
+  } catch (err) {
+    if (fallbackCache) {
+      return { ...fallbackCache, dataStatus: { fetchedAt: String(fallbackCache.generatedAt ?? 0), availability: 'DATA_AVAILABILITY_STALE', detail: 'cable-health computation failed; serving the last good snapshot' } };
+    }
+    return { generatedAt: Date.now(), cables: {}, dataStatus: upstreamError(err, 'cable health computation failed') };
   }
 }
