@@ -5,6 +5,7 @@ import type {
     CarrierOpsSummary,
 } from '../../../../src/generated/server/worldmonitor/aviation/v1/service_server';
 import { cachedFetchJson } from '../../../_shared/redis';
+import { answeredDirectly, upstreamError } from '../../../_shared/data-status';
 import { parseStringArray, DEFAULT_WATCHED_AIRPORTS } from './_shared';
 import { listAirportFlights } from './list-airport-flights';
 
@@ -93,13 +94,21 @@ export async function getCarrierOps(
             }
         );
 
+        const carriers = (result?.carriers ?? []).filter(c => c.totalFlights >= minFlights);
         return {
-            carriers: (result?.carriers ?? []).filter(c => c.totalFlights >= minFlights),
+            carriers,
             source: 'aviationstack',
             updatedAt: now,
+            dataStatus: result
+                ? (carriers.length
+                    ? answeredDirectly()
+                    : { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: `no carrier met the ${minFlights}-flight minimum` })
+                : { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: 'AviationStack returned no carrier operations data' },
         };
     } catch (err) {
+        // `source: 'error'` was the only signal, and it sat in a field callers
+        // read as provenance rather than as a status.
         console.warn(`[Aviation] GetCarrierOps failed: ${err instanceof Error ? err.message : err}`);
-        return { carriers: [], source: 'error', updatedAt: now };
+        return { carriers: [], source: 'error', updatedAt: now, dataStatus: upstreamError(err, 'carrier ops fetch failed') };
     }
 }

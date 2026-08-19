@@ -5,6 +5,7 @@ import type {
     FlightInstance,
 } from '../../../../src/generated/server/worldmonitor/aviation/v1/service_server';
 import { cachedFetchJson } from '../../../_shared/redis';
+import { answeredDirectly, upstreamError } from '../../../_shared/data-status';
 import { getRelayBaseUrl, getRelayHeaders } from './_shared';
 import { aviationStackBudgetMonth, reserveAviationStackCalls } from './_avstack-budget';
 
@@ -100,19 +101,28 @@ export async function getFlightStatus(
                     const flights = (json.data ?? []).map(f => normalizeFlight(f, now));
                     return { flights, source: 'aviationstack' };
                 } catch (err) {
+                    // RETHROW, do not return. Returning a non-null
+                    // `{flights: [], source: 'error'}` made cachedFetchJson treat a
+                    // relay failure as a SUCCESSFUL result and cache "no flights"
+                    // for the full TTL — every caller in that window saw a
+                    // confident empty answer for a flight that may well exist.
                     console.warn(`[Aviation] Flight status relay fetch failed for ${flightNumber}: ${err instanceof Error ? err.message : err}`);
-                    return { flights: [], source: 'error' };
+                    throw err instanceof Error ? err : new Error(String(err));
                 }
             }
         );
 
+        const flights = result?.flights ?? [];
         return {
-            flights: result?.flights ?? [],
+            flights,
             source: result?.source ?? 'unknown',
             cacheHit: false,
+            dataStatus: flights.length
+                ? answeredDirectly()
+                : { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: `no flights found for ${flightNumber}` },
         };
     } catch (err) {
         console.warn(`[Aviation] GetFlightStatus failed for ${flightNumber}: ${err instanceof Error ? err.message : err}`);
-        return { flights: [], source: 'error', cacheHit: false };
+        return { flights: [], source: 'error', cacheHit: false, dataStatus: upstreamError(err, 'flight status lookup failed') };
     }
 }

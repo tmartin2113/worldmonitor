@@ -6,6 +6,7 @@ import type {
 import { getRelayBaseUrl, getRelayHeaders } from '../../../_shared/relay';
 import { parseStringArray } from '../../../_shared/parse-string-array';
 import { cachedFetchJson } from '../../../_shared/redis';
+import { upstreamError } from '../../../_shared/data-status';
 
 const CACHE_TTL = 600;
 
@@ -66,15 +67,19 @@ export async function searchGoogleFlights(
     );
 
     if (!data) {
-      return { flights: [], degraded: true, error: 'no results' };
+      return { flights: [], degraded: true, error: 'no results',
+        dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: 'the relay returned no matching flights' } };
     }
 
+    const flights = data.flights as SearchGoogleFlightsResponse['flights'];
     return {
-      flights: data.flights as SearchGoogleFlightsResponse['flights'],
+      flights,
       degraded: false,
       error: '',
+      dataStatus: { fetchedAt: '0', availability: flights.length ? 'DATA_AVAILABILITY_OK' : 'DATA_AVAILABILITY_EMPTY', detail: '' },
     };
   } catch (err) {
-    return { flights: [], degraded: true, error: err instanceof Error ? err.message : 'search failed' };
+    return { flights: [], degraded: true, error: err instanceof Error ? err.message : 'search failed',
+      dataStatus: upstreamError(err, 'flight search failed') };
   }
 }

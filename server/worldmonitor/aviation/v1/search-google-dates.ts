@@ -6,6 +6,7 @@ import type {
 import { getRelayBaseUrl, getRelayHeaders } from '../../../_shared/relay';
 import { parseStringArray } from '../../../_shared/parse-string-array';
 import { cachedFetchJson } from '../../../_shared/redis';
+import { upstreamError } from '../../../_shared/data-status';
 
 // Medium-cache tier (10 min) — use cachedFetchJson for stampede protection.
 const CACHE_TTL = 600;
@@ -20,12 +21,15 @@ export async function searchGoogleDates(
   const endDate = req.endDate || '';
 
   if (!origin || !destination || !startDate || !endDate) {
-    return { dates: [], degraded: true, error: 'origin, destination, start_date, and end_date are required' };
+    return { dates: [], degraded: true, error: 'origin, destination, start_date, and end_date are required',
+      dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: 'required search fields were missing; nothing was queried' } };
   }
 
   const relayBaseUrl = getRelayBaseUrl();
+  // No relay configured is a provisioning gap, not a failed search.
   if (!relayBaseUrl) {
-    return { dates: [], degraded: true, error: 'relay unavailable' };
+    return { dates: [], degraded: true, error: 'relay unavailable',
+      dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_NEVER_SEEDED', detail: 'no flight relay is configured on this deployment; no search was attempted' } };
   }
 
   const passengers = Math.max(1, Math.min(req.passengers ?? 1, 9));
@@ -66,15 +70,22 @@ export async function searchGoogleDates(
     );
 
     if (!data) {
-      return { dates: [], degraded: true, error: 'no results' };
+      return { dates: [], degraded: true, error: 'no results',
+        dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: 'the relay returned no matching dates' } };
     }
 
+    // This endpoint had its own notion of partial long before the envelope did:
+    // `partial` means some date chunks failed. That is exactly PARTIAL.
     return {
       dates: data.dates as SearchGoogleDatesResponse['dates'],
       degraded: data.partial === true,
       error: data.partial === true ? 'partial results: one or more date chunks failed' : '',
+      dataStatus: data.partial === true
+        ? { fetchedAt: '0', availability: 'DATA_AVAILABILITY_PARTIAL', detail: 'one or more date chunks failed; the returned range is incomplete' }
+        : { fetchedAt: '0', availability: (data.dates as unknown[]).length ? 'DATA_AVAILABILITY_OK' : 'DATA_AVAILABILITY_EMPTY', detail: '' },
     };
   } catch (err) {
-    return { dates: [], degraded: true, error: err instanceof Error ? err.message : 'search failed' };
+    return { dates: [], degraded: true, error: err instanceof Error ? err.message : 'search failed',
+      dataStatus: upstreamError(err, 'flight date search failed') };
   }
 }
