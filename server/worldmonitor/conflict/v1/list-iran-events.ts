@@ -4,7 +4,7 @@ import type {
   ListIranEventsResponse,
 } from '../../../../src/generated/server/worldmonitor/conflict/v1/service_server';
 
-import { getCachedJson } from '../../../_shared/redis';
+import { readSeeded, withCount } from '../../../_shared/data-status';
 
 const REDIS_KEY = 'conflict:iran-events:v1';
 
@@ -17,14 +17,28 @@ export async function listIranEvents(
   _ctx: ServerContext,
   _req: ListIranEventsRequest,
 ): Promise<ListIranEventsResponse> {
-  if (!IRAN_EVENTS_ENABLED) return { events: [], scrapedAt: '0' };
-  try {
-    const cached = await getCachedJson(REDIS_KEY);
-    if (cached && typeof cached === 'object' && 'events' in (cached as Record<string, unknown>)) {
-      return cached as ListIranEventsResponse;
-    }
-    return { events: [], scrapedAt: '0' };
-  } catch {
-    return { events: [], scrapedAt: '0' };
+  // Empty because the domain is switched OFF, which is a deliberate answer and
+  // not a missing feed. Saying so is the entire point of the envelope.
+  if (!IRAN_EVENTS_ENABLED) {
+    return {
+      events: [],
+      scrapedAt: '0',
+      dataStatus: {
+        fetchedAt: '0',
+        availability: 'DATA_AVAILABILITY_EMPTY',
+        detail: 'Iran-events was sunset after the war ended 2026-07 and is serving empty deliberately. Set IRAN_EVENTS_ENABLED=true to restore.',
+      },
+    };
   }
+
+  const read = await readSeeded<ListIranEventsResponse>(
+    REDIS_KEY,
+    'the Iran-events seeder has not run since the domain was re-enabled.',
+  );
+  const events = read.data?.events ?? [];
+  return {
+    events,
+    scrapedAt: read.data?.scrapedAt ?? '0',
+    dataStatus: withCount(read.status, events.length),
+  };
 }

@@ -15,6 +15,7 @@ import type {
 
 import { CHROME_UA } from '../../../_shared/constants';
 import { cachedFetchJson } from '../../../_shared/redis';
+import { answeredDirectly, upstreamError } from '../../../_shared/data-status';
 import { ISO2_TO_ISO3 } from './_shared';
 
 const REDIS_CACHE_KEY = 'conflict:humanitarian:v1';
@@ -139,7 +140,9 @@ export async function getHumanitarianSummary(
   _ctx: ServerContext,
   req: GetHumanitarianSummaryRequest,
 ): Promise<GetHumanitarianSummaryResponse> {
-  if (!req.countryCode) return { summary: undefined };
+  if (!req.countryCode) {
+    return { summary: undefined, dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: 'no country_code supplied; nothing was looked up' } };
+  }
   try {
     const cacheKey = `${REDIS_CACHE_KEY}:${req.countryCode || 'all'}`;
 
@@ -148,8 +151,11 @@ export async function getHumanitarianSummary(
       return summary ? { summary } : null;
     });
 
-    return result || { summary: undefined };
-  } catch {
-    return { summary: undefined };
+    return {
+      summary: result?.summary,
+      dataStatus: result?.summary ? answeredDirectly() : { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: 'HDX HAPI holds no humanitarian summary for this country' },
+    };
+  } catch (err) {
+    return { summary: undefined, dataStatus: upstreamError(err, 'HAPI humanitarian fetch failed') };
   }
 }

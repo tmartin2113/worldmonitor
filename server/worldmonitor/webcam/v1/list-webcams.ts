@@ -1,5 +1,6 @@
 import type { ListWebcamsRequest, ListWebcamsResponse, WebcamEntry, WebcamCluster, ServerContext } from '../../../../src/generated/server/worldmonitor/webcam/v1/service_server';
 import { geoSearchByBox, getHashFieldsBatch, getCachedJson, setCachedJson } from '../../../_shared/redis';
+import { answeredDirectly, neverSeeded } from '../../../_shared/data-status';
 
 const MAX_RESULTS = 2000;
 const RESPONSE_CACHE_TTL = 3600; // 1 hour
@@ -83,14 +84,23 @@ export async function listWebcams(_ctx: ServerContext, req: ListWebcamsRequest):
   // Read active version
   const versionResult = await getCachedJson('webcam:cameras:active');
   const version = versionResult != null ? String(versionResult) : null;
+  // No active version means the webcam seeder has never published a snapshot —
+  // not that there are no webcams in this viewport.
   if (!version) {
-    return { webcams: [], clusters: [], totalInView: 0 };
+    return {
+      webcams: [],
+      clusters: [],
+      totalInView: 0,
+      dataStatus: neverSeeded('webcam:cameras:active has never been written — the webcam seeder has not published a camera set'),
+    };
   }
 
   // Check response cache (quantized bbox + zoom + version)
   const cacheKey = `webcam:resp:${version}:${zoom}:${qW}:${qS}:${qE}:${qN}`;
   const cached = await getCachedJson(cacheKey) as ListWebcamsResponse | null;
-  if (cached) return cached;
+  // Entries written before the envelope existed carry no dataStatus; label them
+  // rather than passing an undefined field back to the caller.
+  if (cached) return { ...cached, dataStatus: cached.dataStatus ?? answeredDirectly('served from the response cache') };
 
   const geoKey = `webcam:cameras:geo:${version}`;
   const metaKey = `webcam:cameras:meta:${version}`;
@@ -118,7 +128,13 @@ export async function listWebcams(_ctx: ServerContext, req: ListWebcamsRequest):
   }
 
   if (ids.length === 0) {
-    const empty: ListWebcamsResponse = { webcams: [], clusters: [], totalInView: 0 };
+    // A real answer: the camera set is present, this viewport simply has none.
+    const empty: ListWebcamsResponse = {
+      webcams: [],
+      clusters: [],
+      totalInView: 0,
+      dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: 'the camera set is loaded but no webcams fall inside these bounds' },
+    };
     await setCachedJson(cacheKey, empty, RESPONSE_CACHE_TTL);
     return empty;
   }
@@ -150,6 +166,7 @@ export async function listWebcams(_ctx: ServerContext, req: ListWebcamsRequest):
     webcams: singles,
     clusters,
     totalInView: webcams.length,
+    dataStatus: answeredDirectly(),
   };
 
   setCachedJson(cacheKey, result, RESPONSE_CACHE_TTL).catch(err => {

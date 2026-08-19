@@ -9,7 +9,7 @@ import type {
   GetNatGasStorageResponse,
 } from '../../../../src/generated/server/worldmonitor/economic/v1/service_server';
 
-import { getCachedJson } from '../../../_shared/redis';
+import { readSeeded, withCount } from '../../../_shared/data-status';
 
 const SEED_CACHE_KEY = 'economic:nat-gas-storage:v1';
 
@@ -17,13 +17,14 @@ export async function getNatGasStorage(
   _ctx: ServerContext,
   _req: GetNatGasStorageRequest,
 ): Promise<GetNatGasStorageResponse> {
-  try {
-    // true = raw key: seed scripts write without Vercel env prefix
-    const result = await getCachedJson(SEED_CACHE_KEY, true) as GetNatGasStorageResponse | null;
-    if (!result?.weeks?.length) return { weeks: [], latestPeriod: '' };
-    return result;
-  } catch (err) {
-    console.error('[getNatGasStorage] Redis read failed:', err);
-    return { weeks: [], latestPeriod: '' };
-  }
+  const read = await readSeeded<GetNatGasStorageResponse>(
+    SEED_CACHE_KEY,
+    'seed-economy.mjs has not written natural gas storage (the EIA series requires EIA_API_KEY).',
+  );
+  const weeks = read.data?.weeks ?? [];
+  return {
+    weeks,
+    latestPeriod: read.data?.latestPeriod ?? '',
+    dataStatus: withCount(read.status, weeks.length),
+  };
 }

@@ -11,6 +11,7 @@ export interface ListArxivPapersRequest {
 export interface ListArxivPapersResponse {
   papers: ArxivPaper[];
   pagination?: PaginationResponse;
+  dataStatus?: DataStatus;
 }
 
 export interface ArxivPaper {
@@ -26,6 +27,12 @@ export interface ArxivPaper {
 export interface PaginationResponse {
   nextCursor: string;
   totalCount: number;
+}
+
+export interface DataStatus {
+  fetchedAt: string;
+  availability: DataAvailability;
+  detail: string;
 }
 
 export interface ListTrendingReposRequest {
@@ -59,6 +66,7 @@ export interface ListHackernewsItemsRequest {
 export interface ListHackernewsItemsResponse {
   items: HackernewsItem[];
   pagination?: PaginationResponse;
+  dataStatus?: DataStatus;
 }
 
 export interface HackernewsItem {
@@ -108,6 +116,8 @@ export interface TechEventCoords {
   original: string;
   virtual: boolean;
 }
+
+export type DataAvailability = "DATA_AVAILABILITY_UNSPECIFIED" | "DATA_AVAILABILITY_OK" | "DATA_AVAILABILITY_EMPTY" | "DATA_AVAILABILITY_NEVER_SEEDED" | "DATA_AVAILABILITY_UPSTREAM_ERROR" | "DATA_AVAILABILITY_STALE";
 
 export interface FieldViolation {
   field: string;

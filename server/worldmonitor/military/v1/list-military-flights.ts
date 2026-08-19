@@ -10,6 +10,7 @@ import type {
 import { isMilitaryCallsign, isMilitaryHex, detectAircraftType, UPSTREAM_TIMEOUT_MS } from './_shared';
 import { cachedFetchJson, getRawJson } from '../../../_shared/redis';
 import { markNoCacheResponse } from '../../../_shared/response-headers';
+import { answeredDirectly, neverSeeded, upstreamError } from '../../../_shared/data-status';
 import { getRelayBaseUrl, getRelayHeaders } from '../../../_shared/relay';
 
 const REDIS_CACHE_KEY = 'military:flights:v1';
@@ -190,7 +191,9 @@ export async function listMilitaryFlights(
   req: ListMilitaryFlightsRequest,
 ): Promise<ListMilitaryFlightsResponse> {
   try {
-    if (!req.neLat && !req.neLon && !req.swLat && !req.swLon) return { flights: [], clusters: [], pagination: undefined };
+    if (!req.neLat && !req.neLon && !req.swLat && !req.swLon) {
+      return { flights: [], clusters: [], pagination: undefined, dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: 'no bounding box supplied; nothing was queried' } };
+    }
     const requestBounds = normalizeBounds(req);
 
     // Quantize bbox to a 1° grid so nearby map views share cache entries.
@@ -211,7 +214,9 @@ export async function listMilitaryFlights(
         const relayBase = isSidecar ? null : getRelayBaseUrl();
         const baseUrl = isSidecar ? 'https://opensky-network.org/api/states/all' : relayBase ? relayBase + '/opensky' : null;
 
-        if (!baseUrl) return null;
+        // No relay configured means no fetch is possible at all — a provisioning
+        // gap, not an absence of aircraft.
+        if (!baseUrl) throw new Error('NO_RELAY_CONFIGURED');
 
         const fetchBB = {
           lamin: quantize(req.swLat, BBOX_GRID_STEP) - BBOX_GRID_STEP / 2,
@@ -231,10 +236,11 @@ export async function listMilitaryFlights(
           signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
         });
 
-        if (!resp.ok) return null;
+        // Upstream faults must not be cached as "no military flights".
+        if (!resp.ok) throw new Error(`OpenSky HTTP ${resp.status}`);
 
         const data = (await resp.json()) as { states?: Array<[string, string, ...unknown[]]> };
-        if (!data.states) return null;
+        if (!data.states) throw new Error('OpenSky response contained no states array');
 
         const flights: ListMilitaryFlightsResponse['flights'] = [];
         for (const state of data.states) {
@@ -291,14 +297,50 @@ export async function listMilitaryFlights(
       // fallback when OpenSky / the relay hiccups.
       const staleFlights = await fetchStaleFallback();
       if (staleFlights && staleFlights.length > 0) {
-        return { flights: filterFlightsToBounds(staleFlights, requestBounds), clusters: [], pagination: undefined };
+        return {
+          flights: filterFlightsToBounds(staleFlights, requestBounds),
+          clusters: [],
+          pagination: undefined,
+          dataStatus: {
+            fetchedAt: '0',
+            availability: 'DATA_AVAILABILITY_STALE',
+            detail: 'live fetch returned nothing; serving the seeded stale snapshot (24h TTL)',
+          },
+        };
       }
       markNoCacheResponse(ctx.request);
-      return { flights: [], clusters: [], pagination: undefined };
+      return { flights: [], clusters: [], pagination: undefined, dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: 'no military flights are currently airborne in these bounds' } };
     }
-    return { ...fullResult, flights: filterFlightsToBounds(fullResult.flights, requestBounds) };
-  } catch {
+    const boundedFlights = filterFlightsToBounds(fullResult.flights, requestBounds);
+    return {
+      ...fullResult,
+      flights: boundedFlights,
+      dataStatus: boundedFlights.length ? answeredDirectly() : { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: 'no military flights are currently airborne in these bounds' },
+    };
+  } catch (err) {
+    // Preserve the stale cascade on a thrown upstream fault too — previously a
+    // throw skipped the fallback entirely and returned a bare empty.
+    const staleFlights = await fetchStaleFallback();
+    if (staleFlights && staleFlights.length > 0) {
+      return {
+        flights: filterFlightsToBounds(staleFlights, normalizeBounds(req)),
+        clusters: [],
+        pagination: undefined,
+        dataStatus: {
+          fetchedAt: '0',
+          availability: 'DATA_AVAILABILITY_STALE',
+          detail: 'live fetch failed; serving the seeded stale snapshot (24h TTL)',
+        },
+      };
+    }
     markNoCacheResponse(ctx.request);
-    return { flights: [], clusters: [], pagination: undefined };
+    return {
+      flights: [],
+      clusters: [],
+      pagination: undefined,
+      dataStatus: (err as Error)?.message === 'NO_RELAY_CONFIGURED'
+        ? neverSeeded('no OpenSky relay is configured on this deployment, so no flight query was attempted')
+        : upstreamError(err, 'military flight fetch failed'),
+    };
   }
 }

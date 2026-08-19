@@ -45,6 +45,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "series":
                                     "frequency": "example"
                                     "observations":
@@ -178,6 +182,10 @@ paths:
                                       "indicatorName": "WorldMonitor Analyst"
                                       "value": 1.5
                                       "year": 1
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "pagination":
                                     "nextCursor": "next-page-token"
                                     "totalCount": 1
@@ -270,6 +278,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "prices":
                                     - "change": 1.5
                                       "commodity": "example"
@@ -484,6 +496,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "series":
                                     - "data":
                                         - "capacityMw": 1.5
@@ -1354,6 +1370,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "series":
                                     "observations":
                                         - "period": "daily"
@@ -1541,6 +1561,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "latestPeriod": "40.7128"
                                 "weeks":
                                     - "period": "daily"
@@ -1623,6 +1647,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "latestPeriod": "40.7128"
                                 "weeks":
                                     - "period": "daily"
@@ -2749,6 +2777,8 @@ components:
             properties:
                 series:
                     $ref: '#/components/schemas/FredSeries'
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
             description: GetFredSeriesResponse contains the requested FRED series data.
         FredSeries:
             type: object
@@ -2784,6 +2814,49 @@ components:
                     format: double
                     description: Observation value.
             description: FredObservation represents a single data point from a FRED economic series.
+        DataStatus:
+            type: object
+            properties:
+                fetchedAt:
+                    type: string
+                    format: int64
+                    description: |-
+                        Unix ms when the underlying data was last successfully fetched upstream.
+                         Zero means never — which is itself the answer, and the point of this field.
+                availability:
+                    type: string
+                    enum:
+                        - DATA_AVAILABILITY_UNSPECIFIED
+                        - DATA_AVAILABILITY_OK
+                        - DATA_AVAILABILITY_EMPTY
+                        - DATA_AVAILABILITY_NEVER_SEEDED
+                        - DATA_AVAILABILITY_UPSTREAM_ERROR
+                        - DATA_AVAILABILITY_STALE
+                    description: DataAvailability separates the states that a bare empty payload collapses.
+                detail:
+                    type: string
+                    description: |-
+                        Human-readable detail, safe to surface. Never contains upstream URLs or
+                         credential fragments: 5xx messages are genericised on purpose elsewhere
+                         (see server/error-mapper.ts, H-3), and this field must not become a way
+                         around that.
+            description: |-
+                DataStatus makes an EMPTY RESPONSE FALSIFIABLE.
+
+                 Measured 2026-08-19: of 147 WorldMonitor endpoints returning 200, twenty-five
+                 answered with a bare `{}` or `{"events":[]}` carrying no timestamp and no
+                 status. `get-fred-series` returning `{}` is indistinguishable from "FRED has no
+                 such series" and "we hold no key and never fetched". Every data-integrity
+                 defect found on this box that month was that shape — get-cable-health cached
+                 "no navigational warnings on Earth" for 24h off a wrong envelope key while
+                 upstream served 386; get-country-risk answered a question it was never asked.
+                 None errored. All looked fine.
+
+                 The problem is not that a response is empty — feeds are legitimately quiet.
+                 The problem is that an empty answer does not say WHY, so a consumer cannot
+                 distinguish silence from breakage. This message is the smallest thing that
+                 fixes that, and it is deliberately additive: existing clients that ignore the
+                 field keep working unchanged.
         ListWorldBankIndicatorsRequest:
             type: object
             properties:
@@ -2821,6 +2894,8 @@ components:
                         $ref: '#/components/schemas/WorldBankCountryData'
                 pagination:
                     $ref: '#/components/schemas/PaginationResponse'
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
             description: ListWorldBankIndicatorsResponse contains World Bank indicator data.
         WorldBankCountryData:
             type: object
@@ -2878,6 +2953,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/EnergyPrice'
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
             description: GetEnergyPricesResponse contains energy price data.
         EnergyPrice:
             type: object
@@ -3115,6 +3192,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/EnergyCapacitySeries'
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
         EnergyCapacitySeries:
             type: object
             properties:
@@ -3538,6 +3617,8 @@ components:
             properties:
                 series:
                     $ref: '#/components/schemas/BlsSeries'
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
             description: GetBlsSeriesResponse contains the requested BLS series data.
         BlsSeries:
             type: object
@@ -3632,6 +3713,8 @@ components:
                 latestPeriod:
                     type: string
                     description: Timestamp of the most recent EIA data point (ISO 8601).
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
             description: GetCrudeInventoriesResponse contains the 8 most recent weeks of US crude oil inventory data.
         CrudeInventoryWeek:
             type: object
@@ -3663,6 +3746,8 @@ components:
                 latestPeriod:
                     type: string
                     description: Timestamp of the most recent EIA data point (ISO 8601).
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
             description: GetNatGasStorageResponse contains the 8 most recent weeks of US natural gas storage data.
         NatGasStorageWeek:
             type: object

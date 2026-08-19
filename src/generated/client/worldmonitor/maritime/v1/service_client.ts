@@ -82,6 +82,7 @@ export interface ListNavigationalWarningsRequest {
 export interface ListNavigationalWarningsResponse {
   warnings: NavigationalWarning[];
   pagination?: PaginationResponse;
+  dataStatus?: DataStatus;
 }
 
 export interface NavigationalWarning {
@@ -99,6 +100,14 @@ export interface PaginationResponse {
   nextCursor: string;
   totalCount: number;
 }
+
+export interface DataStatus {
+  fetchedAt: string;
+  availability: DataAvailability;
+  detail: string;
+}
+
+export type DataAvailability = "DATA_AVAILABILITY_UNSPECIFIED" | "DATA_AVAILABILITY_OK" | "DATA_AVAILABILITY_EMPTY" | "DATA_AVAILABILITY_NEVER_SEEDED" | "DATA_AVAILABILITY_UPSTREAM_ERROR" | "DATA_AVAILABILITY_STALE";
 
 export type AisDisruptionSeverity = "AIS_DISRUPTION_SEVERITY_UNSPECIFIED" | "AIS_DISRUPTION_SEVERITY_LOW" | "AIS_DISRUPTION_SEVERITY_ELEVATED" | "AIS_DISRUPTION_SEVERITY_HIGH";
 

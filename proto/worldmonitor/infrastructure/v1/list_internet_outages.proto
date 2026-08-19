@@ -5,6 +5,7 @@ package worldmonitor.infrastructure.v1;
 import "sebuf/http/annotations.proto";
 import "worldmonitor/core/v1/pagination.proto";
 import "worldmonitor/infrastructure/v1/infrastructure.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 // ListInternetOutagesRequest specifies filters for retrieving internet outages.
 message ListInternetOutagesRequest {
@@ -28,4 +29,8 @@ message ListInternetOutagesResponse {
   repeated InternetOutage outages = 1;
   // Pagination metadata.
   worldmonitor.core.v1.PaginationResponse pagination = 2;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 3;
 }

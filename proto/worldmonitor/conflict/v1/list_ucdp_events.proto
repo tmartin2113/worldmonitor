@@ -5,6 +5,7 @@ package worldmonitor.conflict.v1;
 import "sebuf/http/annotations.proto";
 import "worldmonitor/core/v1/pagination.proto";
 import "worldmonitor/conflict/v1/ucdp_event.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 // ListUcdpEventsRequest specifies filters for retrieving UCDP violence events.
 message ListUcdpEventsRequest {
@@ -30,4 +31,9 @@ message ListUcdpEventsResponse {
   repeated UcdpViolenceEvent events = 1;
   // Pagination metadata.
   worldmonitor.core.v1.PaginationResponse pagination = 2;
+  // Why this payload looks the way it does. An empty `events` list with
+  // availability=NEVER_SEEDED means nothing was ever fetched (the UCDP seeder
+  // needs UCDP_ACCESS_TOKEN); with availability=EMPTY it means the feed really
+  // is quiet. Additive — clients that ignore it are unaffected.
+  worldmonitor.core.v1.DataStatus data_status = 3;
 }

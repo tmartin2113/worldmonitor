@@ -1,4 +1,4 @@
-import { unwrapEnvelope } from './seed-envelope';
+import { unwrapEnvelope, type SeedMeta } from './seed-envelope';
 import { buildUpstreamEvent, getUsageScope, sendToAxiom } from './usage';
 
 // Default Upstash REST timeouts are tuned for production (Vercel ↔ Upstash
@@ -58,14 +58,17 @@ export function __resetKeyPrefixCacheForTests(): void {
   cachedPrefix = undefined;
 }
 
-type CacheReadResult = { status: 'hit'; value: unknown } | { status: 'miss' } | { status: 'error'; error: unknown };
+type CacheReadResult =
+  | { status: 'hit'; value: unknown; seed: SeedMeta | null }
+  | { status: 'miss' }
+  | { status: 'error'; error: unknown };
 
 async function readCachedJson(key: string, raw = false): Promise<CacheReadResult> {
   if (process.env.LOCAL_API_MODE === 'tauri-sidecar') {
     try {
       const { sidecarCacheGet } = await import('./sidecar-cache');
       const value = sidecarCacheGet(key);
-      return value == null ? { status: 'miss' } : { status: 'hit', value };
+      return value == null ? { status: 'miss' } : { status: 'hit', value, seed: null };
     } catch (error) {
       return { status: 'error', error };
     }
@@ -86,9 +89,16 @@ async function readCachedJson(key: string, raw = false): Promise<CacheReadResult
     // Envelope-aware by default — RPC consumers get the bare payload regardless
     // of whether the writer has migrated to contract mode. Legacy shapes pass
     // through unchanged (unwrapEnvelope returns {_seed: null, data: raw}).
+    // The unwrapped payload is what RPC consumers want, but `_seed` carries the
+    // only honest answer to "was this fetched, and did that fetch succeed" —
+    // discarding it here is what forced every handler to infer availability from
+    // an empty array. Kept alongside the data; getCachedJson still returns only
+    // the payload, so existing callers are unaffected.
+    const unwrapped = unwrapEnvelope(JSON.parse(data.result));
     return {
       status: 'hit',
-      value: unwrapEnvelope(JSON.parse(data.result)).data,
+      value: unwrapped.data,
+      seed: unwrapped._seed,
     };
   } catch (error) {
     return { status: 'error', error };
@@ -174,6 +184,19 @@ export async function getCachedRawString(key: string): Promise<string | null> {
     else console.warn('[redis] getCachedRawString failed:', errMsg(err));
     return null;
   }
+}
+
+/**
+ * Discriminated cache read: tells a MISS apart from an ERROR, and returns the
+ * `_seed` envelope when the writer produced one.
+ *
+ * `getCachedJson` collapses miss and error into a single `null`, so a Redis
+ * outage is indistinguishable from a key that was never written. Every handler
+ * built on it therefore reported "no data" for both. That is the exact defect
+ * `DataStatus` exists to close, so the envelope cannot be built on top of it.
+ */
+export async function readSeededCache(key: string, raw = true): Promise<CacheReadResult> {
+  return readCachedJson(key, raw);
 }
 
 export async function getCachedJson(key: string, raw = false): Promise<unknown | null> {

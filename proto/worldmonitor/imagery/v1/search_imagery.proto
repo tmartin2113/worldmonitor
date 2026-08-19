@@ -3,6 +3,7 @@ syntax = "proto3";
 package worldmonitor.imagery.v1;
 
 import "sebuf/http/annotations.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 message SearchImageryRequest {
   // Bounding box filter for imagery search, encoded as west,south,east,north.
@@ -30,4 +31,8 @@ message SearchImageryResponse {
   repeated ImageryScene scenes = 1;
   int32 total_results = 2;
   bool cache_hit = 3;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 4;
 }

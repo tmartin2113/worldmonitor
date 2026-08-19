@@ -5,6 +5,7 @@ package worldmonitor.military.v1;
 import "sebuf/http/annotations.proto";
 import "worldmonitor/core/v1/pagination.proto";
 import "worldmonitor/military/v1/military_flight.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 // ListMilitaryFlightsRequest specifies filters for retrieving military flight data.
 message ListMilitaryFlightsRequest {
@@ -37,4 +38,8 @@ message ListMilitaryFlightsResponse {
   repeated MilitaryFlightCluster clusters = 2;
   // Pagination metadata.
   worldmonitor.core.v1.PaginationResponse pagination = 3;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 4;
 }

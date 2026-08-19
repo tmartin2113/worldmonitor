@@ -72,6 +72,10 @@ paths:
                                       "tempDelta": 1.5
                                       "type": "ANOMALY_TYPE_WARM"
                                       "zone": "example"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "pagination":
                                     "nextCursor": "next-page-token"
                                     "totalCount": 1
@@ -724,6 +728,8 @@ components:
                         $ref: '#/components/schemas/ClimateAnomaly'
                 pagination:
                     $ref: '#/components/schemas/PaginationResponse'
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
             description: ListClimateAnomaliesResponse contains the list of climate anomalies.
         ClimateAnomaly:
             type: object
@@ -801,6 +807,49 @@ components:
                     format: int32
                     description: Total count of items matching the query, if known. Zero if the total is unknown.
             description: PaginationResponse contains pagination metadata returned alongside list results.
+        DataStatus:
+            type: object
+            properties:
+                fetchedAt:
+                    type: string
+                    format: int64
+                    description: |-
+                        Unix ms when the underlying data was last successfully fetched upstream.
+                         Zero means never — which is itself the answer, and the point of this field.
+                availability:
+                    type: string
+                    enum:
+                        - DATA_AVAILABILITY_UNSPECIFIED
+                        - DATA_AVAILABILITY_OK
+                        - DATA_AVAILABILITY_EMPTY
+                        - DATA_AVAILABILITY_NEVER_SEEDED
+                        - DATA_AVAILABILITY_UPSTREAM_ERROR
+                        - DATA_AVAILABILITY_STALE
+                    description: DataAvailability separates the states that a bare empty payload collapses.
+                detail:
+                    type: string
+                    description: |-
+                        Human-readable detail, safe to surface. Never contains upstream URLs or
+                         credential fragments: 5xx messages are genericised on purpose elsewhere
+                         (see server/error-mapper.ts, H-3), and this field must not become a way
+                         around that.
+            description: |-
+                DataStatus makes an EMPTY RESPONSE FALSIFIABLE.
+
+                 Measured 2026-08-19: of 147 WorldMonitor endpoints returning 200, twenty-five
+                 answered with a bare `{}` or `{"events":[]}` carrying no timestamp and no
+                 status. `get-fred-series` returning `{}` is indistinguishable from "FRED has no
+                 such series" and "we hold no key and never fetched". Every data-integrity
+                 defect found on this box that month was that shape — get-cable-health cached
+                 "no navigational warnings on Earth" for 24h off a wrong envelope key while
+                 upstream served 386; get-country-risk answered a question it was never asked.
+                 None errored. All looked fine.
+
+                 The problem is not that a response is empty — feeds are legitimately quiet.
+                 The problem is that an empty answer does not say WHY, so a consumer cannot
+                 distinguish silence from breakage. This message is the smallest thing that
+                 fixes that, and it is deliberately additive: existing clients that ignore the
+                 field keep working unchanged.
         ListClimateDisastersRequest:
             type: object
             properties:

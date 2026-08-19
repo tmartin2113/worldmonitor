@@ -4,6 +4,7 @@ package worldmonitor.market.v1;
 
 import "sebuf/http/annotations.proto";
 import "worldmonitor/market/v1/market_quote.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 // ListCommodityQuotesRequest specifies which commodities to retrieve.
 message ListCommodityQuotesRequest {
@@ -15,4 +16,8 @@ message ListCommodityQuotesRequest {
 message ListCommodityQuotesResponse {
   // The list of commodity quotes.
   repeated CommodityQuote quotes = 1;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 2;
 }

@@ -13,6 +13,7 @@ export interface ListWebcamsResponse {
   webcams: WebcamEntry[];
   clusters: WebcamCluster[];
   totalInView: number;
+  dataStatus?: DataStatus;
 }
 
 export interface WebcamEntry {
@@ -31,6 +32,12 @@ export interface WebcamCluster {
   categories: string[];
 }
 
+export interface DataStatus {
+  fetchedAt: string;
+  availability: DataAvailability;
+  detail: string;
+}
+
 export interface GetWebcamImageRequest {
   webcamId: string;
 }
@@ -43,6 +50,8 @@ export interface GetWebcamImageResponse {
   lastUpdated: string;
   error: string;
 }
+
+export type DataAvailability = "DATA_AVAILABILITY_UNSPECIFIED" | "DATA_AVAILABILITY_OK" | "DATA_AVAILABILITY_EMPTY" | "DATA_AVAILABILITY_NEVER_SEEDED" | "DATA_AVAILABILITY_UPSTREAM_ERROR" | "DATA_AVAILABILITY_STALE";
 
 export interface FieldViolation {
   field: string;

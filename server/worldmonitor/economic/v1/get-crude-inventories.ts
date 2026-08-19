@@ -9,7 +9,7 @@ import type {
   GetCrudeInventoriesResponse,
 } from '../../../../src/generated/server/worldmonitor/economic/v1/service_server';
 
-import { getCachedJson } from '../../../_shared/redis';
+import { readSeeded, withCount } from '../../../_shared/data-status';
 
 const SEED_CACHE_KEY = 'economic:crude-inventories:v1';
 
@@ -17,13 +17,14 @@ export async function getCrudeInventories(
   _ctx: ServerContext,
   _req: GetCrudeInventoriesRequest,
 ): Promise<GetCrudeInventoriesResponse> {
-  try {
-    // true = raw key: seed scripts write without Vercel env prefix
-    const result = await getCachedJson(SEED_CACHE_KEY, true) as GetCrudeInventoriesResponse | null;
-    if (!result?.weeks?.length) return { weeks: [], latestPeriod: '' };
-    return result;
-  } catch (err) {
-    console.error('[getCrudeInventories] Redis read failed:', err);
-    return { weeks: [], latestPeriod: '' };
-  }
+  const read = await readSeeded<GetCrudeInventoriesResponse>(
+    SEED_CACHE_KEY,
+    'seed-economy.mjs has not written crude inventories (the EIA series requires EIA_API_KEY).',
+  );
+  const weeks = read.data?.weeks ?? [];
+  return {
+    weeks,
+    latestPeriod: read.data?.latestPeriod ?? '',
+    dataStatus: withCount(read.status, weeks.length),
+  };
 }

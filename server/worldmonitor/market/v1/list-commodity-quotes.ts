@@ -10,7 +10,7 @@ import type {
   CommodityQuote,
 } from '../../../../src/generated/server/worldmonitor/market/v1/service_server';
 import { parseStringArray } from './_shared';
-import { getCachedJson } from '../../../_shared/redis';
+import { readSeeded, withCount } from '../../../_shared/data-status';
 
 const BOOTSTRAP_KEY = 'market:commodities-bootstrap:v1';
 
@@ -19,16 +19,15 @@ export async function listCommodityQuotes(
   req: ListCommodityQuotesRequest,
 ): Promise<ListCommodityQuotesResponse> {
   const symbols = parseStringArray(req.symbols);
-  if (!symbols.length) return { quotes: [] };
-
-  try {
-    const bootstrap = await getCachedJson(BOOTSTRAP_KEY, true) as ListCommodityQuotesResponse | null;
-    if (!bootstrap?.quotes?.length) return { quotes: [] };
-
-    const symbolSet = new Set(symbols);
-    const filtered = bootstrap.quotes.filter((q: CommodityQuote) => symbolSet.has(q.symbol));
-    return { quotes: filtered };
-  } catch {
-    return { quotes: [] };
+  if (!symbols.length) {
+    return { quotes: [], dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: 'no symbols requested; nothing was looked up' } };
   }
+
+  const read = await readSeeded<ListCommodityQuotesResponse>(
+    BOOTSTRAP_KEY,
+    'the ais-relay commodities bootstrap has not written a snapshot.',
+  );
+  const symbolSet = new Set(symbols);
+  const quotes = (read.data?.quotes ?? []).filter((q: CommodityQuote) => symbolSet.has(q.symbol));
+  return { quotes, dataStatus: withCount(read.status, quotes.length) };
 }

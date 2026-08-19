@@ -11,7 +11,7 @@ import type {
 } from '../../../../src/generated/server/worldmonitor/unrest/v1/service_server';
 
 import { sortBySeverityAndRecency } from './_shared';
-import { getCachedJson } from '../../../_shared/redis';
+import { readSeeded, withCount } from '../../../_shared/data-status';
 
 const SEED_CACHE_KEY = 'unrest:events:v1';
 
@@ -39,12 +39,15 @@ export async function listUnrestEvents(
   _ctx: ServerContext,
   req: ListUnrestEventsRequest,
 ): Promise<ListUnrestEventsResponse> {
-  try {
-    const seedData = await getCachedJson(SEED_CACHE_KEY, true) as ListUnrestEventsResponse | null;
-    const filtered = filterSeedEvents(seedData?.events || [], req);
-    const sorted = sortBySeverityAndRecency(filtered);
-    return { events: sorted, clusters: [], pagination: undefined };
-  } catch {
-    return { events: [], clusters: [], pagination: undefined };
-  }
+  const read = await readSeeded<ListUnrestEventsResponse>(
+    SEED_CACHE_KEY,
+    'seed-unrest.mjs has not run (ACLED requires ACLED_API_KEY / ACLED_EMAIL). An empty list is not a claim that nothing is happening.',
+  );
+  const sorted = sortBySeverityAndRecency(filterSeedEvents(read.data?.events || [], req));
+  return {
+    events: sorted,
+    clusters: [],
+    pagination: undefined,
+    dataStatus: withCount(read.status, sorted.length),
+  };
 }

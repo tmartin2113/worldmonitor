@@ -9,21 +9,24 @@ import type {
   GetFredSeriesResponse,
 } from '../../../../src/generated/server/worldmonitor/economic/v1/service_server';
 
-import { getCachedJson } from '../../../_shared/redis';
+import { readSeeded, withCount } from '../../../_shared/data-status';
 import { applyFredObservationLimit, fredSeedKey, normalizeFredLimit } from './_fred-shared';
 
 export async function getFredSeries(
   _ctx: ServerContext,
   req: GetFredSeriesRequest,
 ): Promise<GetFredSeriesResponse> {
-  if (!req.seriesId) return { series: undefined };
-  try {
-    const seedKey = fredSeedKey(req.seriesId);
-    const result = await getCachedJson(seedKey, true) as GetFredSeriesResponse | null;
-    if (!result?.series) return { series: undefined };
-    const limit = normalizeFredLimit(req.limit);
-    return { series: applyFredObservationLimit(result.series, limit) };
-  } catch {
-    return { series: undefined };
+  if (!req.seriesId) {
+    return { series: undefined, dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: 'no series_id supplied' } };
   }
+  const read = await readSeeded<GetFredSeriesResponse>(
+    fredSeedKey(req.seriesId),
+    'seed-economy.mjs has not written this FRED series (it requires FRED_API_KEY). This is not FRED reporting no such series.',
+  );
+  if (!read.data?.series) {
+    return { series: undefined, dataStatus: withCount(read.status, 0) };
+  }
+  const limit = normalizeFredLimit(req.limit);
+  const series = applyFredObservationLimit(read.data.series, limit);
+  return { series, dataStatus: withCount(read.status, series.observations?.length ?? 0) };
 }

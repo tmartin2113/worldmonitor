@@ -12,6 +12,7 @@ export interface ListInternetOutagesRequest {
 export interface ListInternetOutagesResponse {
   outages: InternetOutage[];
   pagination?: PaginationResponse;
+  dataStatus?: DataStatus;
 }
 
 export interface InternetOutage {
@@ -38,6 +39,12 @@ export interface GeoCoordinates {
 export interface PaginationResponse {
   nextCursor: string;
   totalCount: number;
+}
+
+export interface DataStatus {
+  fetchedAt: string;
+  availability: DataAvailability;
+  detail: string;
 }
 
 export interface ListServiceStatusesRequest {
@@ -92,6 +99,7 @@ export interface GetIpGeoResponse {
   country: string;
   region: string;
   city: string;
+  dataStatus?: DataStatus;
 }
 
 export interface ReverseGeocodeRequest {
@@ -219,6 +227,8 @@ export interface TrafficAnomaly {
   latitude: number;
   longitude: number;
 }
+
+export type DataAvailability = "DATA_AVAILABILITY_UNSPECIFIED" | "DATA_AVAILABILITY_OK" | "DATA_AVAILABILITY_EMPTY" | "DATA_AVAILABILITY_NEVER_SEEDED" | "DATA_AVAILABILITY_UPSTREAM_ERROR" | "DATA_AVAILABILITY_STALE";
 
 export type CableHealthStatus = "CABLE_HEALTH_STATUS_UNSPECIFIED" | "CABLE_HEALTH_STATUS_OK" | "CABLE_HEALTH_STATUS_DEGRADED" | "CABLE_HEALTH_STATUS_FAULT";
 

@@ -9,7 +9,7 @@ import type {
   GetEnergyPricesResponse,
 } from '../../../../src/generated/server/worldmonitor/economic/v1/service_server';
 
-import { getCachedJson } from '../../../_shared/redis';
+import { readSeeded, withCount } from '../../../_shared/data-status';
 
 const SEED_CACHE_KEY = 'economic:energy:v1:all';
 
@@ -17,14 +17,13 @@ export async function getEnergyPrices(
   _ctx: ServerContext,
   req: GetEnergyPricesRequest,
 ): Promise<GetEnergyPricesResponse> {
-  try {
-    const result = await getCachedJson(SEED_CACHE_KEY, true) as GetEnergyPricesResponse | null;
-    if (!result?.prices?.length) return { prices: [] };
-    if (req.commodities.length > 0) {
-      return { prices: result.prices.filter(p => req.commodities.includes(p.commodity)) };
-    }
-    return result;
-  } catch {
-    return { prices: [] };
+  const read = await readSeeded<GetEnergyPricesResponse>(
+    SEED_CACHE_KEY,
+    'seed-economy.mjs has not written energy prices (the EIA series requires EIA_API_KEY).',
+  );
+  let prices = read.data?.prices ?? [];
+  if (req.commodities.length > 0) {
+    prices = prices.filter(p => req.commodities.includes(p.commodity));
   }
+  return { prices, dataStatus: withCount(read.status, prices.length) };
 }

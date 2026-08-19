@@ -10,7 +10,7 @@ import type {
   InternetOutage,
 } from '../../../../src/generated/server/worldmonitor/infrastructure/v1/service_server';
 
-import { getCachedJson } from '../../../_shared/redis';
+import { readSeeded, withCount } from '../../../_shared/data-status';
 
 const SEED_CACHE_KEY = 'infra:outages:v1';
 
@@ -33,10 +33,10 @@ export async function listInternetOutages(
   _ctx: ServerContext,
   req: ListInternetOutagesRequest,
 ): Promise<ListInternetOutagesResponse> {
-  try {
-    const seedData = await getCachedJson(SEED_CACHE_KEY, true) as ListInternetOutagesResponse | null;
-    return { outages: filterOutages(seedData?.outages || [], req), pagination: undefined };
-  } catch {
-    return { outages: [], pagination: undefined };
-  }
+  const read = await readSeeded<ListInternetOutagesResponse>(
+    SEED_CACHE_KEY,
+    'seed-internet-outages.mjs has not run (Cloudflare Radar requires a token). An empty list is not a claim that the internet is healthy everywhere.',
+  );
+  const outages = filterOutages(read.data?.outages || [], req);
+  return { outages, pagination: undefined, dataStatus: withCount(read.status, outages.length) };
 }

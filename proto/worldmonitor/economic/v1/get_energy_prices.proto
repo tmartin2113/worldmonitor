@@ -4,6 +4,7 @@ package worldmonitor.economic.v1;
 
 import "sebuf/http/annotations.proto";
 import "worldmonitor/economic/v1/economic_data.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 // GetEnergyPricesRequest specifies which energy commodities to retrieve.
 message GetEnergyPricesRequest {
@@ -15,4 +16,8 @@ message GetEnergyPricesRequest {
 message GetEnergyPricesResponse {
   // The list of energy prices.
   repeated EnergyPrice prices = 1;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 2;
 }

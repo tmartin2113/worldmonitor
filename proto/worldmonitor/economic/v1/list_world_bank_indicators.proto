@@ -6,6 +6,7 @@ import "buf/validate/validate.proto";
 import "sebuf/http/annotations.proto";
 import "worldmonitor/core/v1/pagination.proto";
 import "worldmonitor/economic/v1/economic_data.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 // ListWorldBankIndicatorsRequest specifies filters for retrieving World Bank data.
 message ListWorldBankIndicatorsRequest {
@@ -33,4 +34,8 @@ message ListWorldBankIndicatorsResponse {
   repeated WorldBankCountryData data = 1;
   // Pagination metadata.
   worldmonitor.core.v1.PaginationResponse pagination = 2;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 3;
 }

@@ -44,6 +44,7 @@ export interface ListCommodityQuotesRequest {
 
 export interface ListCommodityQuotesResponse {
   quotes: CommodityQuote[];
+  dataStatus?: DataStatus;
 }
 
 export interface CommodityQuote {
@@ -53,6 +54,12 @@ export interface CommodityQuote {
   price: number;
   change: number;
   sparkline: number[];
+}
+
+export interface DataStatus {
+  fetchedAt: string;
+  availability: DataAvailability;
+  detail: string;
 }
 
 export interface GetSectorSummaryRequest {
@@ -649,6 +656,8 @@ export interface HyperliquidAssetFlow {
   missingPolls: number;
   alerts: string[];
 }
+
+export type DataAvailability = "DATA_AVAILABILITY_UNSPECIFIED" | "DATA_AVAILABILITY_OK" | "DATA_AVAILABILITY_EMPTY" | "DATA_AVAILABILITY_NEVER_SEEDED" | "DATA_AVAILABILITY_UPSTREAM_ERROR" | "DATA_AVAILABILITY_STALE";
 
 export interface FieldViolation {
   field: string;

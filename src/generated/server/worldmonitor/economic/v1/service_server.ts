@@ -8,6 +8,7 @@ export interface GetFredSeriesRequest {
 
 export interface GetFredSeriesResponse {
   series?: FredSeries;
+  dataStatus?: DataStatus;
 }
 
 export interface FredSeries {
@@ -23,6 +24,12 @@ export interface FredObservation {
   value: number;
 }
 
+export interface DataStatus {
+  fetchedAt: string;
+  availability: DataAvailability;
+  detail: string;
+}
+
 export interface ListWorldBankIndicatorsRequest {
   indicatorCode: string;
   countryCode: string;
@@ -34,6 +41,7 @@ export interface ListWorldBankIndicatorsRequest {
 export interface ListWorldBankIndicatorsResponse {
   data: WorldBankCountryData[];
   pagination?: PaginationResponse;
+  dataStatus?: DataStatus;
 }
 
 export interface WorldBankCountryData {
@@ -56,6 +64,7 @@ export interface GetEnergyPricesRequest {
 
 export interface GetEnergyPricesResponse {
   prices: EnergyPrice[];
+  dataStatus?: DataStatus;
 }
 
 export interface EnergyPrice {
@@ -149,6 +158,7 @@ export interface GetEnergyCapacityRequest {
 
 export interface GetEnergyCapacityResponse {
   series: EnergyCapacitySeries[];
+  dataStatus?: DataStatus;
 }
 
 export interface EnergyCapacitySeries {
@@ -346,6 +356,7 @@ export interface GetBlsSeriesRequest {
 
 export interface GetBlsSeriesResponse {
   series?: BlsSeries;
+  dataStatus?: DataStatus;
 }
 
 export interface BlsSeries {
@@ -392,6 +403,7 @@ export interface GetCrudeInventoriesRequest {
 export interface GetCrudeInventoriesResponse {
   weeks: CrudeInventoryWeek[];
   latestPeriod: string;
+  dataStatus?: DataStatus;
 }
 
 export interface CrudeInventoryWeek {
@@ -406,6 +418,7 @@ export interface GetNatGasStorageRequest {
 export interface GetNatGasStorageResponse {
   weeks: NatGasStorageWeek[];
   latestPeriod: string;
+  dataStatus?: DataStatus;
 }
 
 export interface NatGasStorageWeek {
@@ -690,6 +703,8 @@ export interface EnergyCrisisPolicy {
   dateAnnounced: string;
   status: string;
 }
+
+export type DataAvailability = "DATA_AVAILABILITY_UNSPECIFIED" | "DATA_AVAILABILITY_OK" | "DATA_AVAILABILITY_EMPTY" | "DATA_AVAILABILITY_NEVER_SEEDED" | "DATA_AVAILABILITY_UPSTREAM_ERROR" | "DATA_AVAILABILITY_STALE";
 
 export interface FieldViolation {
   field: string;

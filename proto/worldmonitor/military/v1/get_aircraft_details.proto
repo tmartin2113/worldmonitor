@@ -4,6 +4,7 @@ package worldmonitor.military.v1;
 
 import "buf/validate/validate.proto";
 import "sebuf/http/annotations.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 // AircraftDetails contains Wingbits aircraft enrichment data.
 message AircraftDetails {
@@ -55,4 +56,8 @@ message GetAircraftDetailsResponse {
   AircraftDetails details = 1;
   // Whether the Wingbits API is configured.
   bool configured = 2;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 3;
 }

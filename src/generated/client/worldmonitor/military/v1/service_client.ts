@@ -16,6 +16,7 @@ export interface ListMilitaryFlightsResponse {
   flights: MilitaryFlight[];
   clusters: MilitaryFlightCluster[];
   pagination?: PaginationResponse;
+  dataStatus?: DataStatus;
 }
 
 export interface MilitaryFlight {
@@ -74,6 +75,12 @@ export interface PaginationResponse {
   totalCount: number;
 }
 
+export interface DataStatus {
+  fetchedAt: string;
+  availability: DataAvailability;
+  detail: string;
+}
+
 export interface GetTheaterPostureRequest {
   theater: string;
 }
@@ -98,6 +105,7 @@ export interface GetAircraftDetailsRequest {
 export interface GetAircraftDetailsResponse {
   details?: AircraftDetails;
   configured: boolean;
+  dataStatus?: DataStatus;
 }
 
 export interface AircraftDetails {
@@ -134,6 +142,7 @@ export interface GetWingbitsStatusRequest {
 
 export interface GetWingbitsStatusResponse {
   configured: boolean;
+  dataStatus?: DataStatus;
 }
 
 export interface GetUSNIFleetReportRequest {
@@ -238,6 +247,7 @@ export interface GetWingbitsLiveFlightRequest {
 
 export interface GetWingbitsLiveFlightResponse {
   flight?: WingbitsLiveFlight;
+  dataStatus?: DataStatus;
 }
 
 export interface WingbitsLiveFlight {
@@ -294,6 +304,8 @@ export interface DefensePatentFiling {
   abstract: string;
   url: string;
 }
+
+export type DataAvailability = "DATA_AVAILABILITY_UNSPECIFIED" | "DATA_AVAILABILITY_OK" | "DATA_AVAILABILITY_EMPTY" | "DATA_AVAILABILITY_NEVER_SEEDED" | "DATA_AVAILABILITY_UPSTREAM_ERROR" | "DATA_AVAILABILITY_STALE";
 
 export type MilitaryActivityType = "MILITARY_ACTIVITY_TYPE_UNSPECIFIED" | "MILITARY_ACTIVITY_TYPE_EXERCISE" | "MILITARY_ACTIVITY_TYPE_PATROL" | "MILITARY_ACTIVITY_TYPE_TRANSPORT" | "MILITARY_ACTIVITY_TYPE_DEPLOYMENT" | "MILITARY_ACTIVITY_TYPE_TRANSIT" | "MILITARY_ACTIVITY_TYPE_UNKNOWN";
 

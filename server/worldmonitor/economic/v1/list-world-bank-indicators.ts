@@ -12,6 +12,7 @@ import type {
 
 import { CHROME_UA } from '../../../_shared/constants';
 import { cachedFetchJson } from '../../../_shared/redis';
+import { answeredDirectly, upstreamError } from '../../../_shared/data-status';
 
 const REDIS_CACHE_KEY = 'economic:worldbank:v1';
 const REDIS_CACHE_TTL = 86400; // 24 hr — annual data
@@ -48,7 +49,9 @@ async function fetchWorldBankIndicators(
       signal: AbortSignal.timeout(15000),
     });
 
-    if (!response.ok) return [];
+    // A non-200 from the World Bank is a FAILURE, not an empty dataset. Returning
+    // [] here made an outage indistinguishable from "this indicator has no rows".
+    if (!response.ok) throw new Error(`World Bank HTTP ${response.status}`);
 
     const data = await response.json();
     if (!data || !Array.isArray(data) || data.length < 2 || !data[1]) return [];
@@ -66,8 +69,10 @@ async function fetchWorldBankIndicators(
         year: parseInt(r.date, 10) || 0,
         value: r.value,
       }));
-  } catch {
-    return [];
+  } catch (err) {
+    // Rethrow so cachedFetchJson's caller can report UPSTREAM_ERROR. Swallowing
+    // to [] is what turned every World Bank fault into a silent empty success.
+    throw err instanceof Error ? err : new Error(String(err));
   }
 }
 
@@ -75,14 +80,27 @@ export async function listWorldBankIndicators(
   _ctx: ServerContext,
   req: ListWorldBankIndicatorsRequest,
 ): Promise<ListWorldBankIndicatorsResponse> {
+  if (!req.indicatorCode) {
+    return {
+      data: [],
+      pagination: undefined,
+      dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: 'no indicator_code supplied; nothing was looked up' },
+    };
+  }
   try {
     const cacheKey = `${REDIS_CACHE_KEY}:${req.indicatorCode}:${req.countryCode || 'all'}:${req.year || 0}`;
     const result = await cachedFetchJson<ListWorldBankIndicatorsResponse>(cacheKey, REDIS_CACHE_TTL, async () => {
       const data = await fetchWorldBankIndicators(req);
       return data.length > 0 ? { data, pagination: undefined } : null;
     });
-    return result || { data: [], pagination: undefined };
-  } catch {
-    return { data: [], pagination: undefined };
+    return {
+      data: result?.data ?? [],
+      pagination: undefined,
+      dataStatus: result?.data?.length
+        ? answeredDirectly()
+        : { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: 'the World Bank returned no rows for this indicator and country set' },
+    };
+  } catch (err) {
+    return { data: [], pagination: undefined, dataStatus: upstreamError(err, 'World Bank fetch failed') };
   }
 }

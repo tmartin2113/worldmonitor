@@ -10,6 +10,7 @@ export interface ListClimateAnomaliesRequest {
 export interface ListClimateAnomaliesResponse {
   anomalies: ClimateAnomaly[];
   pagination?: PaginationResponse;
+  dataStatus?: DataStatus;
 }
 
 export interface ClimateAnomaly {
@@ -30,6 +31,12 @@ export interface GeoCoordinates {
 export interface PaginationResponse {
   nextCursor: string;
   totalCount: number;
+}
+
+export interface DataStatus {
+  fetchedAt: string;
+  availability: DataAvailability;
+  detail: string;
 }
 
 export interface ListClimateDisastersRequest {
@@ -151,6 +158,8 @@ export interface ClimateNewsItem {
 export type AnomalySeverity = "ANOMALY_SEVERITY_UNSPECIFIED" | "ANOMALY_SEVERITY_NORMAL" | "ANOMALY_SEVERITY_MODERATE" | "ANOMALY_SEVERITY_EXTREME";
 
 export type AnomalyType = "ANOMALY_TYPE_UNSPECIFIED" | "ANOMALY_TYPE_WARM" | "ANOMALY_TYPE_COLD" | "ANOMALY_TYPE_WET" | "ANOMALY_TYPE_DRY" | "ANOMALY_TYPE_MIXED";
+
+export type DataAvailability = "DATA_AVAILABILITY_UNSPECIFIED" | "DATA_AVAILABILITY_OK" | "DATA_AVAILABILITY_EMPTY" | "DATA_AVAILABILITY_NEVER_SEEDED" | "DATA_AVAILABILITY_UPSTREAM_ERROR" | "DATA_AVAILABILITY_STALE";
 
 export interface FieldViolation {
   field: string;

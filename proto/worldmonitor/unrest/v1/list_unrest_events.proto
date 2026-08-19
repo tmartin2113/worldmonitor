@@ -6,6 +6,7 @@ import "sebuf/http/annotations.proto";
 import "worldmonitor/core/v1/pagination.proto";
 import "worldmonitor/core/v1/severity.proto";
 import "worldmonitor/unrest/v1/unrest_event.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 // ListUnrestEventsRequest specifies filters for retrieving social unrest events.
 message ListUnrestEventsRequest {
@@ -46,4 +47,8 @@ message ListUnrestEventsResponse {
   repeated UnrestCluster clusters = 2;
   // Pagination metadata.
   worldmonitor.core.v1.PaginationResponse pagination = 3;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 4;
 }

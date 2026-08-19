@@ -4,6 +4,7 @@ package worldmonitor.military.v1;
 
 import "buf/validate/validate.proto";
 import "sebuf/http/annotations.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 // WingbitsLiveFlight contains real-time flight position data from the Wingbits ECS network.
 message WingbitsLiveFlight {
@@ -87,4 +88,8 @@ message GetWingbitsLiveFlightRequest {
 message GetWingbitsLiveFlightResponse {
   // Live flight position data; absent if Wingbits has no current signal for this aircraft.
   WingbitsLiveFlight flight = 1;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 2;
 }

@@ -10,7 +10,7 @@ import type {
 } from '../../../../src/generated/server/worldmonitor/research/v1/service_server';
 
 import { clampInt } from '../../../_shared/constants';
-import { getCachedJson } from '../../../_shared/redis';
+import { readSeeded, withCount } from '../../../_shared/data-status';
 
 const SEED_KEY_PREFIX = 'research:arxiv:v1';
 
@@ -18,14 +18,12 @@ export async function listArxivPapers(
   _ctx: ServerContext,
   req: ListArxivPapersRequest,
 ): Promise<ListArxivPapersResponse> {
-  try {
-    const category = req.category || 'cs.AI';
-    const pageSize = clampInt(req.pageSize, 50, 1, 100);
-    const seedKey = `${SEED_KEY_PREFIX}:${category}::50`;
-    const result = await getCachedJson(seedKey, true) as ListArxivPapersResponse | null;
-    if (!result?.papers?.length) return { papers: [], pagination: undefined };
-    return { papers: result.papers.slice(0, pageSize), pagination: undefined };
-  } catch {
-    return { papers: [], pagination: undefined };
-  }
+  const category = req.category || 'cs.AI';
+  const pageSize = clampInt(req.pageSize, 50, 1, 100);
+  const read = await readSeeded<ListArxivPapersResponse>(
+    `${SEED_KEY_PREFIX}:${category}::50`,
+    `seed-research.mjs has not written arXiv category "${category}".`,
+  );
+  const papers = (read.data?.papers ?? []).slice(0, pageSize);
+  return { papers, pagination: undefined, dataStatus: withCount(read.status, papers.length) };
 }

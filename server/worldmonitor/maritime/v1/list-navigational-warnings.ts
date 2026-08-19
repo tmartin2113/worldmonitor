@@ -7,6 +7,7 @@ import type {
 
 import { CHROME_UA } from '../../../_shared/constants';
 import { cachedFetchJson } from '../../../_shared/redis';
+import { answeredDirectly, upstreamError } from '../../../_shared/data-status';
 
 const REDIS_CACHE_KEY = 'maritime:navwarnings:v1';
 const REDIS_CACHE_TTL = 3600; // 1 hr — NGA broadcasts update daily
@@ -41,10 +42,25 @@ async function fetchNgaWarnings(area?: string): Promise<NavigationalWarning[]> {
       signal: AbortSignal.timeout(15000),
     });
 
-    if (!response.ok) return [];
+    // A non-200 is a FAILURE, not a calm sea. Returning [] here made an NGA
+    // outage indistinguishable from "no active warnings anywhere on Earth".
+    if (!response.ok) throw new Error(`NGA HTTP ${response.status}`);
 
     const data = await response.json();
-    const rawWarnings: any[] = Array.isArray(data) ? data : (data?.broadcast_warn ?? []);
+    // NGA's envelope key is "broadcast-warn" — HYPHEN. This read `broadcast_warn`
+    // (underscore), got undefined, and `?? []` laundered that into "there are no
+    // navigational warnings", which is what this endpoint has been serving.
+    // Verified against the live API 2026-08-19: 386 active warnings under the
+    // hyphenated key. Identical to the get-cable-health defect. An unrecognised
+    // shape now THROWS rather than defaulting to empty — never turn "I do not
+    // understand this response" into "the answer is nothing".
+    const envelope = Array.isArray(data)
+      ? data
+      : (data?.['broadcast-warn'] ?? data?.broadcast_warn);
+    if (!Array.isArray(envelope)) {
+      throw new Error('NGA response shape not recognised (no broadcast-warn array)');
+    }
+    const rawWarnings: any[] = envelope;
 
     let warnings: NavigationalWarning[] = rawWarnings.map((w: any): NavigationalWarning => ({
       id: `${w.navArea || ''}-${w.msgYear || ''}-${w.msgNumber || ''}`,
@@ -67,8 +83,9 @@ async function fetchNgaWarnings(area?: string): Promise<NavigationalWarning[]> {
     }
 
     return warnings;
-  } catch {
-    return [];
+  } catch (err) {
+    // Rethrow so the caller reports UPSTREAM_ERROR instead of a silent empty.
+    throw err instanceof Error ? err : new Error(String(err));
   }
 }
 
@@ -86,8 +103,21 @@ export async function listNavigationalWarnings(
       const warnings = await fetchNgaWarnings(req.area);
       return warnings.length > 0 ? { warnings, pagination: undefined } : null;
     });
-    return result || { warnings: [], pagination: undefined };
-  } catch {
-    return { warnings: [], pagination: undefined };
+    const warnings = result?.warnings ?? [];
+    return {
+      warnings,
+      pagination: undefined,
+      dataStatus: warnings.length
+        ? answeredDirectly()
+        : {
+            fetchedAt: '0',
+            availability: 'DATA_AVAILABILITY_EMPTY',
+            detail: req.area
+              ? `NGA returned no active warnings matching area "${req.area}"`
+              : 'NGA returned no active warnings',
+          },
+    };
+  } catch (err) {
+    return { warnings: [], pagination: undefined, dataStatus: upstreamError(err, 'NGA broadcast-warn fetch failed') };
   }
 }

@@ -12,6 +12,7 @@ export interface SearchImageryResponse {
   scenes: ImageryScene[];
   totalResults: number;
   cacheHit: boolean;
+  dataStatus?: DataStatus;
 }
 
 export interface ImageryScene {
@@ -24,6 +25,14 @@ export interface ImageryScene {
   previewUrl: string;
   assetUrl: string;
 }
+
+export interface DataStatus {
+  fetchedAt: string;
+  availability: DataAvailability;
+  detail: string;
+}
+
+export type DataAvailability = "DATA_AVAILABILITY_UNSPECIFIED" | "DATA_AVAILABILITY_OK" | "DATA_AVAILABILITY_EMPTY" | "DATA_AVAILABILITY_NEVER_SEEDED" | "DATA_AVAILABILITY_UPSTREAM_ERROR" | "DATA_AVAILABILITY_STALE";
 
 export interface FieldViolation {
   field: string;

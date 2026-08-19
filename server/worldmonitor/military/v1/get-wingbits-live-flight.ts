@@ -6,6 +6,7 @@ import type {
 } from '../../../../src/generated/server/worldmonitor/military/v1/service_server';
 
 import { cachedFetchJson } from '../../../_shared/redis';
+import { answeredDirectly, upstreamError } from '../../../_shared/data-status';
 import { CHROME_UA } from '../../../_shared/constants';
 import { toIataCallsign } from '../../../_shared/airline-codes';
 
@@ -144,10 +145,14 @@ export async function getWingbitsLiveFlight(
   _ctx: ServerContext,
   req: GetWingbitsLiveFlightRequest,
 ): Promise<GetWingbitsLiveFlightResponse> {
-  if (!req.icao24) return { flight: undefined };
+  if (!req.icao24) {
+    return { flight: undefined, dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: 'no icao24 supplied; nothing was looked up' } };
+  }
 
   const icao24 = req.icao24.toLowerCase().trim();
-  if (!/^[0-9a-f]{6}$/.test(icao24)) return { flight: undefined };
+  if (!/^[0-9a-f]{6}$/.test(icao24)) {
+    return { flight: undefined, dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: 'icao24 is not a 6-digit hex address; nothing was looked up' } };
+  }
 
   try {
     const liveResult = await cachedFetchJson<{ flight: WingbitsLiveFlight | null }>(
@@ -157,7 +162,11 @@ export async function getWingbitsLiveFlight(
     );
 
     const flight = liveResult?.flight ?? null;
-    if (!flight) return { flight: undefined };
+    // fetchWingbitsLiveFlight only returns null on a 404 (aircraft unknown to
+    // Wingbits) — transient upstream errors throw — so this really is "no flight".
+    if (!flight) {
+      return { flight: undefined, dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: 'Wingbits is not currently tracking this aircraft' } };
+    }
 
     // Normalize callsign to uppercase to prevent duplicate cache keys (ECS may return mixed-case).
     const callsign = flight.callsign?.trim().toUpperCase() || '';
@@ -211,8 +220,9 @@ export async function getWingbitsLiveFlight(
           photoCredit: photo.photographer ?? '',
         }),
       },
+      dataStatus: answeredDirectly(),
     };
-  } catch {
-    return { flight: undefined };
+  } catch (err) {
+    return { flight: undefined, dataStatus: upstreamError(err, 'Wingbits live flight lookup failed') };
   }
 }

@@ -15,6 +15,7 @@ import type {
 
 import { cachedFetchJson } from '../../../_shared/redis';
 import { fetchAcledCached } from '../../../_shared/acled';
+import { answeredDirectly, upstreamError } from '../../../_shared/data-status';
 
 const REDIS_CACHE_KEY = 'conflict:acled:v1';
 const REDIS_CACHE_TTL = 900; // 15 min — ACLED rate-limited
@@ -72,8 +73,9 @@ async function fetchAcledConflicts(
         source: e.source || '',
         admin1: e.admin1 || '',
       }));
-  } catch {
-    return [];
+  } catch (err) {
+    // Rethrow: an ACLED auth/rate-limit failure is not "no conflict occurred".
+    throw err instanceof Error ? err : new Error(String(err));
   }
 }
 
@@ -95,9 +97,43 @@ export async function listAcledEvents(
     if (result) {
       if (fallbackAcledCache.size > 50) fallbackAcledCache.clear();
       fallbackAcledCache.set(cacheKey, { data: result, ts: Date.now() });
+      return { events: result.events, pagination: undefined, dataStatus: answeredDirectly() };
     }
-    return result || fallbackAcledCache.get(cacheKey)?.data || { events: [], pagination: undefined };
-  } catch {
-    return fallbackAcledCache.get(cacheKey)?.data || { events: [], pagination: undefined };
+    // Serving the in-process fallback means this is NOT a fresh answer.
+    const stale = fallbackAcledCache.get(cacheKey);
+    if (stale) {
+      return {
+        events: stale.data.events,
+        pagination: undefined,
+        dataStatus: {
+          fetchedAt: String(stale.ts),
+          availability: 'DATA_AVAILABILITY_STALE',
+          detail: 'served from the in-process fallback cache; the current fetch returned nothing',
+        },
+      };
+    }
+    return {
+      events: [],
+      pagination: undefined,
+      dataStatus: {
+        fetchedAt: '0',
+        availability: 'DATA_AVAILABILITY_EMPTY',
+        detail: 'ACLED returned no events for this window and country filter',
+      },
+    };
+  } catch (err) {
+    const stale = fallbackAcledCache.get(cacheKey);
+    if (stale) {
+      return {
+        events: stale.data.events,
+        pagination: undefined,
+        dataStatus: {
+          fetchedAt: String(stale.ts),
+          availability: 'DATA_AVAILABILITY_STALE',
+          detail: 'ACLED fetch failed; serving the last good in-process snapshot',
+        },
+      };
+    }
+    return { events: [], pagination: undefined, dataStatus: upstreamError(err, 'ACLED fetch failed') };
   }
 }

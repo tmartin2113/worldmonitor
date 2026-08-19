@@ -5,6 +5,7 @@ import type {
   ImageryScene,
 } from '../../../../src/generated/server/worldmonitor/imagery/v1/service_server';
 import { cachedFetchJson } from '../../../_shared/redis';
+import { answeredDirectly, upstreamError } from '../../../_shared/data-status';
 import { CHROME_UA } from '../../../_shared/constants';
 
 const STAC_SEARCH = 'https://earth-search.aws.element84.com/v1/search';
@@ -105,12 +106,12 @@ export async function searchImagery(
   req: SearchImageryRequest,
 ): Promise<SearchImageryResponse> {
   if (!req.bbox) {
-    return { scenes: [], totalResults: 0, cacheHit: false };
+    return { scenes: [], totalResults: 0, cacheHit: false, dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: 'no bbox supplied; nothing was searched' } };
   }
 
   const parsedBbox = validateBbox(req.bbox);
   if (!parsedBbox) {
-    return { scenes: [], totalResults: 0, cacheHit: false };
+    return { scenes: [], totalResults: 0, cacheHit: false, dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: 'bbox failed validation; nothing was searched' } };
   }
 
   const limit = Math.max(1, Math.min(50, req.limit || 10));
@@ -164,9 +165,11 @@ export async function searchImagery(
           signal: AbortSignal.timeout(10_000),
         });
 
+        // A STAC failure is not "no imagery exists over this bbox". Returning an
+        // empty result here cached the outage as a successful empty answer.
         if (!resp.ok) {
           console.warn(`[Imagery] STAC search failed: ${resp.status}`);
-          return { scenes: [], totalResults: 0 };
+          throw new Error(`STAC search HTTP ${resp.status}`);
         }
 
         const data = (await resp.json()) as StacSearchResponse;
@@ -178,11 +181,16 @@ export async function searchImagery(
     );
 
     if (result) {
-      return { scenes: result.scenes, totalResults: result.totalResults, cacheHit: true };
+      return {
+        scenes: result.scenes,
+        totalResults: result.totalResults,
+        cacheHit: true,
+        dataStatus: result.scenes.length ? answeredDirectly() : { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: 'the STAC catalog holds no scenes for this bbox and time window' },
+      };
     }
-    return { scenes: [], totalResults: 0, cacheHit: false };
+    return { scenes: [], totalResults: 0, cacheHit: false, dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: 'the STAC catalog returned no scenes for this bbox and time window' } };
   } catch (err) {
     console.warn(`[Imagery] Search failed: ${err instanceof Error ? err.message : 'unknown'}`);
-    return { scenes: [], totalResults: 0, cacheHit: false };
+    return { scenes: [], totalResults: 0, cacheHit: false, dataStatus: upstreamError(err, 'STAC imagery search failed') };
   }
 }
