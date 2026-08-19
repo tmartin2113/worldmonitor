@@ -28,7 +28,8 @@ export type DataAvailability =
   | 'DATA_AVAILABILITY_EMPTY'
   | 'DATA_AVAILABILITY_NEVER_SEEDED'
   | 'DATA_AVAILABILITY_UPSTREAM_ERROR'
-  | 'DATA_AVAILABILITY_STALE';
+  | 'DATA_AVAILABILITY_STALE'
+  | 'DATA_AVAILABILITY_PARTIAL';
 
 /**
  * Structurally identical to the generated `DataStatus` in all 11 domains, so a
@@ -205,6 +206,147 @@ export async function attach<T extends object>(
   const out = await body(read.data);
   const status = count ? withCount(read.status, count(out)) : read.status;
   return { ...out, dataStatus: status };
+}
+
+/**
+ * Read SEVERAL seeded keys and describe the composite honestly.
+ *
+ * A handler that reads 21 keys and answers with one status is the hard case:
+ * collapsing a partial result into OK hides the gap, and collapsing it into
+ * NEVER_SEEDED paints a mostly-working answer as broken. Both destroy the
+ * distinction this envelope exists to preserve, so PARTIAL exists and names the
+ * inputs that were missing.
+ *
+ * Precedence, strongest signal first:
+ *   1. any key errored          -> UPSTREAM_ERROR  (a live fault outranks absence)
+ *   2. no key present at all    -> NEVER_SEEDED
+ *   3. some present, some not   -> PARTIAL, listing what is missing
+ *   4. all present              -> OK
+ *
+ * `fetchedAt` is the OLDEST present timestamp, not the newest: a composite answer
+ * is only as fresh as its stalest input, and reporting the newest would let one
+ * freshly-seeded key vouch for twenty stale ones.
+ */
+export interface MultiRead {
+  /** key -> unwrapped payload, for keys that were actually present. */
+  values: Map<string, unknown>;
+  status: DataStatus;
+}
+
+export async function readSeededMany(keys: string[], context: string): Promise<MultiRead> {
+  const values = new Map<string, unknown>();
+  const missing: string[] = [];
+  const errored: string[] = [];
+  let oldest = 0;
+
+  const reads = await Promise.all(
+    keys.map(async (k) => ({ key: k, read: await readSeeded(k, context) })),
+  );
+
+  for (const { key, read } of reads) {
+    if (read.status.availability === 'DATA_AVAILABILITY_UPSTREAM_ERROR') { errored.push(key); continue; }
+    if (!read.present) { missing.push(key); continue; }
+    values.set(key, read.data);
+    const at = Number(read.status.fetchedAt);
+    if (Number.isFinite(at) && at > 0) oldest = oldest === 0 ? at : Math.min(oldest, at);
+  }
+
+  // Cap the list: `detail` is capped at 300 chars anyway, and a wall of 26 key
+  // names is not more informative than the first few plus a count.
+  const name = (list: string[]) =>
+    list.length <= 5 ? list.join(', ') : `${list.slice(0, 5).join(', ')} and ${list.length - 5} more`;
+
+  let status: DataStatus;
+  if (errored.length) {
+    status = { fetchedAt: String(oldest), availability: 'DATA_AVAILABILITY_UPSTREAM_ERROR',
+               detail: sanitizeDetail(`${errored.length} of ${keys.length} inputs could not be read (${name(errored)}) — a read failure, not an absence of data`) };
+  } else if (values.size === 0) {
+    status = { fetchedAt: '0', availability: 'DATA_AVAILABILITY_NEVER_SEEDED',
+               detail: sanitizeDetail(`none of the ${keys.length} inputs has ever been written — ${context}`) };
+  } else if (missing.length) {
+    status = { fetchedAt: String(oldest), availability: 'DATA_AVAILABILITY_PARTIAL',
+               detail: sanitizeDetail(`${missing.length} of ${keys.length} inputs missing (${name(missing)}); the rest were read normally`) };
+  } else {
+    status = { fetchedAt: String(oldest), availability: 'DATA_AVAILABILITY_OK', detail: '' };
+  }
+  return { values, status };
+}
+
+/**
+ * A running tally for handlers that read MANY keys, often computed inside loops
+ * so no static key list exists (list-temporal-anomalies reads a snapshot, then a
+ * key per source, then a baseline key per type).
+ *
+ * Swap `await getCachedJson(k, true)` for `await tally.read(k)` at each call
+ * site — same return value, `null` when absent — then hand `tally.status()` to
+ * the response. Same precedence as readSeededMany: a live error outranks
+ * absence, nothing-present is NEVER_SEEDED, some-present is PARTIAL naming what
+ * was missing, all-present is OK. `fetchedAt` is the OLDEST input, because a
+ * composite is only as fresh as its stalest part.
+ *
+ * Keys marked optional do not count against PARTIAL — an enrichment lookup that
+ * legitimately has no row should not make the whole answer look degraded.
+ */
+export interface CacheTally {
+  read<T = unknown>(key: string, opts?: { optional?: boolean }): Promise<T | null>;
+  status(): DataStatus;
+}
+
+export function cacheTally(context: string): CacheTally {
+  const missing: string[] = [];
+  const errored: string[] = [];
+  let present = 0;
+  let oldest = 0;
+
+  return {
+    async read<T = unknown>(key: string, opts?: { optional?: boolean }): Promise<T | null> {
+      const r = await readSeeded<T>(key, context);
+      if (r.status.availability === 'DATA_AVAILABILITY_UPSTREAM_ERROR') {
+        if (!opts?.optional) errored.push(key);
+        return null;
+      }
+      if (!r.present) {
+        if (!opts?.optional) missing.push(key);
+        return null;
+      }
+      present += 1;
+      const at = Number(r.status.fetchedAt);
+      if (Number.isFinite(at) && at > 0) oldest = oldest === 0 ? at : Math.min(oldest, at);
+      return r.data;
+    },
+    status(): DataStatus {
+      const total = present + missing.length + errored.length;
+      const name = (l: string[]) =>
+        l.length <= 5 ? l.join(', ') : `${l.slice(0, 5).join(', ')} and ${l.length - 5} more`;
+      if (errored.length) {
+        return { fetchedAt: String(oldest), availability: 'DATA_AVAILABILITY_UPSTREAM_ERROR',
+                 detail: sanitizeDetail(`${errored.length} of ${total} inputs could not be read (${name(errored)}) — a read failure, not an absence of data`) };
+      }
+      if (total === 0) {
+        return { fetchedAt: '0', availability: 'DATA_AVAILABILITY_OK', detail: 'answered without reading any cached input' };
+      }
+      if (present === 0) {
+        return { fetchedAt: '0', availability: 'DATA_AVAILABILITY_NEVER_SEEDED',
+                 detail: sanitizeDetail(`none of the ${total} inputs has ever been written — ${context}`) };
+      }
+      if (missing.length) {
+        return { fetchedAt: String(oldest), availability: 'DATA_AVAILABILITY_PARTIAL',
+                 detail: sanitizeDetail(`${missing.length} of ${total} inputs missing (${name(missing)}); the rest were read normally`) };
+      }
+      return { fetchedAt: String(oldest), availability: 'DATA_AVAILABILITY_OK', detail: '' };
+    },
+  };
+}
+
+/** attach() for the multi-key case: same contract, composite status. */
+export async function attachMany<T extends object>(
+  keys: string[],
+  context: string,
+  body: (values: Map<string, unknown>) => T | Promise<T>,
+): Promise<T & { dataStatus: DataStatus }> {
+  const read = await readSeededMany(keys, context);
+  const out = await body(read.values);
+  return { ...out, dataStatus: read.status };
 }
 
 /** A handler that answered fully from its own inputs — no cache, no upstream. */

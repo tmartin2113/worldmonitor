@@ -47,4 +47,10 @@ enum DataAvailability {
   DATA_AVAILABILITY_UPSTREAM_ERROR = 4;
   // Data exists but is older than this endpoint's freshness contract.
   DATA_AVAILABILITY_STALE = 5;
+  // A composite answer whose inputs were not all available: some keys were read,
+  // others were never seeded or could not be read. Added because collapsing this
+  // into OK hides the gap and collapsing it into NEVER_SEEDED paints a mostly
+  // working answer as broken — and both destroy the distinction this message
+  // exists to preserve. `detail` names the missing inputs.
+  DATA_AVAILABILITY_PARTIAL = 6;
 }

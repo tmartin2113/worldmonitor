@@ -651,6 +651,7 @@ components:
                         - DATA_AVAILABILITY_NEVER_SEEDED
                         - DATA_AVAILABILITY_UPSTREAM_ERROR
                         - DATA_AVAILABILITY_STALE
+                        - DATA_AVAILABILITY_PARTIAL
                     description: DataAvailability separates the states that a bare empty payload collapses.
                 detail:
                     type: string
