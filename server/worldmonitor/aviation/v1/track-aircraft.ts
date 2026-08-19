@@ -6,6 +6,7 @@ import type {
 } from '../../../../src/generated/server/worldmonitor/aviation/v1/service_server';
 import { getRelayBaseUrl, getRelayHeaders } from './_shared';
 import { cachedFetchJson } from '../../../_shared/redis';
+import { answeredDirectly, upstreamError } from '../../../_shared/data-status';
 import { CHROME_UA } from '../../../_shared/constants';
 
 // 120s for anonymous OpenSky tier (~10 req/min limit); TODO: reduce to 10s on commercial tier
@@ -86,6 +87,8 @@ export async function trackAircraft(
     const cacheKey = buildCacheKey(req);
 
     let result: { positions: PositionSample[]; source: string } | null = null;
+
+    let readError: unknown = null;
     try {
         const positiveTtl = req.callsign ? CALLSIGN_CACHE_TTL : CACHE_TTL;
         const negativeTtl = req.callsign ? CALLSIGN_NEGATIVE_TTL : CACHE_TTL;
@@ -174,16 +177,29 @@ export async function trackAircraft(
                 return null; // negative-cached briefly
             }, negativeTtl,
         );
-    } catch {
-        /* Redis unavailable — fall through to simulated */
+    } catch (err) {
+        /* Redis unavailable — fall through, but remember why. */
+        readError = err;
     }
 
     if (result) {
         let positions = result.positions;
         if (req.icao24) positions = positions.filter(p => p.icao24 === req.icao24);
         if (req.callsign) positions = positions.filter(p => p.callsign.includes(req.callsign.toUpperCase()));
-        return { positions, source: result.source, updatedAt: Date.now() };
+        return {
+            positions, source: result.source, updatedAt: Date.now(),
+            dataStatus: positions.length
+                ? answeredDirectly()
+                : { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: 'no aircraft matched the requested filters' },
+        };
     }
 
-    return { positions: [], source: 'none', updatedAt: Date.now() };
+    // `source: 'none'` was the only clue, and it did not distinguish a quiet sky
+    // from a Redis outage on the way to it.
+    return {
+        positions: [], source: 'none', updatedAt: Date.now(),
+        dataStatus: readError
+            ? upstreamError(readError, 'aircraft position lookup failed')
+            : { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: 'no aircraft positions are currently available' },
+    };
 }

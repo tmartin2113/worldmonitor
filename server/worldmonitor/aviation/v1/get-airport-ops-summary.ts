@@ -8,6 +8,7 @@ import type {
 } from '../../../../src/generated/server/worldmonitor/aviation/v1/service_server';
 import { MONITORED_AIRPORTS } from '../../../../src/config/airports';
 import { getCachedJson } from '../../../_shared/redis';
+import { answeredDirectly, upstreamError } from '../../../_shared/data-status';
 import {
     determineSeverity,
     severityFromCancelRate,
@@ -131,9 +132,19 @@ export async function getAirportOpsSummary(
             }
         }
 
-        return { summaries, cacheHit: false };
+        // `healthy` records whether the delay seed cache answered at all. When it
+        // did not, every airport below is emitted with source 'unknown' — which
+        // looks the same in the payload as a genuinely quiet airport.
+        return {
+            summaries,
+            cacheHit: false,
+            dataStatus: healthy
+                ? answeredDirectly()
+                : { fetchedAt: '0', availability: 'DATA_AVAILABILITY_PARTIAL',
+                    detail: 'the delay seed cache returned nothing this tick; ops summaries are built without delay telemetry' },
+        };
     } catch (err) {
         console.warn(`[Aviation] GetAirportOpsSummary failed: ${err instanceof Error ? err.message : err}`);
-        return { summaries: [], cacheHit: false };
+        return { summaries: [], cacheHit: false, dataStatus: upstreamError(err, 'airport ops summary failed') };
     }
 }

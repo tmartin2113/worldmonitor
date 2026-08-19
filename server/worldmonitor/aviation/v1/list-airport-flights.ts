@@ -8,6 +8,7 @@ import type {
     AirportRef,
 } from '../../../../src/generated/server/worldmonitor/aviation/v1/service_server';
 import { cachedFetchJson } from '../../../_shared/redis';
+import { answeredDirectly, upstreamError } from '../../../_shared/data-status';
 import { getRelayBaseUrl, getRelayHeaders } from './_shared';
 import { aviationStackBudgetMonth, reserveAviationStackCalls } from './_avstack-budget';
 
@@ -153,8 +154,12 @@ export async function listAirportFlights(
                     const flights = normalizeFlights(json.data ?? [], now);
                     return { flights, source: 'aviationstack' };
                 } catch (err) {
+                    // RETHROW: returning a non-null `{flights: [], source:
+                    // 'error'}` made cachedFetchJson cache a relay failure as a
+                    // successful "no flights at this airport" for the full TTL.
+                    // Same defect as get-flight-status.
                     console.warn(`[Aviation] Flights relay fetch failed for ${airport}: ${err instanceof Error ? err.message : err}`);
-                    return { flights: [], source: 'error' };
+                    throw err instanceof Error ? err : new Error(String(err));
                 }
             }
         );
@@ -165,9 +170,12 @@ export async function listAirportFlights(
             totalAvailable: flights.length,
             source: result?.source ?? 'unknown',
             updatedAt: now,
+            dataStatus: flights.length
+                ? answeredDirectly()
+                : { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: `no flights reported at ${airport}` },
         };
     } catch (err) {
         console.warn(`[Aviation] ListAirportFlights error: ${err instanceof Error ? err.message : err}`);
-        return { flights: [], totalAvailable: 0, source: 'error', updatedAt: now };
+        return { flights: [], totalAvailable: 0, source: 'error', updatedAt: now, dataStatus: upstreamError(err, 'airport flights fetch failed') };
     }
 }

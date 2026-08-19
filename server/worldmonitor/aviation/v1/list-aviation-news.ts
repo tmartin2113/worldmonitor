@@ -5,6 +5,7 @@ import type {
     AviationNewsItem,
 } from '../../../../src/generated/server/worldmonitor/aviation/v1/service_server';
 import { cachedFetchJson } from '../../../_shared/redis';
+import { answeredDirectly, upstreamError } from '../../../_shared/data-status';
 import { CHROME_UA } from '../../../_shared/constants';
 import { parseStringArray, xmlParser } from './_shared';
 
@@ -133,13 +134,17 @@ export async function listAviationNews(
             }
         );
 
+        const items = (result?.items ?? []).slice(0, maxItems);
         return {
-            items: (result?.items ?? []).slice(0, maxItems),
+            items,
             source: 'rss',
             updatedAt: now,
+            dataStatus: items.length
+                ? answeredDirectly()
+                : { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: 'no aviation news items in the current window' },
         };
     } catch (err) {
         console.warn(`[Aviation] ListAviationNews failed: ${err instanceof Error ? err.message : err}`);
-        return { items: [], source: 'error', updatedAt: now };
+        return { items: [], source: 'error', updatedAt: now, dataStatus: upstreamError(err, 'aviation news fetch failed') };
     }
 }

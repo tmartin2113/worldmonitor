@@ -12,6 +12,7 @@ import filterParamContracts from '../../../../shared/openapi-filter-param-contra
 import { UPSTREAM_TIMEOUT_MS, type YahooChartResponse } from './_shared';
 import { CHROME_UA, yahooGate } from '../../../_shared/constants';
 import { cachedFetchJson } from '../../../_shared/redis';
+import { answeredDirectly, upstreamError } from '../../../_shared/data-status';
 
 // ========================================================================
 // Country-to-index mapping
@@ -42,13 +43,21 @@ export async function getCountryStockIndex(
     available: false, code, symbol: '', indexName: '', price: 0, weekChangePercent: 0, currency: '', fetchedAt: '',
   };
 
-  if (!code) return notAvailable;
+  // Three different reasons for `available: false` that all looked identical:
+  // no code supplied, no index mapped for that country, and the fetch failing.
+  if (!code) {
+    return { ...notAvailable, dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: 'no country_code supplied; nothing was looked up' } };
+  }
 
   const index = COUNTRY_INDEX[code];
-  if (!index) return notAvailable;
+  if (!index) {
+    return { ...notAvailable, dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: `no stock index is mapped for ${code}` } };
+  }
 
   const cached = stockIndexCache[code];
-  if (cached && Date.now() - cached.ts < STOCK_INDEX_CACHE_TTL) return cached.data;
+  if (cached && Date.now() - cached.ts < STOCK_INDEX_CACHE_TTL) {
+    return { ...cached.data, dataStatus: cached.data.dataStatus ?? answeredDirectly('served from the in-process cache') };
+  }
 
   const redisKey = `${REDIS_CACHE_KEY}:${code}`;
 
@@ -94,8 +103,17 @@ export async function getCountryStockIndex(
     stockIndexCache[code] = { data: result, ts: Date.now() };
   }
 
-  return result || stockIndexCache[code]?.data || notAvailable;
-  } catch {
-    return stockIndexCache[code]?.data || notAvailable;
+  if (result) return { ...result, dataStatus: answeredDirectly() };
+  const fallback = stockIndexCache[code]?.data;
+  if (fallback) {
+    return { ...fallback, dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_STALE', detail: `live quote for ${code} unavailable; serving the last good in-process value` } };
+  }
+  return { ...notAvailable, dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: `no quote returned for ${index.symbol}` } };
+  } catch (err) {
+    const fallback = stockIndexCache[code]?.data;
+    if (fallback) {
+      return { ...fallback, dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_STALE', detail: `live quote fetch failed; serving the last good in-process value` } };
+    }
+    return { ...notAvailable, dataStatus: upstreamError(err, `stock index fetch for ${code} failed`) };
   }
 }
