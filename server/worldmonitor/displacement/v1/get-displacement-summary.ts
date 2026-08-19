@@ -14,6 +14,7 @@ import type {
 
 import { CHROME_UA } from '../../../_shared/constants';
 import { cachedFetchJson, getCachedJson } from '../../../_shared/redis';
+import { answeredDirectly, upstreamError } from '../../../_shared/data-status';
 
 const REDIS_CACHE_KEY = 'displacement:summary:v1';
 const REDIS_CACHE_TTL = 43200; // 12 hr — annual UNHCR data, very slow-moving
@@ -375,11 +376,16 @@ export async function getDisplacementSummary(
         summary,
         fetchedAt: result.fetchedAt || 0,
         dataAvailable: result.dataAvailable !== false,
+        dataStatus: answeredDirectly(),
       };
     }
-    return result || emptyResponse;
-  } catch {
-    // Graceful degradation: return empty summary on ANY failure
-    return emptyResponse;
+    return result
+      ? { ...result, dataStatus: answeredDirectly() }
+      : { ...emptyResponse, dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: 'UNHCR returned no displacement data for this year' } };
+  } catch (err) {
+    // "Graceful degradation: return empty summary on ANY failure" was the stated
+    // intent, and it is reasonable — but an empty displacement summary reads as
+    // "no one is displaced", which is never the finding this system should imply.
+    return { ...emptyResponse, dataStatus: upstreamError(err, 'displacement summary failed') };
   }
 }

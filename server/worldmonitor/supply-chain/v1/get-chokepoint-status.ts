@@ -19,6 +19,7 @@ import { getVesselSnapshot } from '../../maritime/v1/get-vessel-snapshot';
 import { computeDisruptionScore, scoreToStatus, SEVERITY_SCORE, THREAT_LEVEL } from './_scoring.mjs';
 import { type ThreatLevel, threatLevelToWarRiskTier } from './_insurance-tier';
 import { CHOKEPOINT_STATUS_KEY as REDIS_CACHE_KEY } from '../../../_shared/cache-keys';
+import { upstreamError } from '../../../_shared/data-status';
 const TRANSIT_SUMMARIES_KEY = 'supply_chain:transit-summaries:v1';
 const FLOWS_KEY = 'energy:chokepoint-flows:v1';
 // NOTE: historical fallback via supply_chain:portwatch:v1 / corridorrisk / chokepoint_transits
@@ -398,14 +399,24 @@ export async function getChokepointStatus(
           chokepoints,
           fetchedAt: new Date().toISOString(),
           upstreamUnavailable: upstreamUnavailable || partialCoverage,
+          // This handler already computed partial coverage and then folded it
+          // into `upstreamUnavailable`, which conflates "some chokepoints have
+          // no telemetry" with "the upstream is down". PARTIAL separates them.
+          dataStatus: upstreamUnavailable
+            ? { fetchedAt: '0', availability: 'DATA_AVAILABILITY_UPSTREAM_ERROR' as const, detail: 'the chokepoint telemetry upstream was unavailable' }
+            : partialCoverage
+              ? { fetchedAt: '0', availability: 'DATA_AVAILABILITY_PARTIAL' as const, detail: `${chokepoints.length - coveredCount} of ${chokepoints.length} chokepoints have no live telemetry; their entries are static registry values` }
+              : { fetchedAt: '0', availability: 'DATA_AVAILABILITY_OK' as const, detail: '' },
         };
         setCachedJson('seed-meta:supply_chain:chokepoints', { fetchedAt: Date.now(), recordCount: coveredCount }, 604800).catch(() => {});
         return response;
       },
     );
 
-    return result ?? { chokepoints: [], fetchedAt: '', upstreamUnavailable: true };
-  } catch {
-    return { chokepoints: [], fetchedAt: '', upstreamUnavailable: true };
+    return result ?? { chokepoints: [], fetchedAt: '', upstreamUnavailable: true,
+      dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_NEVER_SEEDED', detail: 'no chokepoint status has been computed yet' } };
+  } catch (err) {
+    return { chokepoints: [], fetchedAt: '', upstreamUnavailable: true,
+      dataStatus: upstreamError(err, 'chokepoint status read failed') };
   }
 }

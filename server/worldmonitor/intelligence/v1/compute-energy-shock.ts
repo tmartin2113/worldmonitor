@@ -394,6 +394,16 @@ export async function computeEnergyShockScenario(
     response.dataAvailable = true;
   }
 
+  // This handler already reasons about coverage: `coverageLevel` can be 'partial'
+  // and `degraded` shortens the cache TTL. Both were internal to the payload, so
+  // a consumer had to know which of ten coverage booleans to read. The envelope
+  // states it once.
+  response.dataStatus = degraded
+    ? { fetchedAt: '0', availability: 'DATA_AVAILABILITY_PARTIAL', detail: 'one or more energy-shock inputs were unavailable; the scenario ran on reduced coverage' }
+    : response.coverageLevel === 'partial'
+      ? { fetchedAt: '0', availability: 'DATA_AVAILABILITY_PARTIAL', detail: 'oil and gas were both requested but only one has coverage; the shock is modelled on the covered side only' }
+      : { fetchedAt: '0', availability: response.dataAvailable ? 'DATA_AVAILABILITY_OK' : 'DATA_AVAILABILITY_EMPTY', detail: response.dataAvailable ? '' : 'no energy coverage for this country/scenario' };
+
   const cacheTtl = degraded ? 300 : SHOCK_CACHE_TTL;
   await setCachedJson(cacheKey, response, cacheTtl);
   return response;

@@ -4,8 +4,8 @@ import type {
   GetCountryEnergyProfileResponse,
 } from '../../../../src/generated/server/worldmonitor/intelligence/v1/service_server';
 
-import { getCachedJson } from '../../../_shared/redis';
 import { ENERGY_SPINE_KEY_PREFIX, EMBER_ELECTRICITY_KEY_PREFIX, SPR_POLICIES_KEY } from '../../../_shared/cache-keys';
+import { cacheTally } from '../../../_shared/data-status';
 
 interface OwidMix {
   year?: number | null;
@@ -322,6 +322,7 @@ export async function getCountryEnergyProfile(
   _ctx: ServerContext,
   req: GetCountryEnergyProfileRequest,
 ): Promise<GetCountryEnergyProfileResponse> {
+  const tally = cacheTally('the country energy inputs have not been written');
   const code = req.countryCode?.trim().toUpperCase() ?? '';
   if (!code || code.length !== 2) return EMPTY;
 
@@ -329,10 +330,10 @@ export async function getCountryEnergyProfile(
   // (gas storage ~10:30 UTC, electricity ~14:00 UTC) while the spine seeds once
   // at 06:00 UTC. Serving them from the spine would return stale data for up to 8h.
   const [spineResult, gasStorageResult, electricityResult, sprRegistryResult] = await Promise.allSettled([
-    getCachedJson(`${ENERGY_SPINE_KEY_PREFIX}${code}`, true),
-    getCachedJson(`energy:gas-storage:v1:${code}`, true),
-    getCachedJson(`energy:electricity:v1:${code}`, true),
-    getCachedJson(SPR_POLICIES_KEY, true),
+    tally.read(`${ENERGY_SPINE_KEY_PREFIX}${code}`),
+    tally.read(`energy:gas-storage:v1:${code}`),
+    tally.read(`energy:electricity:v1:${code}`),
+    tally.read(SPR_POLICIES_KEY),
   ]);
 
   const spine = spineResult.status === 'fulfilled' ? (spineResult.value as EnergySpine | null) : null;
@@ -344,7 +345,7 @@ export async function getCountryEnergyProfile(
   if (spine != null && typeof spine === 'object' && spine.coverage != null) {
     let emberFallback: EmberData | null = null;
     if (!spine.electricity || typeof spine.electricity.fossilShare !== 'number') {
-      const directEmber = await getCachedJson(`${EMBER_ELECTRICITY_KEY_PREFIX}${code}`, true).catch(() => null);
+      const directEmber = await tally.read(`${EMBER_ELECTRICITY_KEY_PREFIX}${code}`);
       if (directEmber && typeof directEmber === 'object') {
         emberFallback = directEmber as EmberData;
       }
@@ -355,11 +356,11 @@ export async function getCountryEnergyProfile(
   // Fallback: 4-key direct join (cold cache or countries not yet in spine)
   const [mixResult, jodiOilResult, jodiGasResult, ieaStocksResult, emberResult] =
     await Promise.allSettled([
-      getCachedJson(`energy:mix:v1:${code}`, true),
-      getCachedJson(`energy:jodi-oil:v1:${code}`, true),
-      getCachedJson(`energy:jodi-gas:v1:${code}`, true),
-      getCachedJson(`energy:iea-oil-stocks:v1:${code}`, true),
-      getCachedJson(`${EMBER_ELECTRICITY_KEY_PREFIX}${code}`, true),
+      tally.read(`energy:mix:v1:${code}`),
+      tally.read(`energy:jodi-oil:v1:${code}`),
+      tally.read(`energy:jodi-gas:v1:${code}`),
+      tally.read(`energy:iea-oil-stocks:v1:${code}`),
+      tally.read(`${EMBER_ELECTRICITY_KEY_PREFIX}${code}`),
     ]);
 
   const mix = mixResult.status === 'fulfilled' ? (mixResult.value as OwidMix | null) : null;
@@ -428,5 +429,9 @@ export async function getCountryEnergyProfile(
     emberDataMonth: s(emberData?.dataMonth),
     emberAvailable: emberData != null && typeof emberData.fossilShare === 'number',
     ...buildSprFields(sprPolicy),
+    // Nine per-country energy inputs, each contributing a slice of the profile.
+    // Missing ones already surface as `emberAvailable: false` and zeroed numbers,
+    // but a zero share and an unread source are not the same claim.
+    dataStatus: tally.status(),
   };
 }
