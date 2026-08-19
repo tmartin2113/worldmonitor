@@ -196,6 +196,7 @@ export interface ListInternetDdosAttacksResponse {
   dateRangeStart: string;
   dateRangeEnd: string;
   topTargetLocations: DdosLocationHit[];
+  dataStatus?: DataStatus;
 }
 
 export interface DdosAttackSummaryEntry {
@@ -218,6 +219,7 @@ export interface ListInternetTrafficAnomaliesRequest {
 export interface ListInternetTrafficAnomaliesResponse {
   anomalies: TrafficAnomaly[];
   totalCount: number;
+  dataStatus?: DataStatus;
 }
 
 export interface TrafficAnomaly {

@@ -283,6 +283,7 @@ export interface ListBigMacPricesResponse {
   wowAvgPct: number;
   wowAvailable: boolean;
   prevFetchedAt: string;
+  dataStatus?: DataStatus;
 }
 
 export interface BigMacCountryPrice {

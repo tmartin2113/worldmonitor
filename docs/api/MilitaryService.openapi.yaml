@@ -672,6 +672,10 @@ paths:
                         application/json:
                             example:
                                 "cached": true
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "error": "example"
                                 "report":
                                     "articleDate": "2026-01-15"
@@ -1785,6 +1789,8 @@ components:
                 error:
                     type: string
                     description: Error message, if any.
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
             description: GetUSNIFleetReportResponse returns the parsed USNI Fleet Tracker report.
         USNIFleetReport:
             type: object

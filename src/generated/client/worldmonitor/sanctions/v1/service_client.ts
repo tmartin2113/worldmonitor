@@ -63,6 +63,7 @@ export interface LookupSanctionEntityResponse {
   results: SanctionEntityMatch[];
   total: number;
   source: string;
+  dataStatus?: DataStatus;
 }
 
 export interface SanctionEntityMatch {

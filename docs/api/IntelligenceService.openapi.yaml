@@ -2289,6 +2289,10 @@ paths:
                         application/json:
                             example:
                                 "available": true
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": "2026-01-15T12:00:00Z"
                                 "ports":
                                     - "anomalySignal": true
@@ -4485,6 +4489,8 @@ components:
                     format: double
                 gasImpact:
                     $ref: '#/components/schemas/GasImpact'
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
         ProductImpact:
             type: object
             properties:
@@ -4560,6 +4566,8 @@ components:
                     type: string
                 available:
                     type: boolean
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
         PortActivityEntry:
             type: object
             properties:

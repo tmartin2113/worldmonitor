@@ -5,7 +5,7 @@ import type {
   USNIFleetReport,
 } from '../../../../src/generated/server/worldmonitor/military/v1/service_server';
 
-import { getCachedJson } from '../../../_shared/redis';
+import { readSeeded } from '../../../_shared/data-status';
 
 const USNI_CACHE_KEY = 'usni-fleet:sebuf:v1';
 const USNI_STALE_CACHE_KEY = 'usni-fleet:sebuf:stale:v1';
@@ -51,17 +51,24 @@ export async function getUSNIFleetReport(
     return buildUSNIFleetReportForceRefreshResponse();
   }
 
-  try {
-    const report = (await getCachedJson(USNI_CACHE_KEY)) as USNIFleetReport | null;
-    if (report) {
-      return buildUSNIFleetReportCacheResponse(report, null);
-    }
-
-    const stale = (await getCachedJson(USNI_STALE_CACHE_KEY)) as USNIFleetReport | null;
-    return buildUSNIFleetReportCacheResponse(null, stale);
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : String(err);
-    console.warn('[USNI Fleet] Error:', message);
-    return { report: undefined, cached: false, stale: false, error: message };
+  // A cascade, not a composite: the stale key answers the same question as the
+  // live one, so falling back means the answer is OLD, not incomplete.
+  const live = await readSeeded<USNIFleetReport>(USNI_CACHE_KEY,
+    'the USNI fleet-report seeder has not written the live key');
+  if (live.status.availability === 'DATA_AVAILABILITY_UPSTREAM_ERROR') {
+    return { report: undefined, cached: false, stale: false, error: live.status.detail, dataStatus: live.status };
   }
+  if (live.data) {
+    return { ...buildUSNIFleetReportCacheResponse(live.data, null), dataStatus: live.status };
+  }
+
+  const stale = await readSeeded<USNIFleetReport>(USNI_STALE_CACHE_KEY, 'no stale USNI snapshot either');
+  return {
+    ...buildUSNIFleetReportCacheResponse(null, stale.data),
+    dataStatus: stale.data
+      ? { fetchedAt: stale.status.fetchedAt, availability: 'DATA_AVAILABILITY_STALE',
+          detail: 'the live USNI report was unavailable; serving the stale snapshot' }
+      : { fetchedAt: '0', availability: 'DATA_AVAILABILITY_NEVER_SEEDED',
+          detail: 'neither the live nor the stale USNI fleet report has been written' },
+  };
 }

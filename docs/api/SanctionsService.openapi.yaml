@@ -147,6 +147,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "results":
                                     - "countryCodes":
                                         - "US"
@@ -523,6 +527,8 @@ components:
                     format: int32
                 source:
                     type: string
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
             description: LookupSanctionEntityResponse contains matched entities from OFAC + OpenSanctions.
         SanctionEntityMatch:
             type: object

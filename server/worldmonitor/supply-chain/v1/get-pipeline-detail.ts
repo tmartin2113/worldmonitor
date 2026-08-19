@@ -1,4 +1,4 @@
-import { getCachedJson } from '../../../_shared/redis';
+import { cacheTally } from '../../../_shared/data-status';
 import { PIPELINES_GAS_KEY, PIPELINES_OIL_KEY } from '../../../_shared/cache-keys';
 import type {
   GetPipelineDetailRequest,
@@ -31,12 +31,16 @@ export async function getPipelineDetail(
       revisions: [],
       fetchedAt: new Date().toISOString(),
       unavailable: true,
+      dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: 'no pipeline_id supplied; nothing was looked up' },
     };
   }
 
+  // A UNION of two registries. If one is missing, the requested pipeline may
+  // have lived in it — so "not found" is PARTIAL, not "no such pipeline".
+  const tally = cacheTally('the pipeline registries have not been written');
   const [gasRaw, oilRaw] = await Promise.all([
-    getCachedJson(PIPELINES_GAS_KEY) as Promise<RawRegistry | null>,
-    getCachedJson(PIPELINES_OIL_KEY) as Promise<RawRegistry | null>,
+    tally.read<RawRegistry>(PIPELINES_GAS_KEY),
+    tally.read<RawRegistry>(PIPELINES_OIL_KEY),
   ]);
 
   const raw = gasRaw?.pipelines?.[req.pipelineId] ?? oilRaw?.pipelines?.[req.pipelineId];
@@ -46,6 +50,7 @@ export async function getPipelineDetail(
       revisions: [],
       fetchedAt: new Date().toISOString(),
       unavailable: true,
+      dataStatus: tally.status(),
     };
   }
 
@@ -56,6 +61,7 @@ export async function getPipelineDetail(
       revisions: [],
       fetchedAt: new Date().toISOString(),
       unavailable: true,
+      dataStatus: tally.status(),
     };
   }
 
@@ -68,5 +74,6 @@ export async function getPipelineDetail(
     // timestamp rather than always preferring gas.
     fetchedAt: pickNewerIsoTimestamp(gasRaw?.updatedAt, oilRaw?.updatedAt) || new Date().toISOString(),
     unavailable: false,
+    dataStatus: tally.status(),
   };
 }

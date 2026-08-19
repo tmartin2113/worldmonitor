@@ -4,6 +4,7 @@ package worldmonitor.infrastructure.v1;
 
 import "sebuf/http/annotations.proto";
 import "worldmonitor/infrastructure/v1/infrastructure.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 // ListInternetDdosAttacksRequest specifies filters for retrieving DDoS attack summaries.
 message ListInternetDdosAttacksRequest {}
@@ -20,4 +21,8 @@ message ListInternetDdosAttacksResponse {
   string date_range_end = 4;
   // Top DDoS target locations with geo coordinates.
   repeated DdosLocationHit top_target_locations = 5;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 6;
 }

@@ -156,6 +156,7 @@ export interface GetUSNIFleetReportResponse {
   cached: boolean;
   stale: boolean;
   error: string;
+  dataStatus?: DataStatus;
 }
 
 export interface USNIFleetReport {

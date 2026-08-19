@@ -5194,9 +5194,12 @@ paths:
                                       "currency": "USD"
                                       "flag": "example"
                                       "fxRate": 75.25
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": "2026-01-15T12:00:00Z"
                                 "mostExpensiveCountry": "US"
-                                "prevFetchedAt": "2026-01-15T12:00:00Z"
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_economic_v1_ListBigMacPricesResponse'
                 "400":
@@ -8790,6 +8793,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "dateRangeEnd": "2026-01-15"
                                 "dateRangeStart": "2026-01-15"
                                 "protocol":
@@ -8800,9 +8807,6 @@ paths:
                                       "countryName": "US"
                                       "latitude": 40.7128
                                       "longitude": -74.006
-                                      "percentage": 42.5
-                                "vector":
-                                    - "label": "example"
                                       "percentage": 42.5
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_infrastructure_v1_ListInternetDdosAttacksResponse'
@@ -8894,6 +8898,10 @@ paths:
                                       "endDate": 1
                                       "latitude": 40.7128
                                       "locationCode": "US"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "totalCount": 1
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_infrastructure_v1_ListInternetTrafficAnomaliesResponse'
@@ -11231,6 +11239,10 @@ paths:
                         application/json:
                             example:
                                 "available": true
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": "2026-01-15T12:00:00Z"
                                 "ports":
                                     - "anomalySignal": true
@@ -15190,6 +15202,10 @@ paths:
                         application/json:
                             example:
                                 "cached": true
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "error": "example"
                                 "report":
                                     "articleDate": "2026-01-15"
@@ -17346,6 +17362,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "results":
                                     - "countryCodes":
                                         - "US"
@@ -25289,6 +25309,8 @@ components:
                     type: boolean
                 prevFetchedAt:
                     type: string
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_economic_v1_BigMacCountryPrice:
             type: object
             properties:
@@ -27725,6 +27747,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/worldmonitor_infrastructure_v1_DdosLocationHit'
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: ListInternetDdosAttacksResponse contains DDoS attack protocol and vector breakdowns.
         worldmonitor_infrastructure_v1_DdosAttackSummaryEntry:
             type: object
@@ -27777,6 +27801,8 @@ components:
                     type: integer
                     format: int32
                     description: Total anomaly count before filtering.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: ListInternetTrafficAnomaliesResponse contains detected traffic anomalies.
         worldmonitor_infrastructure_v1_TrafficAnomaly:
             type: object
@@ -29439,6 +29465,8 @@ components:
                     format: double
                 gasImpact:
                     $ref: '#/components/schemas/worldmonitor_intelligence_v1_GasImpact'
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_intelligence_v1_ProductImpact:
             type: object
             properties:
@@ -29514,6 +29542,8 @@ components:
                     type: string
                 available:
                     type: boolean
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_intelligence_v1_PortActivityEntry:
             type: object
             properties:
@@ -32581,6 +32611,8 @@ components:
                 error:
                     type: string
                     description: Error message, if any.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: GetUSNIFleetReportResponse returns the parsed USNI Fleet Tracker report.
         worldmonitor_military_v1_USNIFleetReport:
             type: object
@@ -34466,6 +34498,8 @@ components:
                     format: int32
                 source:
                     type: string
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: LookupSanctionEntityResponse contains matched entities from OFAC + OpenSanctions.
         worldmonitor_sanctions_v1_SanctionEntityMatch:
             type: object

@@ -1,6 +1,7 @@
 syntax = "proto3";
 package worldmonitor.intelligence.v1;
 import "sebuf/http/annotations.proto";
+import "worldmonitor/core/v1/data_status.proto";
 option go_package = "github.com/koala73/worldmonitor/worldmonitor/intelligence/v1";
 
 message ComputeEnergyShockScenarioRequest {
@@ -66,4 +67,8 @@ message ComputeEnergyShockScenarioResponse {
   string chokepoint_confidence = 18;  // "high" | "low" | "none"
   optional double live_flow_ratio = 19;  // from energy:chokepoint-flows:v1, 0-1.5; absent when portwatch_coverage=false
   GasImpact gas_impact        = 20;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 21;
 }

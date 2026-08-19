@@ -1113,9 +1113,12 @@ paths:
                                       "currency": "USD"
                                       "flag": "example"
                                       "fxRate": 75.25
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": "2026-01-15T12:00:00Z"
                                 "mostExpensiveCountry": "US"
-                                "prevFetchedAt": "2026-01-15T12:00:00Z"
                             schema:
                                 $ref: '#/components/schemas/ListBigMacPricesResponse'
                 "400":
@@ -3525,6 +3528,8 @@ components:
                     type: boolean
                 prevFetchedAt:
                     type: string
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
         BigMacCountryPrice:
             type: object
             properties:

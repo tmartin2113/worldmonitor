@@ -5,7 +5,7 @@ import type {
   PortActivityEntry,
 } from '../../../../src/generated/server/worldmonitor/intelligence/v1/service_server';
 
-import { getCachedJson } from '../../../_shared/redis';
+import { cacheTally } from '../../../_shared/data-status';
 import {
   PORTWATCH_PORT_ACTIVITY_COUNTRIES_KEY,
   PORTWATCH_PORT_ACTIVITY_KEY_PREFIX,
@@ -40,14 +40,26 @@ export async function getCountryPortActivity(
   req: GetCountryPortActivityRequest,
 ): Promise<CountryPortActivityResponse> {
   const code = req.countryCode?.trim().toUpperCase() ?? '';
-  if (!code || code.length !== 2) return EMPTY;
+  if (!code || code.length !== 2) {
+    return { ...EMPTY, dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: 'a 2-letter country_code is required; nothing was looked up' } };
+  }
 
-  const countriesResult = await getCachedJson(PORTWATCH_PORT_ACTIVITY_COUNTRIES_KEY, true).catch(() => null);
+  // Both reads used `.catch(() => null)`, folding a Redis fault into the same
+  // EMPTY returned for a country PortWatch does not cover.
+  const tally = cacheTally('the PortWatch seeder has not written this key');
+  const countriesResult = await tally.read(PORTWATCH_PORT_ACTIVITY_COUNTRIES_KEY);
   const countries = Array.isArray(countriesResult) ? (countriesResult as string[]) : [];
-  if (!countries.includes(code)) return EMPTY;
+  if (!countries.includes(code)) {
+    return {
+      ...EMPTY,
+      dataStatus: countries.length
+        ? { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: `PortWatch does not cover ${code}` }
+        : tally.status(),
+    };
+  }
 
-  const data = await getCachedJson(`${PORTWATCH_PORT_ACTIVITY_KEY_PREFIX}${code}`, true).catch(() => null);
-  if (!data) return EMPTY;
+  const data = await tally.read(`${PORTWATCH_PORT_ACTIVITY_KEY_PREFIX}${code}`);
+  if (!data) return { ...EMPTY, dataStatus: tally.status() };
 
   const payload = data as SeederPayload;
   const rawPorts = Array.isArray(payload.ports) ? payload.ports : [];
@@ -73,5 +85,6 @@ export async function getCountryPortActivity(
     available: true,
     ports,
     fetchedAt: typeof payload.fetchedAt === 'string' ? payload.fetchedAt : '',
+    dataStatus: tally.status(),
   };
 }

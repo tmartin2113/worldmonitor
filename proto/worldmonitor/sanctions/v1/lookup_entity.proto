@@ -3,6 +3,7 @@ syntax = "proto3";
 package worldmonitor.sanctions.v1;
 
 import "sebuf/http/annotations.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 // LookupSanctionEntityRequest searches the OFAC entity index by name, vessel, or aircraft.
 message LookupSanctionEntityRequest {
@@ -26,4 +27,8 @@ message LookupSanctionEntityResponse {
   repeated SanctionEntityMatch results = 1;
   int32 total = 2;
   string source = 3;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 4;
 }

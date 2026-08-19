@@ -4,6 +4,7 @@ package worldmonitor.military.v1;
 
 import "sebuf/http/annotations.proto";
 import "worldmonitor/military/v1/usni_fleet.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 // GetUSNIFleetReportRequest requests the latest USNI Fleet Tracker report.
 message GetUSNIFleetReportRequest {
@@ -21,4 +22,8 @@ message GetUSNIFleetReportResponse {
   bool stale = 3;
   // Error message, if any.
   string error = 4;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 5;
 }

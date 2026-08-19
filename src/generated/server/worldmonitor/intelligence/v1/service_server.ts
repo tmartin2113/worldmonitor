@@ -612,6 +612,7 @@ export interface ComputeEnergyShockScenarioResponse {
   chokepointConfidence: string;
   liveFlowRatio?: number;
   gasImpact?: GasImpact;
+  dataStatus?: DataStatus;
 }
 
 export interface ProductImpact {
@@ -650,6 +651,7 @@ export interface CountryPortActivityResponse {
   ports: PortActivityEntry[];
   fetchedAt: string;
   available: boolean;
+  dataStatus?: DataStatus;
 }
 
 export interface PortActivityEntry {
