@@ -470,7 +470,16 @@ export async function getCableHealth(
       const count = result.cables ? Object.keys(result.cables).length : 0;
       setCachedJson('seed-meta:cable-health', { fetchedAt: Date.now(), recordCount: count }, 604800).catch(() => {});
       fallbackCache = result;
-      return { ...result, dataStatus: answeredDirectly() };
+      // Zero cables after a SUCCESSFUL fetch is EMPTY, not OK — that is the
+      // documented distinction ("fetched, and there genuinely is nothing"), and
+      // it is the real state here: NGA serves 386 warnings, 24 mention CABLE,
+      // and all of those are 2023-24 notices that age out of the recency window.
+      return {
+        ...result,
+        dataStatus: count > 0
+          ? answeredDirectly()
+          : { fetchedAt: String(result.generatedAt ?? 0), availability: 'DATA_AVAILABILITY_EMPTY', detail: 'NGA was read successfully; no cable warning is recent enough to score' },
+      };
     }
 
     // NGA upstream failed (cachedFetchJson stored NEG_SENTINEL in cable-health-v1

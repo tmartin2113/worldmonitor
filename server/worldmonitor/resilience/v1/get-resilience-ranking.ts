@@ -475,7 +475,20 @@ export const getResilienceRanking: ResilienceServiceHandler['getResilienceRankin
       console.warn(`[resilience] ranking not cached — coverage ${cachedScores.size}/${countryCodes.length} below ${RANKING_CACHE_MIN_COVERAGE * 100}% threshold`);
     }
 
-    return response;
+    // The coverage ratio was already computed to decide whether to CACHE the
+    // ranking; it equally decides whether the ranking is a complete answer. A
+    // league table built from 60% of countries ranks differently from one built
+    // from all of them, and nothing in the payload said which this was.
+    const coverage = countryCodes.length > 0 ? cachedScores.size / countryCodes.length : 0;
+    return {
+      ...response,
+      dataStatus: cachedScores.size === 0
+        ? { fetchedAt: '0', availability: 'DATA_AVAILABILITY_NEVER_SEEDED', detail: 'no country resilience scores are available yet' }
+        : coverage < 1
+          ? { fetchedAt: String(fetchedAtMs ?? 0), availability: 'DATA_AVAILABILITY_PARTIAL',
+              detail: `ranked ${cachedScores.size} of ${countryCodes.length} countries; the ordering reflects the scored subset only` }
+          : { fetchedAt: String(fetchedAtMs ?? 0), availability: 'DATA_AVAILABILITY_OK', detail: '' },
+    };
   } finally {
     if (lockToRelease) await releaseRankingLock(lockToRelease.key, lockToRelease.token);
   }

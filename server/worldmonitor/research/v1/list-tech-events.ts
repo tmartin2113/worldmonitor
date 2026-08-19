@@ -24,6 +24,7 @@ import { CHROME_UA } from '../../../_shared/constants';
 import { resolveTechEventsPaging, type TechEventsPagingPresence } from './_tech-events-paging';
 import { cachedFetchJson } from '../../../_shared/redis';
 import { getRelayBaseUrl, getRelayHeaders } from '../../../_shared/relay';
+import { answeredDirectly, upstreamError } from '../../../_shared/data-status';
 
 const REDIS_CACHE_KEY = 'research:tech-events:v1';
 const REDIS_CACHE_TTL = 21600; // 6 hr — weekly event data
@@ -474,7 +475,13 @@ export async function listTechEvents(
 
     // Apply geocoding (seed stores events without coords) and filter by request params
     const geocoded = geocodeEvents(result.events);
-    return filterEvents(geocoded, req, pagingPresence);
+    const filtered = filterEvents(geocoded, req, pagingPresence);
+    return {
+      ...filtered,
+      dataStatus: filtered.events.length
+        ? answeredDirectly()
+        : { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: 'no tech events matched the requested filters' },
+    };
   } catch (error) {
     return {
       success: false,
@@ -484,6 +491,7 @@ export async function listTechEvents(
       lastUpdated: new Date().toISOString(),
       events: [],
       error: error instanceof Error ? error.message : String(error),
+      dataStatus: upstreamError(error, 'tech event listing failed'),
     };
   }
 }
