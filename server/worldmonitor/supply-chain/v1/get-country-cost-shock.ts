@@ -7,7 +7,8 @@ import type {
 } from '../../../../src/generated/server/worldmonitor/supply_chain/v1/service_server';
 
 import { isCallerPremium } from '../../../_shared/premium-check';
-import { cachedFetchJson, getCachedJson } from '../../../_shared/redis';
+import { cachedFetchJson } from '../../../_shared/redis';
+import { readSeeded, answeredDirectly } from '../../../_shared/data-status';
 import { CHOKEPOINT_REGISTRY } from '../../../../src/config/chokepoint-registry';
 import { computeEnergyShockScenario } from '../../intelligence/v1/compute-energy-shock';
 import { warRiskTierToInsurancePremiumBps } from './_insurance-tier';
@@ -46,7 +47,12 @@ export async function getCountryCostShock(
 
   const registry = CHOKEPOINT_REGISTRY.find(c => c.id === chokepointId);
 
-  const statusRaw = await getCachedJson(CHOKEPOINT_STATUS_KEY).catch(() => null) as { chokepoints?: ChokepointInfo[] } | null;
+  // `.catch(() => null)` folded a Redis fault into the same null a never-written
+  // key gives; without live chokepoint status these scores fall back to static
+  // registry values, which is a weaker answer of the same shape.
+  const statusRead = await readSeeded<{ chokepoints?: ChokepointInfo[] }>(
+    CHOKEPOINT_STATUS_KEY, 'the chokepoint-status key has not been written');
+  const statusRaw = statusRead.data;
   const cpStatus = statusRaw?.chokepoints?.find(c => c.id === chokepointId);
   const warRiskTier = (cpStatus?.warRiskTier ?? 'WAR_RISK_TIER_NORMAL') as WarRiskTier;
   const premiumBps = warRiskTierToInsurancePremiumBps(warRiskTier);
@@ -95,5 +101,14 @@ export async function getCountryCostShock(
     hasEnergyModel,
     unavailableReason,
     fetchedAt: new Date().toISOString(),
+    // `unavailableReason` already explains a MODELLING gap ("HS 27 only"), which
+    // is a deliberate product limit, not a data failure. The envelope carries the
+    // separate question of whether the inputs were actually read.
+    dataStatus: statusRaw
+      ? answeredDirectly(unavailableReason || '')
+      : statusRead.status.availability === 'DATA_AVAILABILITY_UPSTREAM_ERROR'
+        ? statusRead.status
+        : { fetchedAt: '0', availability: 'DATA_AVAILABILITY_PARTIAL',
+            detail: 'live chokepoint status was unavailable; war-risk inputs use static registry values only' },
   };
 }

@@ -5,6 +5,7 @@ import type {
   ReverseGeocodeResponse,
 } from '../../../../src/generated/server/worldmonitor/infrastructure/v1/service_server';
 import { getCachedJson, setCachedJson } from '../../../_shared/redis';
+import { answeredDirectly, upstreamError } from '../../../_shared/data-status';
 
 const NOMINATIM_BASE = 'https://nominatim.openstreetmap.org/reverse';
 const CHROME_UA = 'WorldMonitor/2.0 (https://worldmonitor.app)';
@@ -56,6 +57,7 @@ export const reverseGeocode: InfrastructureServiceHandler['reverseGeocode'] = as
       code: '',
       displayName: '',
       error: 'valid lat (-90..90) and lon (-180..180) required',
+      dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: 'coordinates were invalid; nothing was geocoded' },
     };
   }
 
@@ -64,7 +66,7 @@ export const reverseGeocode: InfrastructureServiceHandler['reverseGeocode'] = as
   const cached = await getCachedJson(cacheKey);
   if (cached && typeof cached === 'object') {
     const normalized = normalizeCacheEntry(cached as ReverseCacheEntry);
-    if (normalized) return normalized;
+    if (normalized) return { ...normalized, dataStatus: answeredDirectly('served from the geocode cache') };
   }
 
   try {
@@ -77,7 +79,8 @@ export const reverseGeocode: InfrastructureServiceHandler['reverseGeocode'] = as
     );
 
     if (!resp.ok) {
-      return { country: '', code: '', displayName: '', error: `Nominatim HTTP ${resp.status}` };
+      return { country: '', code: '', displayName: '', error: `Nominatim HTTP ${resp.status}`,
+        dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_UPSTREAM_ERROR', detail: `Nominatim returned HTTP ${resp.status}` } };
     }
 
     const data = (await resp.json()) as NominatimResponse;
@@ -88,8 +91,12 @@ export const reverseGeocode: InfrastructureServiceHandler['reverseGeocode'] = as
     const result: ReverseCacheEntry = { country, code, displayName };
     await setCachedJson(cacheKey, result, 604800);
 
-    return { country, code, displayName, error: '' };
+    return { country, code, displayName, error: '',
+      dataStatus: country
+        ? { fetchedAt: '0', availability: 'DATA_AVAILABILITY_OK', detail: '' }
+        : { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: 'Nominatim resolved no country for these coordinates' } };
   } catch (err) {
-    return { country: '', code: '', displayName: '', error: String(err) };
+    return { country: '', code: '', displayName: '', error: String(err),
+      dataStatus: upstreamError(err, 'reverse geocode failed') };
   }
 };

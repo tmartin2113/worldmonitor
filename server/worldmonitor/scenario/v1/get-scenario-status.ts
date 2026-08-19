@@ -8,6 +8,7 @@ import { ApiError, ValidationError } from '../../../../src/generated/server/worl
 
 import { isCallerPremium } from '../../../_shared/premium-check';
 import { getRawJson } from '../../../_shared/redis';
+import { answeredDirectly } from '../../../_shared/data-status';
 
 // Matches jobIds produced by run-scenario.ts: `scenario:{13-digit-ts}:{8-char-suffix}`.
 // Guards `GET /scenario-result/{jobId}` against path-traversal via crafted jobId.
@@ -79,21 +80,25 @@ export async function getScenarioStatus(
     throw new ApiError(502, 'Failed to fetch job status', '');
   }
 
+  // A job that has not written a result yet is PENDING — a real answer about a
+  // real job, not an absence of data. Saying so keeps it out of the empty bucket.
   if (!envelope) {
-    return { status: 'pending', error: '' };
+    return { status: 'pending', error: '', dataStatus: answeredDirectly('no result written yet; the job is still pending') };
   }
 
   const status = typeof envelope.status === 'string' ? envelope.status : 'pending';
 
   if (status === 'done') {
     const result = coerceResult(envelope.result);
-    return { status: 'done', result, error: '' };
+    return { status: 'done', result, error: '', dataStatus: answeredDirectly() };
   }
 
   if (status === 'failed') {
     const error = typeof envelope.error === 'string' ? envelope.error : 'computation_error';
-    return { status: 'failed', error };
+    // The JOB failed; the lookup succeeded. That is an answered question, and
+    // reporting it as UPSTREAM_ERROR would blame the wrong layer.
+    return { status: 'failed', error, dataStatus: answeredDirectly(`the scenario job failed: ${error}`) };
   }
 
-  return { status, error: '' };
+  return { status, error: '', dataStatus: answeredDirectly(`job status: ${status}`) };
 }

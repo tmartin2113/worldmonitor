@@ -7,6 +7,7 @@ import type {
 
 import { isCallerPremium } from '../../../_shared/premium-check';
 import { cachedFetchJson, getCachedJson } from '../../../_shared/redis';
+import { answeredDirectly, upstreamError } from '../../../_shared/data-status';
 import { SECTOR_DEPENDENCY_KEY } from '../../../_shared/cache-keys';
 import { CHOKEPOINT_REGISTRY } from '../../../_shared/chokepoint-registry';
 import { BYPASS_CORRIDORS_BY_CHOKEPOINT } from '../../../_shared/bypass-corridors';
@@ -179,8 +180,10 @@ export async function getSectorDependency(
       },
     );
 
-    return result ?? { ...empty, iso2, hs2 };
-  } catch {
-    return { ...empty, iso2, hs2 };
+    return result
+      ? { ...result, dataStatus: answeredDirectly() }
+      : { ...empty, iso2, hs2, dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: `no sector dependency could be computed for ${iso2}/HS${hs2}` } };
+  } catch (err) {
+    return { ...empty, iso2, hs2, dataStatus: upstreamError(err, 'sector dependency computation failed') };
   }
 }

@@ -5,6 +5,7 @@ import type {
 } from '../../../../src/generated/server/worldmonitor/military/v1/service_server';
 
 import { getCachedJsonBatch, cachedFetchJson } from '../../../_shared/redis';
+import { upstreamError } from '../../../_shared/data-status';
 import { toUniqueSortedLimited } from '../../../_shared/normalize-list';
 import {
   AIRCRAFT_DETAILS_CACHE_KEY,
@@ -65,13 +66,23 @@ export async function getAircraftDetailsBatch(
       if (i < toFetch.length - 1) await delay(100);
     }
 
+    const fetched = Object.keys(results).length;
+    const missing = limitedList.filter((id) => !results[id]);
+    const shown = missing.length <= 5 ? missing.join(', ') : `${missing.slice(0, 5).join(', ')} and ${missing.length - 5} more`;
     return {
       results,
-      fetched: Object.keys(results).length,
+      fetched,
       requested: limitedList.length,
       configured: true,
+      dataStatus: limitedList.length === 0
+        ? { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: 'no icao24s supplied; nothing was looked up' }
+        : missing.length === 0
+          ? { fetchedAt: '0', availability: 'DATA_AVAILABILITY_OK', detail: '' }
+          : fetched === 0
+            ? { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: 'Wingbits returned details for none of the requested aircraft' }
+            : { fetchedAt: '0', availability: 'DATA_AVAILABILITY_PARTIAL', detail: `${missing.length} of ${limitedList.length} aircraft had no details (${shown})` },
     };
-  } catch {
-    return { results: {}, fetched: 0, requested: 0, configured: true };
+  } catch (err) {
+    return { results: {}, fetched: 0, requested: 0, configured: true, dataStatus: upstreamError(err, 'aircraft details batch failed') };
   }
 }

@@ -8,7 +8,7 @@ import type {
 
 import { isCallerPremium } from '../../../_shared/premium-check';
 import { BYPASS_CORRIDORS_BY_CHOKEPOINT } from '../../../../src/config/bypass-corridors';
-import { getCachedJson } from '../../../_shared/redis';
+import { readSeeded, answeredDirectly } from '../../../_shared/data-status';
 import { CHOKEPOINT_STATUS_KEY } from '../../../_shared/cache-keys';
 import { TIER_RANK } from './_insurance-tier';
 
@@ -47,7 +47,12 @@ export async function getBypassOptions(
     return true;
   });
 
-  const statusRaw = await getCachedJson(CHOKEPOINT_STATUS_KEY).catch(() => null) as { chokepoints?: ChokepointInfo[] } | null;
+  // `.catch(() => null)` folded a Redis fault into the same null a never-written
+  // key gives; without live chokepoint status these scores fall back to static
+  // registry values, which is a weaker answer of the same shape.
+  const statusRead = await readSeeded<{ chokepoints?: ChokepointInfo[] }>(
+    CHOKEPOINT_STATUS_KEY, 'the chokepoint-status key has not been written');
+  const statusRaw = statusRead.data;
   const tierMap: Record<string, string> = {};
   const scoreMap: Record<string, number> = {};
   for (const cp of statusRaw?.chokepoints ?? []) {
@@ -96,5 +101,11 @@ export async function getBypassOptions(
     options,
     primaryChokepointWarRiskTier,
     fetchedAt: new Date().toISOString(),
+    dataStatus: statusRaw
+      ? answeredDirectly()
+      : statusRead.status.availability === 'DATA_AVAILABILITY_UPSTREAM_ERROR'
+        ? statusRead.status
+        : { fetchedAt: '0', availability: 'DATA_AVAILABILITY_PARTIAL',
+            detail: 'live chokepoint status was unavailable; bypass scores use static registry values only' },
   };
 }
