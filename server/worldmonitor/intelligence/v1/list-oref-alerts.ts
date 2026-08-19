@@ -123,7 +123,9 @@ export const listOrefAlerts: IntelligenceServiceHandler['listOrefAlerts'] = asyn
     }
   }
 
-  // Relay unavailable: return Redis counts, no active alerts
+  // Relay unavailable: return Redis counts, no active alerts.
+  // `alerts: []` here means "we could not ask", not "no rockets are inbound" —
+  // for an air-raid feed that is the difference that matters most on this box.
   if (cached) {
     return {
       configured: true,
@@ -133,8 +135,15 @@ export const listOrefAlerts: IntelligenceServiceHandler['listOrefAlerts'] = asyn
       totalHistoryCount: cached.totalHistoryCount || 0,
       timestampMs: toEpochMs(cached.persistedAt) || Date.now(),
       error: 'relay unavailable',
+      dataStatus: {
+        fetchedAt: String(toEpochMs(cached.persistedAt) || 0),
+        availability: 'DATA_AVAILABILITY_PARTIAL',
+        detail: 'the alert relay was unreachable; historical counts are from cache and the active-alert list could not be checked',
+      },
     };
   }
 
-  return emptyResponse('No relay or cache available');
+  return { ...emptyResponse('No relay or cache available'),
+    dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_NEVER_SEEDED',
+      detail: 'neither the alert relay nor a cached snapshot was available; active alerts are unknown, not absent' } };
 };

@@ -6,6 +6,7 @@ import type {
 } from '../../../../src/generated/server/worldmonitor/resilience/v1/service_server';
 
 import { getCachedJson } from '../../../_shared/redis';
+import { answeredDirectly } from '../../../_shared/data-status';
 import { markNoCacheResponse } from '../../../_shared/response-headers';
 import {
   RESILIENCE_RANKING_META_KEY,
@@ -120,5 +121,12 @@ export const getResilienceRuntimeManifest: ResilienceServiceHandler['getResilien
     },
     constructVersions: getConstructVersions(),
     intervals,
+    // A manifest describes the runtime, so it answers from its own state; the
+    // envelope reports whether the two cache-meta reads it embeds succeeded.
+    dataStatus: (staticMeta && rankingMeta)
+      ? answeredDirectly()
+      : (!staticMeta && !rankingMeta)
+        ? { fetchedAt: '0', availability: 'DATA_AVAILABILITY_PARTIAL', detail: 'neither the static nor the ranking cache metadata could be read; their fields are zeroed rather than unknown' }
+        : { fetchedAt: '0', availability: 'DATA_AVAILABILITY_PARTIAL', detail: `the ${staticMeta ? 'ranking' : 'static'} cache metadata could be read; its fields are zeroed rather than unknown` },
   };
 };

@@ -14,6 +14,7 @@ import { callLlmReasoning } from '../../../_shared/llm';
 import { sanitizeForPrompt } from '../../../_shared/llm-sanitize.js';
 import { buildDeductionPrompt, postProcessDeductionOutput } from './deduction-prompt';
 import { isCallerPremium } from '../../../_shared/premium-check';
+import { answeredDirectly } from '../../../_shared/data-status';
 
 const PREDICTION_BOOTSTRAP_KEY = 'prediction:markets-bootstrap:v1';
 const MAX_PREDICTION_MARKETS = 7;
@@ -138,13 +139,18 @@ export async function deductSituation(
         { timeoutMs: DEDUCT_TIMEOUT_MS + 5_000 },
     );
 
+    // `provider: 'error'` was the only signal, and it sits in a field callers
+    // read as provenance. An LLM that returned nothing usable and one that could
+    // not be reached produced the same empty analysis.
     if (!cached?.analysis) {
-        return { analysis: '', model: '', provider: 'error' };
+        return { analysis: '', model: '', provider: 'error',
+            dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: 'the reasoning model returned no usable analysis' } };
     }
 
     return {
         analysis: cached.analysis,
         model: cached.model,
         provider: cached.provider,
+        dataStatus: answeredDirectly(),
     };
 }

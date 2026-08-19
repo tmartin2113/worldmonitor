@@ -7,7 +7,7 @@ import type {
   CrossSourceSignalType,
   CrossSourceSignalSeverity,
 } from '../../../../src/generated/server/worldmonitor/intelligence/v1/service_server';
-import { getCachedJson } from '../../../_shared/redis';
+import { attach } from '../../../_shared/data-status';
 
 const REDIS_KEY = 'intelligence:cross-source-signals:v1';
 
@@ -90,19 +90,20 @@ export const listCrossSourceSignals: IntelligenceServiceHandler['listCrossSource
   _ctx: ServerContext,
   _req: ListCrossSourceSignalsRequest,
 ): Promise<ListCrossSourceSignalsResponse> => {
-  const raw = await getCachedJson(REDIS_KEY, true);
-  if (!raw || typeof raw !== 'object') {
-    return { signals: [], evaluatedAt: 0, compositeCount: 0 };
-  }
+  return attach(REDIS_KEY, 'the cross-source signal evaluator has not written this key', (raw) => {
+    if (!raw || typeof raw !== 'object') {
+      return { signals: [], evaluatedAt: 0, compositeCount: 0 };
+    }
 
-  const payload = raw as CachedPayload;
-  const signals = Array.isArray(payload.signals)
-    ? payload.signals.map(normalizeSignal)
-    : [];
+    const payload = raw as CachedPayload;
+    const signals = Array.isArray(payload.signals)
+      ? payload.signals.map(normalizeSignal)
+      : [];
 
-  return {
-    signals,
-    evaluatedAt: typeof payload.evaluatedAt === 'number' ? payload.evaluatedAt : 0,
-    compositeCount: typeof payload.compositeCount === 'number' ? payload.compositeCount : 0,
-  };
+    return {
+      signals,
+      evaluatedAt: typeof payload.evaluatedAt === 'number' ? payload.evaluatedAt : 0,
+      compositeCount: typeof payload.compositeCount === 'number' ? payload.compositeCount : 0,
+    };
+  }, (out) => out.signals.length);
 };

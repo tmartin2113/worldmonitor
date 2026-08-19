@@ -9,6 +9,7 @@ import { getCachedJsonBatch, cachedFetchJson } from '../../../_shared/redis';
 import { CHROME_UA } from '../../../_shared/constants';
 import { ISO2_TO_ISO3 } from './_shared';
 import { toUniqueSortedLimited } from '../../../_shared/normalize-list';
+import { upstreamError } from '../../../_shared/data-status';
 
 const REDIS_CACHE_KEY = 'conflict:humanitarian:v1';
 const REDIS_CACHE_TTL = 21600;
@@ -142,12 +143,25 @@ export async function getHumanitarianSummaryBatch(
       }
     }
 
+    // Per-country fetches are settled independently and rejections are only
+    // logged, so a partly-failed batch was indistinguishable from a batch where
+    // HAPI genuinely has no summary for those countries.
+    const fetched = Object.keys(results).length;
+    const missing = limitedList.filter((cc) => !results[cc]);
+    const shown = missing.length <= 5 ? missing.join(', ') : `${missing.slice(0, 5).join(', ')} and ${missing.length - 5} more`;
     return {
       results,
-      fetched: Object.keys(results).length,
+      fetched,
       requested: limitedList.length,
+      dataStatus: limitedList.length === 0
+        ? { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: 'no country codes supplied; nothing was looked up' }
+        : missing.length === 0
+          ? { fetchedAt: '0', availability: 'DATA_AVAILABILITY_OK', detail: '' }
+          : fetched === 0
+            ? { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: 'HDX HAPI returned no summary for any requested country' }
+            : { fetchedAt: '0', availability: 'DATA_AVAILABILITY_PARTIAL', detail: `${missing.length} of ${limitedList.length} countries returned no summary (${shown})` },
     };
-  } catch {
-    return { results: {}, fetched: 0, requested: 0 };
+  } catch (err) {
+    return { results: {}, fetched: 0, requested: 0, dataStatus: upstreamError(err, 'humanitarian summary batch failed') };
   }
 }
