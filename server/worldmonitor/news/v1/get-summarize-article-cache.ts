@@ -6,6 +6,7 @@ import type {
 
 import filterParamContracts from '../../../../shared/openapi-filter-param-contracts.json';
 import { getCachedJson } from '../../../_shared/redis';
+import { answeredDirectly, upstreamError } from '../../../_shared/data-status';
 import { markNoCacheResponse } from '../../../_shared/response-headers';
 
 const CACHE_KEY_PATTERN = new RegExp(filterParamContracts.newsSummarizeArticleCacheKeyPattern);
@@ -39,13 +40,13 @@ export async function getSummarizeArticleCache(
 
     if (cached === NEG_SENTINEL || cached === null || cached === undefined) {
       markNoCacheResponse(ctx.request);
-      return EMPTY_MISS;
+      return { ...EMPTY_MISS, dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: 'no cached summary for this key' } };
     }
 
     const data = cached as { summary?: string; model?: string; tokens?: number };
     if (!data.summary) {
       markNoCacheResponse(ctx.request);
-      return EMPTY_MISS;
+      return { ...EMPTY_MISS, dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: 'no cached summary for this key' } };
     }
 
     return {
@@ -58,9 +59,12 @@ export async function getSummarizeArticleCache(
       errorType: '',
       status: 'SUMMARIZE_STATUS_CACHED',
       statusDetail: '',
+      dataStatus: answeredDirectly(),
     };
-  } catch {
+  } catch (err) {
+    // A cache MISS and a Redis outage both returned EMPTY_MISS, so the caller
+    // would re-summarize (paying for an LLM call) believing nothing was cached.
     markNoCacheResponse(ctx.request);
-    return EMPTY_MISS;
+    return { ...EMPTY_MISS, dataStatus: upstreamError(err, 'summary cache read failed') };
   }
 }

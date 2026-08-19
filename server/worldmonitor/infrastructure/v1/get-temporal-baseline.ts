@@ -5,6 +5,7 @@ import type {
 } from '../../../../src/generated/server/worldmonitor/infrastructure/v1/service_server';
 
 import { getCachedJson } from '../../../_shared/redis';
+import { answeredDirectly, upstreamError } from '../../../_shared/data-status';
 import {
   VALID_BASELINE_TYPES,
   MIN_SAMPLES,
@@ -74,13 +75,16 @@ export async function getTemporalBaseline(
       sampleCount: baseline.sampleCount,
       samplesNeeded: MIN_SAMPLES,
       error: '',
+      dataStatus: answeredDirectly(),
     };
-  } catch {
+  } catch (err) {
+    // 'Internal error' in a string field is not a status a consumer can branch on.
     return {
       learning: false,
       sampleCount: 0,
       samplesNeeded: 0,
       error: 'Internal error',
+      dataStatus: upstreamError(err, 'temporal baseline read failed'),
     };
   }
 }

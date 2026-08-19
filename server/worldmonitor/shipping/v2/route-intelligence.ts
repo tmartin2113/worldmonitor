@@ -11,7 +11,7 @@ import {
 } from '../../../../src/generated/server/worldmonitor/shipping/v2/service_server';
 
 import { isCallerPremium } from '../../../_shared/premium-check';
-import { getCachedJson } from '../../../_shared/redis';
+import { readSeeded, answeredDirectly } from '../../../_shared/data-status';
 import { CHOKEPOINT_STATUS_KEY } from '../../../_shared/cache-keys';
 import { BYPASS_CORRIDORS_BY_CHOKEPOINT, type CargoType } from '../../../_shared/bypass-corridors';
 import { CHOKEPOINT_REGISTRY } from '../../../_shared/chokepoint-registry';
@@ -66,7 +66,12 @@ export async function routeIntelligence(
   const sharedRoutes = [...fromRoutes].filter(r => toRoutes.has(r));
   const primaryRouteId = sharedRoutes[0] ?? fromCluster?.nearestRouteIds[0] ?? '';
 
-  const statusRaw = (await getCachedJson(CHOKEPOINT_STATUS_KEY).catch(() => null)) as ChokepointStatusResponse | null;
+  // `.catch(() => null)` folded a Redis fault into the same null a never-written
+  // key gives, and the only downstream trace was `fetchedAt: ''` — which reads as
+  // "no timestamp" rather than "the chokepoint status could not be read".
+  const statusRead = await readSeeded<ChokepointStatusResponse>(
+    CHOKEPOINT_STATUS_KEY, 'the chokepoint-status key has not been written');
+  const statusRaw = statusRead.data;
   const statusAvailable =
     Array.isArray(statusRaw?.chokepoints) &&
     statusRaw.chokepoints.length > 0 &&
@@ -117,5 +122,16 @@ export async function routeIntelligence(
     warRiskTier,
     disruptionScore,
     fetchedAt: statusAvailable ? new Date().toISOString() : '',
+    // Without chokepoint status the exposures and disruption score are computed
+    // from static route geometry alone — same shape, weaker answer.
+    dataStatus: statusAvailable
+      ? answeredDirectly()
+      : statusRead.status.availability === 'DATA_AVAILABILITY_UPSTREAM_ERROR'
+        ? statusRead.status
+        : {
+            fetchedAt: '0',
+            availability: 'DATA_AVAILABILITY_PARTIAL',
+            detail: 'live chokepoint status was unavailable; exposures and disruption score are from static route geometry only',
+          },
   };
 }
