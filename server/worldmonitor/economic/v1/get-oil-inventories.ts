@@ -4,7 +4,7 @@ import type {
   GetOilInventoriesResponse,
 } from '../../../../src/generated/server/worldmonitor/economic/v1/service_server';
 
-import { getCachedJson } from '../../../_shared/redis';
+import { cacheTally } from '../../../_shared/data-status';
 
 const CRUDE_KEY = 'economic:crude-inventories:v1';
 const SPR_KEY = 'economic:spr:v1';
@@ -67,14 +67,15 @@ export async function getOilInventories(
   _ctx: ServerContext,
   _req: GetOilInventoriesRequest,
 ): Promise<GetOilInventoriesResponse> {
+  const tally = cacheTally('the oil-inventory seeders have not written these keys');
   try {
     const [crudeRaw, sprRaw, natGasRaw, euGasRaw, ieaRaw, refineryRaw] = await Promise.all([
-      getCachedJson(CRUDE_KEY, true) as Promise<CrudeRaw | null>,
-      getCachedJson(SPR_KEY, true) as Promise<SprRaw | null>,
-      getCachedJson(NAT_GAS_KEY, true) as Promise<NatGasRaw | null>,
-      getCachedJson(EU_GAS_KEY, true) as Promise<EuGasRaw | null>,
-      getCachedJson(IEA_KEY, true) as Promise<IeaRaw | null>,
-      getCachedJson(REFINERY_KEY, true) as Promise<RefineryRaw | null>,
+      tally.read<CrudeRaw>(CRUDE_KEY),
+      tally.read<SprRaw>(SPR_KEY),
+      tally.read<NatGasRaw>(NAT_GAS_KEY),
+      tally.read<EuGasRaw>(EU_GAS_KEY),
+      tally.read<IeaRaw>(IEA_KEY),
+      tally.read<RefineryRaw>(REFINERY_KEY),
     ]);
 
     const crudeWeeks = crudeRaw?.weeks?.map((w) => ({
@@ -144,9 +145,13 @@ export async function getOilInventories(
       ieaStocks,
       refinery,
       updatedAt,
+      // Six independent EIA/IEA series. A missing one is simply OMITTED from the
+      // response, so a partial answer had the same shape as a complete one — and
+      // several of these are exactly the series that go missing without EIA_API_KEY.
+      dataStatus: tally.status(),
     } as GetOilInventoriesResponse;
   } catch (err) {
     console.error('[getOilInventories] Redis read failed:', err);
-    return { crudeWeeks: [], natGasWeeks: [], updatedAt: '' } as GetOilInventoriesResponse;
+    return { crudeWeeks: [], natGasWeeks: [], updatedAt: '', dataStatus: tally.status() } as GetOilInventoriesResponse;
   }
 }

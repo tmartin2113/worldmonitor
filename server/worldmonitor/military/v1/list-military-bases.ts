@@ -9,6 +9,7 @@ import type {
 import filterParamContracts from '../../../../shared/openapi-filter-param-contracts.json';
 import { cachedFetchJson, getCachedJson, geoSearchByBox, getHashFieldsBatch } from '../../../_shared/redis';
 import { markNoCacheResponse, setResponseHeader } from '../../../_shared/response-headers';
+import { answeredDirectly, upstreamError } from '../../../_shared/data-status';
 
 const VALID_TYPES = new Set(filterParamContracts.militaryBaseTypes);
 const VALID_KINDS = new Set(filterParamContracts.militaryBaseKinds);
@@ -233,12 +234,14 @@ export async function listMilitaryBases(
 
     if (!result) {
       markNoCacheResponse(ctx.request);
-      return empty;
+      return { ...empty, dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: 'no military bases fall inside the requested bounds' } };
     }
-    return result;
+    return { ...result, dataStatus: answeredDirectly() };
   } catch (err) {
+    // The failure was reported only in an X-Bases-Debug response header, which
+    // no map client reads; the body said "no bases here".
     markNoCacheResponse(ctx.request);
     setResponseHeader(ctx.request, 'X-Bases-Debug', `error:${err instanceof Error ? err.message : String(err)}`);
-    return { bases: [], clusters: [], totalInView: 0, truncated: false };
+    return { bases: [], clusters: [], totalInView: 0, truncated: false, dataStatus: upstreamError(err, 'military base lookup failed') };
   }
 }
