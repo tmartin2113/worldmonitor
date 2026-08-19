@@ -1,5 +1,6 @@
 import type { GetWebcamImageRequest, GetWebcamImageResponse, ServerContext } from '../../../../src/generated/server/worldmonitor/webcam/v1/service_server';
 import { cachedFetchJson } from '../../../_shared/redis';
+import { attachLive, neverSeeded } from '../../../_shared/data-status';
 
 const WINDY_BASE = 'https://api.windy.com/webcams/api/v3/webcams';
 const CACHE_TTL = 300;
@@ -11,15 +12,19 @@ export async function getWebcamImage(_ctx: ServerContext, req: GetWebcamImageReq
   const windyUrl = `https://www.windy.com/webcams/${encodeURIComponent(webcamId || '')}`;
 
   if (!webcamId || !WEBCAM_ID_RE.test(webcamId)) {
-    return { thumbnailUrl: '', playerUrl: '', title: '', windyUrl, lastUpdated: '', error: 'missing webcam_id' };
+    return { thumbnailUrl: '', playerUrl: '', title: '', windyUrl, lastUpdated: '', error: 'missing webcam_id',
+      dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: 'no valid webcam_id supplied; nothing was fetched' } };
   }
 
   const apiKey = process.env.WINDY_API_KEY;
+  // `error: 'unavailable'` read as an outage; it is a missing credential, so no
+  // request was ever made.
   if (!apiKey) {
-    return { thumbnailUrl: '', playerUrl: '', title: '', windyUrl, lastUpdated: '', error: 'unavailable' };
+    return { thumbnailUrl: '', playerUrl: '', title: '', windyUrl, lastUpdated: '', error: 'unavailable',
+      dataStatus: neverSeeded('WINDY_API_KEY is not set, so no webcam lookup was attempted') };
   }
 
-  const result = await cachedFetchJson<GetWebcamImageResponse>(
+  return attachLive(`webcam image ${webcamId}`, () => cachedFetchJson<GetWebcamImageResponse>(
     `webcam:image:${webcamId}`,
     CACHE_TTL,
     async () => {
@@ -43,7 +48,10 @@ export async function getWebcamImage(_ctx: ServerContext, req: GetWebcamImageReq
         error: '',
       };
     },
-  );
-
-  return result ?? { thumbnailUrl: '', playerUrl: '', title: '', windyUrl, lastUpdated: '', error: 'unavailable' };
+  ),
+  // `!resp.ok` inside the fetcher returns null, which cachedFetchJson caches as a
+  // negative — so an upstream 5xx and "Windy has no image for this cam" produced
+  // the same `error: 'unavailable'`. The envelope separates them.
+  () => ({ thumbnailUrl: '', playerUrl: '', title: '', windyUrl, lastUpdated: '', error: 'unavailable' }),
+  (out) => (out.thumbnailUrl ? 1 : 0));
 }

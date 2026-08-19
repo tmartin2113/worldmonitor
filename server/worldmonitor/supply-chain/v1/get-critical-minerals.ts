@@ -7,6 +7,7 @@ import type {
 } from '../../../../src/generated/server/worldmonitor/supply_chain/v1/service_server';
 
 import { cachedFetchJson } from '../../../_shared/redis';
+import { attachLive } from '../../../_shared/data-status';
 import { MINERAL_PRODUCTION_2024 } from './_minerals-data';
 // @ts-expect-error — .mjs module, no declaration file
 import { computeHHI, riskRating } from './_scoring.mjs';
@@ -58,18 +59,15 @@ export async function getCriticalMinerals(
   _ctx: ServerContext,
   _req: GetCriticalMineralsRequest,
 ): Promise<GetCriticalMineralsResponse> {
-  try {
-    const result = await cachedFetchJson<GetCriticalMineralsResponse>(
+  return attachLive('critical minerals',
+    () => cachedFetchJson<GetCriticalMineralsResponse>(
       REDIS_CACHE_KEY,
       REDIS_CACHE_TTL,
       async () => {
         const minerals = buildMineralsData();
         return { minerals, fetchedAt: new Date().toISOString(), upstreamUnavailable: false };
       },
-    );
-
-    return result ?? { minerals: [], fetchedAt: new Date().toISOString(), upstreamUnavailable: true };
-  } catch {
-    return { minerals: [], fetchedAt: new Date().toISOString(), upstreamUnavailable: true };
-  }
+    ),
+    () => ({ minerals: [], fetchedAt: new Date().toISOString(), upstreamUnavailable: true }),
+    (out) => out.minerals.length);
 }

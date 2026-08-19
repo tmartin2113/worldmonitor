@@ -355,6 +355,42 @@ export async function attachMany<T extends object>(
   return { ...out, dataStatus: read.status };
 }
 
+/**
+ * Envelope for a LIVE fetch behind `cachedFetchJson`, which is a different shape
+ * from a seeded read: there is no "never seeded" state, because the handler
+ * fetches on a miss. The three outcomes are the fetcher threw (UPSTREAM_ERROR —
+ * cachedFetchJson rethrows), it returned null (EMPTY: fetched, nothing there, and
+ * cached as a negative), or it returned data (OK).
+ *
+ * `onEmpty` supplies the handler's own empty shape so its existing contract —
+ * `upstreamUnavailable`, `degraded`, `error` fields and the like — is preserved
+ * verbatim rather than replaced.
+ */
+export async function attachLive<T extends object>(
+  context: string,
+  run: () => Promise<T | null>,
+  onEmpty: () => T,
+  count?: (out: T) => number,
+): Promise<T & { dataStatus: DataStatus }> {
+  let result: T | null;
+  try {
+    result = await run();
+  } catch (err) {
+    return { ...onEmpty(), dataStatus: upstreamError(err, context) };
+  }
+  if (result == null) {
+    return {
+      ...onEmpty(),
+      dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: sanitizeDetail(`${context}: the upstream returned nothing`) },
+    };
+  }
+  const n = count ? count(result) : 1;
+  return {
+    ...result,
+    dataStatus: { fetchedAt: '0', availability: n > 0 ? 'DATA_AVAILABILITY_OK' : 'DATA_AVAILABILITY_EMPTY', detail: '' },
+  };
+}
+
 /** A handler that answered fully from its own inputs — no cache, no upstream. */
 export function answeredDirectly(detail = ''): DataStatus {
   return { fetchedAt: '0', availability: 'DATA_AVAILABILITY_OK', detail: sanitizeDetail(detail) };

@@ -19,6 +19,7 @@ import {
   mergeNotamWithExistingAlert,
 } from './_shared';
 import { getCachedJson, setCachedJson } from '../../../_shared/redis';
+import { answeredDirectly } from '../../../_shared/data-status';
 
 const FAA_CACHE_KEY = 'aviation:delays:faa:v1';
 const INTL_CACHE_KEY = 'aviation:delays:intl:v3';
@@ -170,5 +171,22 @@ export async function listAirportDelays(
     await setCachedJson('aviation:delays-bootstrap:v2', { alerts: allAlerts }, 7200);
   } catch { /* non-critical */ }
 
-  return { alerts: allAlerts };
+  // This handler already tracked exactly what PARTIAL means: `faaSourceCovered`
+  // and `intlSourceCovered` record whether each upstream returned telemetry this
+  // tick, and uncovered airports are deliberately emitted as "Coverage
+  // unavailable" rather than synthetic NORMAL rows (#3707). One source down was
+  // therefore indistinguishable, at the response level, from a calm day — the
+  // rows said it, the envelope did not.
+  const covered = [faaSourceCovered && 'FAA', intlSourceCovered && 'international'].filter(Boolean) as string[];
+  const uncovered = [!faaSourceCovered && 'FAA', !intlSourceCovered && 'international'].filter(Boolean) as string[];
+  return {
+    alerts: allAlerts,
+    dataStatus: covered.length === 0
+      ? { fetchedAt: '0', availability: 'DATA_AVAILABILITY_NEVER_SEEDED',
+          detail: 'neither the FAA nor the international delay cache returned telemetry this tick' }
+      : uncovered.length
+        ? { fetchedAt: '0', availability: 'DATA_AVAILABILITY_PARTIAL',
+            detail: `the ${uncovered.join(' and ')} source returned no telemetry this tick; those airports are reported as coverage-unavailable rather than normal` }
+        : answeredDirectly(),
+  };
 }
