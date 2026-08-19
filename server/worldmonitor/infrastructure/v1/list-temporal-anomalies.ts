@@ -20,6 +20,7 @@ import {
   BASELINE_LOCK_TTL,
   type BaselineEntry,
 } from './_shared';
+import { cacheTally, answeredDirectly, upstreamError } from '../../../_shared/data-status';
 
 interface AnomalySnapshot {
   anomalies: TemporalAnomalyProto[];
@@ -78,18 +79,24 @@ export async function listTemporalAnomalies(
   _req: ListTemporalAnomaliesRequest,
 ): Promise<ListTemporalAnomaliesResponse> {
   try {
-    const cached = await getCachedJson(TEMPORAL_ANOMALIES_KEY) as AnomalySnapshot | null;
+    const tally = cacheTally('the temporal-anomaly inputs have not been written');
+    const cached = await tally.read<AnomalySnapshot>(TEMPORAL_ANOMALIES_KEY, { optional: true });
     if (cached?.computedAt) {
       const age = Date.now() - new Date(cached.computedAt).getTime();
       if (age < TEMPORAL_ANOMALIES_TTL * 1000) {
-        return cached;
+        return { ...cached, dataStatus: answeredDirectly('served from the current anomaly snapshot') };
       }
     }
 
     const lockAcquired = await tryAcquireLock();
+    // Another worker is recomputing. Serving the aged snapshot is a STALE answer,
+    // and serving nothing is "not computed yet" — previously identical outputs.
     if (!lockAcquired) {
-      if (cached) return cached;
-      return { anomalies: [], trackedTypes: [], computedAt: '' };
+      if (cached) {
+        return { ...cached, dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_STALE', detail: 'a recompute is in flight elsewhere; serving the previous snapshot' } };
+      }
+      return { anomalies: [], trackedTypes: [], computedAt: '',
+        dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: 'a recompute is in flight elsewhere and no previous snapshot exists' } };
     }
 
     {
@@ -101,7 +108,9 @@ export async function listTemporalAnomalies(
 
       const counts: Record<string, number> = {};
       for (const [type, sourceKey] of Object.entries(COUNT_SOURCE_KEYS)) {
-        const data = await getCachedJson(sourceKey) as Record<string, unknown> | null;
+        // Each source that fails to read silently drops a tracked type from the
+        // anomaly computation, so the snapshot looked complete with fewer inputs.
+        const data = await tally.read<Record<string, unknown>>(sourceKey);
         if (!data) continue;
 
         if (type === 'news') {
@@ -182,9 +191,9 @@ export async function listTemporalAnomalies(
       };
 
       await setCachedJson(TEMPORAL_ANOMALIES_KEY, snapshot, TEMPORAL_ANOMALIES_TTL);
-      return snapshot;
+      return { ...snapshot, dataStatus: tally.status() };
     }
-  } catch {
-    return { anomalies: [], trackedTypes: [], computedAt: '' };
+  } catch (err) {
+    return { anomalies: [], trackedTypes: [], computedAt: '', dataStatus: upstreamError(err, 'temporal anomaly computation failed') };
   }
 }
