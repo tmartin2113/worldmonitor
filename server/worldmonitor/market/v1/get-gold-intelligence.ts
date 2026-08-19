@@ -14,7 +14,7 @@ import type {
   GoldCbHolder,
   GoldCbMover,
 } from '../../../../src/generated/server/worldmonitor/market/v1/service_server';
-import { getCachedJson } from '../../../_shared/redis';
+import { cacheTally, upstreamError } from '../../../_shared/data-status';
 
 const COMMODITY_KEY = 'market:commodities-bootstrap:v1';
 const COT_KEY = 'market:cot:v1';
@@ -185,13 +185,14 @@ export async function getGoldIntelligence(
   _ctx: ServerContext,
   _req: GetGoldIntelligenceRequest,
 ): Promise<GetGoldIntelligenceResponse> {
+  const tally = cacheTally('the gold-intelligence inputs have not been written');
   try {
     const [rawPayload, rawCot, rawExtended, rawEtfFlows, rawCbReserves] = await Promise.all([
-      getCachedJson(COMMODITY_KEY, true) as Promise<{ quotes?: RawQuote[] } | null>,
-      getCachedJson(COT_KEY, true) as Promise<{ instruments?: RawCotInstrument[]; reportDate?: string } | null>,
-      getCachedJson(GOLD_EXTENDED_KEY, true) as Promise<GoldExtendedPayload | null>,
-      getCachedJson(GOLD_ETF_FLOWS_KEY, true) as Promise<GoldEtfFlowsPayload | null>,
-      getCachedJson(GOLD_CB_RESERVES_KEY, true) as Promise<GoldCbReservesPayload | null>,
+      tally.read<{ quotes?: RawQuote[] }>(COMMODITY_KEY),
+      tally.read<{ instruments?: RawCotInstrument[]; reportDate?: string }>(COT_KEY),
+      tally.read<GoldExtendedPayload>(GOLD_EXTENDED_KEY),
+      tally.read<GoldEtfFlowsPayload>(GOLD_ETF_FLOWS_KEY),
+      tally.read<GoldCbReservesPayload>(GOLD_CB_RESERVES_KEY),
     ]);
 
     const rawQuotes = rawPayload?.quotes;
@@ -297,8 +298,14 @@ export async function getGoldIntelligence(
       // are all absent.
       updatedAt: rawExtended?.updatedAt ?? '',
       unavailable: false,
+      // Five independent inputs. The comment above already notes that a missing
+      // extended key makes the panel render "Updated —" rather than a misleading
+      // stamp; PARTIAL says the same thing to a machine, and names which of the
+      // five went missing rather than leaving it to be inferred from blank
+      // sections.
+      dataStatus: tally.status(),
     };
-  } catch {
-    return emptyResponse();
+  } catch (err) {
+    return { ...emptyResponse(), dataStatus: upstreamError(err, 'gold intelligence read failed') };
   }
 }

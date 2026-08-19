@@ -13,6 +13,7 @@ import { isCallerPremium } from '../../../_shared/premium-check';
 import { sanitizeForPrompt } from '../../../_shared/llm-sanitize.js';
 import { ENERGY_SPINE_KEY_PREFIX } from '../../../_shared/cache-keys';
 import { deriveCountryIntelCacheKey, fetchSharedCountryContext } from './_country-brief-context';
+import { answeredDirectly, upstreamError } from '../../../_shared/data-status';
 
 const INTEL_CACHE_TTL = 21600;
 
@@ -272,18 +273,23 @@ Rules:
         sources: entrySources,
       };
     });
-  } catch {
-    return empty;
+  } catch (err) {
+    // An LLM/cache failure and "no brief could be generated" both returned the
+    // same `empty`, so a reader could not tell an outage from a quiet country.
+    return { ...empty, dataStatus: upstreamError(err, 'country intel brief generation failed') };
   }
 
-  if (!result) return empty;
+  if (!result) {
+    return { ...empty, dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: 'no intel brief could be generated for this country' } };
+  }
   if (!isPremium) {
     // Shared entries carry server-derived sources; never backfill them with
     // this caller's parsed context (the brief text didn't see it).
-    return { ...result, sources: Array.isArray(result.sources) ? result.sources : [] };
+    return { ...result, sources: Array.isArray(result.sources) ? result.sources : [], dataStatus: answeredDirectly() };
   }
   return {
     ...result,
     sources: Array.isArray(result.sources) && result.sources.length > 0 ? result.sources : sources,
+    dataStatus: answeredDirectly(),
   };
 }
