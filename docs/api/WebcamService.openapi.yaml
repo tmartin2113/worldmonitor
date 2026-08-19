@@ -171,11 +171,14 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "error": "example"
                                 "lastUpdated": "2026-01-15T12:00:00.000Z"
                                 "playerUrl": "https://example.com/worldmonitor"
                                 "thumbnailUrl": "https://example.com/worldmonitor"
-                                "title": "example"
                             schema:
                                 $ref: '#/components/schemas/GetWebcamImageResponse'
                 "400":
@@ -490,3 +493,5 @@ components:
                          field carries a datetime string, never epoch milliseconds.
                 error:
                     type: string
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'

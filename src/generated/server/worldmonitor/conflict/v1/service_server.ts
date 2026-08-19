@@ -121,6 +121,7 @@ export interface GetHumanitarianSummaryBatchResponse {
   results: Record<string, HumanitarianCountrySummary>;
   fetched: number;
   requested: number;
+  dataStatus?: DataStatus;
 }
 
 export type UcdpViolenceType = "UCDP_VIOLENCE_TYPE_UNSPECIFIED" | "UCDP_VIOLENCE_TYPE_STATE_BASED" | "UCDP_VIOLENCE_TYPE_NON_STATE" | "UCDP_VIOLENCE_TYPE_ONE_SIDED";

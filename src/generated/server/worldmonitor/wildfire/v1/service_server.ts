@@ -17,6 +17,7 @@ export interface ListFireDetectionsResponse {
   pagination?: PaginationResponse;
   fetchedAt: number;
   dataAvailable: boolean;
+  dataStatus?: DataStatus;
 }
 
 export interface FireDetection {
@@ -41,6 +42,14 @@ export interface PaginationResponse {
   nextCursor: string;
   totalCount: number;
 }
+
+export interface DataStatus {
+  fetchedAt: string;
+  availability: DataAvailability;
+  detail: string;
+}
+
+export type DataAvailability = "DATA_AVAILABILITY_UNSPECIFIED" | "DATA_AVAILABILITY_OK" | "DATA_AVAILABILITY_EMPTY" | "DATA_AVAILABILITY_NEVER_SEEDED" | "DATA_AVAILABILITY_UPSTREAM_ERROR" | "DATA_AVAILABILITY_STALE";
 
 export type FireConfidence = "FIRE_CONFIDENCE_UNSPECIFIED" | "FIRE_CONFIDENCE_LOW" | "FIRE_CONFIDENCE_NOMINAL" | "FIRE_CONFIDENCE_HIGH";
 

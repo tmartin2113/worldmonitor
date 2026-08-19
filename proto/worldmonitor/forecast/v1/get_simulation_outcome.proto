@@ -3,6 +3,7 @@ syntax = "proto3";
 package worldmonitor.forecast.v1;
 
 import "sebuf/http/annotations.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 message GetSimulationOutcomeRequest {
   // Filter is active for outcomes within the 24h retention window (#3734).
@@ -43,4 +44,8 @@ message GetSimulationOutcomeResponse {
   // Added in #3734 to prevent the 30-day demand experiment from being contaminated
   // by the queued-vs-expired indistinguishability.
   bool processing = 10;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 11;
 }

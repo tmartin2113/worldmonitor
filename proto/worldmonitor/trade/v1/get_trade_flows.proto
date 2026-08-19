@@ -4,6 +4,7 @@ package worldmonitor.trade.v1;
 
 import "sebuf/http/annotations.proto";
 import "worldmonitor/trade/v1/trade_data.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 // Request for bilateral trade flow data.
 message GetTradeFlowsRequest {
@@ -23,4 +24,8 @@ message GetTradeFlowsResponse {
   string fetched_at = 2;
   // True if upstream fetch failed and results may be stale/empty.
   bool upstream_unavailable = 3;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 4;
 }

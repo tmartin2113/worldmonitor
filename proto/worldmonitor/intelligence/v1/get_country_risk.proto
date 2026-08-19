@@ -5,6 +5,7 @@ package worldmonitor.intelligence.v1;
 import "buf/validate/validate.proto";
 import "sebuf/http/annotations.proto";
 import "worldmonitor/intelligence/v1/intelligence.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 // GetCountryRiskRequest specifies which country to retrieve risk intelligence for.
 message GetCountryRiskRequest {
@@ -36,4 +37,8 @@ message GetCountryRiskResponse {
   int64 fetched_at = 7 [(sebuf.http.int64_encoding) = INT64_ENCODING_NUMBER];
   // True when all upstream Redis keys were unavailable. Signals CDN cache bypass.
   bool upstream_unavailable = 8;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 9;
 }

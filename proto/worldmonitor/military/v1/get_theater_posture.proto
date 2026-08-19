@@ -4,6 +4,7 @@ package worldmonitor.military.v1;
 
 import "sebuf/http/annotations.proto";
 import "worldmonitor/military/v1/military_vessel.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 // GetTheaterPostureRequest specifies the theater to assess.
 message GetTheaterPostureRequest {
@@ -16,4 +17,8 @@ message GetTheaterPostureRequest {
 message GetTheaterPostureResponse {
   // Theater posture assessments (one per theater, or all if no filter).
   repeated TheaterPosture theaters = 1;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 2;
 }

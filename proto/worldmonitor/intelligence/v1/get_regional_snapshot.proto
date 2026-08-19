@@ -4,6 +4,7 @@ package worldmonitor.intelligence.v1;
 
 import "buf/validate/validate.proto";
 import "sebuf/http/annotations.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 // GetRegionalSnapshotRequest asks for the latest persisted RegionalSnapshot
 // for a given region. See shared/geography.ts for the canonical region ids.
@@ -25,6 +26,10 @@ message GetRegionalSnapshotRequest {
 // on a 6h cron; this handler only reads canonical state.
 message GetRegionalSnapshotResponse {
   RegionalSnapshot snapshot = 1;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 2;
 }
 
 // RegionalSnapshot is the canonical intelligence object for one region.

@@ -3,6 +3,7 @@ syntax = "proto3";
 package worldmonitor.forecast.v1;
 
 import "sebuf/http/annotations.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 message GetSimulationPackageRequest {
   // Optional run identifier. Does not select the package — the latest stored package is
@@ -26,4 +27,8 @@ message GetSimulationPackageResponse {
   // Populated when the Redis lookup failed. Distinguish from healthy not-found (found=false, error="").
   // Value: "redis_unavailable" on Redis errors.
   string error = 8;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 9;
 }

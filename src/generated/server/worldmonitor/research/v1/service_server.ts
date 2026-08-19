@@ -45,6 +45,7 @@ export interface ListTrendingReposRequest {
 export interface ListTrendingReposResponse {
   repos: GithubRepo[];
   pagination?: PaginationResponse;
+  dataStatus?: DataStatus;
 }
 
 export interface GithubRepo {
@@ -94,6 +95,7 @@ export interface ListTechEventsResponse {
   lastUpdated: string;
   events: TechEvent[];
   error: string;
+  dataStatus?: DataStatus;
 }
 
 export interface TechEvent {

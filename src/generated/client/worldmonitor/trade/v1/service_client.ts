@@ -10,6 +10,7 @@ export interface GetTradeRestrictionsResponse {
   restrictions: TradeRestriction[];
   fetchedAt: string;
   upstreamUnavailable: boolean;
+  dataStatus?: DataStatus;
 }
 
 export interface TradeRestriction {
@@ -24,6 +25,12 @@ export interface TradeRestriction {
   sourceUrl: string;
 }
 
+export interface DataStatus {
+  fetchedAt: string;
+  availability: DataAvailability;
+  detail: string;
+}
+
 export interface GetTariffTrendsRequest {
   reportingCountry: string;
   partnerCountry: string;
@@ -36,6 +43,7 @@ export interface GetTariffTrendsResponse {
   fetchedAt: string;
   upstreamUnavailable: boolean;
   effectiveTariffRate?: EffectiveTariffRate;
+  dataStatus?: DataStatus;
 }
 
 export interface TariffDataPoint {
@@ -66,6 +74,7 @@ export interface GetTradeFlowsResponse {
   flows: TradeFlowRecord[];
   fetchedAt: string;
   upstreamUnavailable: boolean;
+  dataStatus?: DataStatus;
 }
 
 export interface TradeFlowRecord {
@@ -89,6 +98,7 @@ export interface GetTradeBarriersResponse {
   barriers: TradeBarrier[];
   fetchedAt: string;
   upstreamUnavailable: boolean;
+  dataStatus?: DataStatus;
 }
 
 export interface TradeBarrier {
@@ -110,6 +120,7 @@ export interface GetCustomsRevenueResponse {
   months: CustomsRevenueMonth[];
   fetchedAt: string;
   upstreamUnavailable: boolean;
+  dataStatus?: DataStatus;
 }
 
 export interface CustomsRevenueMonth {
@@ -131,6 +142,7 @@ export interface ListComtradeFlowsResponse {
   flows: ComtradeFlowRecord[];
   fetchedAt: string;
   upstreamUnavailable: boolean;
+  dataStatus?: DataStatus;
 }
 
 export interface ComtradeFlowRecord {
@@ -146,6 +158,8 @@ export interface ComtradeFlowRecord {
   yoyChange: number;
   isAnomaly: boolean;
 }
+
+export type DataAvailability = "DATA_AVAILABILITY_UNSPECIFIED" | "DATA_AVAILABILITY_OK" | "DATA_AVAILABILITY_EMPTY" | "DATA_AVAILABILITY_NEVER_SEEDED" | "DATA_AVAILABILITY_UPSTREAM_ERROR" | "DATA_AVAILABILITY_STALE";
 
 export interface FieldViolation {
   field: string;

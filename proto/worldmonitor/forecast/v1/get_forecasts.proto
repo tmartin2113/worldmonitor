@@ -4,6 +4,7 @@ package worldmonitor.forecast.v1;
 
 import "sebuf/http/annotations.proto";
 import "worldmonitor/forecast/v1/forecast.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 message GetForecastsRequest {
   // Forecast domain to retrieve, such as geopolitics, markets, or climate.
@@ -24,4 +25,8 @@ message GetForecastsResponse {
   // Stable machine-readable reason when degraded=true, empty otherwise.
   // Value: "forecast_backend_unavailable" on Redis/backend read failures.
   string error = 5;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 6;
 }

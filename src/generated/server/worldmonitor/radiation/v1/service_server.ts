@@ -18,6 +18,7 @@ export interface ListRadiationObservationsResponse {
   lowConfidenceCount: number;
   conflictingCount: number;
   convertedFromCpmCount: number;
+  dataStatus?: DataStatus;
 }
 
 export interface RadiationObservation {
@@ -46,6 +47,14 @@ export interface GeoCoordinates {
   latitude: number;
   longitude: number;
 }
+
+export interface DataStatus {
+  fetchedAt: string;
+  availability: DataAvailability;
+  detail: string;
+}
+
+export type DataAvailability = "DATA_AVAILABILITY_UNSPECIFIED" | "DATA_AVAILABILITY_OK" | "DATA_AVAILABILITY_EMPTY" | "DATA_AVAILABILITY_NEVER_SEEDED" | "DATA_AVAILABILITY_UPSTREAM_ERROR" | "DATA_AVAILABILITY_STALE";
 
 export type RadiationConfidence = "RADIATION_CONFIDENCE_UNSPECIFIED" | "RADIATION_CONFIDENCE_LOW" | "RADIATION_CONFIDENCE_MEDIUM" | "RADIATION_CONFIDENCE_HIGH";
 

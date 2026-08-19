@@ -4,6 +4,7 @@ package worldmonitor.military.v1;
 
 import "buf/validate/validate.proto";
 import "worldmonitor/military/v1/get_aircraft_details.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 // GetAircraftDetailsBatchRequest looks up multiple aircraft by ICAO 24-bit hex.
 message GetAircraftDetailsBatchRequest {
@@ -25,4 +26,8 @@ message GetAircraftDetailsBatchResponse {
   int32 requested = 3;
   // Whether the Wingbits API is configured.
   bool configured = 4;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 5;
 }

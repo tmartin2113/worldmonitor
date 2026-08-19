@@ -4,6 +4,7 @@ package worldmonitor.conflict.v1;
 
 import "buf/validate/validate.proto";
 import "worldmonitor/conflict/v1/humanitarian_summary.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 // GetHumanitarianSummaryBatchRequest looks up humanitarian summaries for multiple countries.
 message GetHumanitarianSummaryBatchRequest {
@@ -22,4 +23,8 @@ message GetHumanitarianSummaryBatchResponse {
   int32 fetched = 2;
   // Number of countries requested.
   int32 requested = 3;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 4;
 }

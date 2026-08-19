@@ -3,6 +3,7 @@ syntax = "proto3";
 package worldmonitor.military.v1;
 
 import "sebuf/http/annotations.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 // DefensePatentFiling is a single patent filing from a defense/dual-use organization.
 message DefensePatentFiling {
@@ -42,4 +43,8 @@ message ListDefensePatentsResponse {
   int32 total = 2;
   // ISO 8601 timestamp when data was seeded.
   string fetched_at = 3;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 4;
 }

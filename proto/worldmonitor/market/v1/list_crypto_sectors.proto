@@ -3,6 +3,7 @@ syntax = "proto3";
 package worldmonitor.market.v1;
 
 import "sebuf/http/annotations.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 // CryptoSector represents performance data for a crypto market sector.
 message CryptoSector {
@@ -22,4 +23,8 @@ message ListCryptoSectorsRequest {
 message ListCryptoSectorsResponse {
   // The list of crypto sectors with their performance.
   repeated CryptoSector sectors = 1;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 2;
 }

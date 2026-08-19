@@ -4,6 +4,7 @@ package worldmonitor.market.v1;
 
 import "buf/validate/validate.proto";
 import "sebuf/http/annotations.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 // GetCountryStockIndexRequest specifies which country's stock index to retrieve.
 message GetCountryStockIndexRequest {
@@ -34,4 +35,8 @@ message GetCountryStockIndexResponse {
   string currency = 7;
   // When the data was fetched (ISO 8601).
   string fetched_at = 8;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 9;
 }

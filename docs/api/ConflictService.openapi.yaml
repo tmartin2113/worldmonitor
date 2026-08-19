@@ -732,6 +732,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetched": 1
                                 "requested": 1
                                 "results":
@@ -1324,6 +1328,8 @@ components:
                     type: integer
                     format: int32
                     description: Number of countries requested.
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
             description: GetHumanitarianSummaryBatchResponse contains humanitarian summaries for the requested countries.
         ResultsEntry:
             type: object

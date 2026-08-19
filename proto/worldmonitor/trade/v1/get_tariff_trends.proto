@@ -4,6 +4,7 @@ package worldmonitor.trade.v1;
 
 import "sebuf/http/annotations.proto";
 import "worldmonitor/trade/v1/trade_data.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 // Request for tariff timeseries data.
 message GetTariffTrendsRequest {
@@ -27,4 +28,8 @@ message GetTariffTrendsResponse {
   bool upstream_unavailable = 3;
   // Optional effective tariff snapshot for countries with additional coverage (currently US only).
   EffectiveTariffRate effective_tariff_rate = 4;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 5;
 }

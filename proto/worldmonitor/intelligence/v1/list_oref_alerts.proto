@@ -3,6 +3,7 @@ syntax = "proto3";
 package worldmonitor.intelligence.v1;
 
 import "sebuf/http/annotations.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 // Request to fetch Israeli Red Alerts (OREF).
 message ListOrefAlertsRequest {
@@ -32,6 +33,10 @@ message ListOrefAlertsResponse {
   
   // Optional error message from the relay.
   string error = 7;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 8;
 }
 
 // A single Red Alert event.

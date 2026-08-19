@@ -171,6 +171,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "disasters":
                                     - "affectedPopulation": 1
                                       "country": "US"
@@ -257,6 +261,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "monitoring":
                                     "annualGrowthRate": 75.25
                                     "currentPpm": 1.5
@@ -349,6 +357,10 @@ paths:
                                           "extentMkm2": 1.5
                                           "month": "example"
                                     "measuredAt": 1717200000000
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                             schema:
                                 $ref: '#/components/schemas/GetOceanIceDataResponse'
                 "400":
@@ -426,6 +438,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": 1717200000000
                                 "stations":
                                     - "aqi": 1
@@ -514,6 +530,10 @@ paths:
                         application/json:
                             example:
                                 "dataAvailable": true
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": 1717200000000
                                 "items":
                                     - "id": "example-id"
@@ -870,6 +890,8 @@ components:
                         $ref: '#/components/schemas/ClimateDisaster'
                 pagination:
                     $ref: '#/components/schemas/PaginationResponse'
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
             description: ListClimateDisastersResponse contains climate disaster events.
         ClimateDisaster:
             type: object
@@ -925,6 +947,8 @@ components:
             properties:
                 monitoring:
                     $ref: '#/components/schemas/Co2Monitoring'
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
         Co2Monitoring:
             type: object
             properties:
@@ -977,6 +1001,8 @@ components:
             properties:
                 data:
                     $ref: '#/components/schemas/OceanIceData'
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
         OceanIceData:
             type: object
             properties:
@@ -1032,6 +1058,8 @@ components:
                     type: integer
                     format: int64
                     description: 'Warning: Values > 2^53 may lose precision in JavaScript'
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
         AirQualityStation:
             type: object
             properties:
@@ -1082,6 +1110,8 @@ components:
                     description: |-
                         True when items came from a seed snapshot. False means an empty payload is
                          graceful degradation because the snapshot is unavailable.
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
         ClimateNewsItem:
             type: object
             properties:

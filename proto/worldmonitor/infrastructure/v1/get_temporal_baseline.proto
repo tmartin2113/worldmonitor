@@ -4,6 +4,7 @@ package worldmonitor.infrastructure.v1;
 
 import "buf/validate/validate.proto";
 import "sebuf/http/annotations.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 // GetTemporalBaselineRequest checks current activity count against stored baseline.
 message GetTemporalBaselineRequest {
@@ -53,4 +54,8 @@ message GetTemporalBaselineResponse {
   int32 samples_needed = 5;
   // Error message if request was invalid.
   string error = 6;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 7;
 }

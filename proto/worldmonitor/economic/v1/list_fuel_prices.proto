@@ -3,6 +3,7 @@ syntax = "proto3";
 package worldmonitor.economic.v1;
 
 import "sebuf/http/annotations.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 message FuelPrice {
   double usd_price = 1;
@@ -37,4 +38,8 @@ message ListFuelPricesResponse {
   string prev_fetched_at = 8;
   int32 source_count = 9;
   int32 country_count = 10;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 11;
 }

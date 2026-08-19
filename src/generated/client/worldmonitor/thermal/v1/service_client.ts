@@ -12,6 +12,7 @@ export interface ListThermalEscalationsResponse {
   clusters: ThermalEscalationCluster[];
   summary?: ThermalEscalationSummary;
   dataAvailable: boolean;
+  dataStatus?: DataStatus;
 }
 
 export interface ThermalEscalationCluster {
@@ -56,6 +57,14 @@ export interface ThermalEscalationSummary {
   conflictAdjacentCount: number;
   highRelevanceCount: number;
 }
+
+export interface DataStatus {
+  fetchedAt: string;
+  availability: DataAvailability;
+  detail: string;
+}
+
+export type DataAvailability = "DATA_AVAILABILITY_UNSPECIFIED" | "DATA_AVAILABILITY_OK" | "DATA_AVAILABILITY_EMPTY" | "DATA_AVAILABILITY_NEVER_SEEDED" | "DATA_AVAILABILITY_UPSTREAM_ERROR" | "DATA_AVAILABILITY_STALE";
 
 export type ThermalConfidence = "THERMAL_CONFIDENCE_UNSPECIFIED" | "THERMAL_CONFIDENCE_LOW" | "THERMAL_CONFIDENCE_MEDIUM" | "THERMAL_CONFIDENCE_HIGH";
 

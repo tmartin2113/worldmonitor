@@ -47,6 +47,10 @@ paths:
                                           "militaryActivity": 1.5
                                           "newsActivity": 1.5
                                       "computedAt": 1717200000000
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "degraded": true
                                 "stale": true
                                 "strategicRisks":
@@ -140,6 +144,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "pizzint":
                                     "activeSpikes": 1
                                     "aggregateActivity": 1.5
@@ -269,6 +277,10 @@ paths:
                                     "entities":
                                         - "example"
                                     "severity": "SEVERITY_LEVEL_LOW"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                             schema:
                                 $ref: '#/components/schemas/ClassifyEventResponse'
                 "400":
@@ -367,7 +379,10 @@ paths:
                                     "computedAt": 1717200000000
                                 "countryCode": "US"
                                 "countryName": "US"
-                                "fetchedAt": 1717200000000
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                             schema:
                                 $ref: '#/components/schemas/GetCountryRiskResponse'
                 "400":
@@ -463,8 +478,11 @@ paths:
                                 "brief": "example"
                                 "countryCode": "US"
                                 "countryName": "US"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "generatedAt": 1717200000000
-                                "model": "example"
                             schema:
                                 $ref: '#/components/schemas/GetCountryIntelBriefResponse'
                 "400":
@@ -594,6 +612,10 @@ paths:
                                       "language": "typescript"
                                       "source": "example"
                                       "title": "example"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "error": "example"
                                 "query": "supply chain risk"
                             schema:
@@ -699,6 +721,10 @@ paths:
                         application/json:
                             example:
                                 "analysis": "example"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "model": "example"
                                 "provider": "worldmonitor"
                             schema:
@@ -836,6 +862,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "satellites":
                                     - "alt": 1.5
                                       "country": "US"
@@ -927,6 +957,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": 1717200000000
                                 "hexes":
                                     - "aircraftCount": 1
@@ -1034,6 +1068,10 @@ paths:
                                       "id": "example-id"
                                       "timestampMs": 1717200000000
                                 "configured": true
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "error": "example"
                                 "history":
                                     - "alerts":
@@ -1044,7 +1082,6 @@ paths:
                                           "id": "example-id"
                                           "timestampMs": 1717200000000
                                       "timestampMs": 1717200000000
-                                "historyCount24h": 1
                             schema:
                                 $ref: '#/components/schemas/ListOrefAlertsResponse'
                 "400":
@@ -1489,7 +1526,10 @@ paths:
                                 "countryName": "US"
                                 "currencies":
                                     - "example"
-                                "headOfState": "example"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                             schema:
                                 $ref: '#/components/schemas/GetCountryFactsResponse'
                 "400":
@@ -1575,6 +1615,10 @@ paths:
                                       "source": "example"
                                 "byCountry":
                                     "exampleKey": "example"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                             schema:
                                 $ref: '#/components/schemas/ListSecurityAdvisoriesResponse'
                 "400":
@@ -1659,15 +1703,16 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "error": "example"
                                 "fetchedAt": "2026-01-15T12:00:00Z"
                                 "tone":
                                     - "date": "2026-01-15"
                                       "value": 1.5
                                 "topic": "military"
-                                "vol":
-                                    - "date": "2026-01-15"
-                                      "value": 1.5
                             schema:
                                 $ref: '#/components/schemas/GetGdeltTopicTimelineResponse'
                 "400":
@@ -1746,6 +1791,10 @@ paths:
                         application/json:
                             example:
                                 "compositeCount": 1
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "evaluatedAt": 1717200000000
                                 "signals":
                                     - "contributingTypes":
@@ -1848,6 +1897,10 @@ paths:
                                       "driver": "example"
                                       "name": "WorldMonitor Analyst"
                                       "narrative": "example"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "degraded": true
                                 "emptyReason": "example"
                                 "generatedAt": "2026-01-15T12:00:00Z"
@@ -1928,6 +1981,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": 1717200000000
                                 "posts":
                                     - "createdAt": 1717200000000
@@ -2021,9 +2078,12 @@ paths:
                             example:
                                 "coalShare": 1.5
                                 "crudeImportsKbd": 1.5
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "dieselDemandKbd": 1.5
                                 "dieselImportsKbd": 1.5
-                                "electricityAvailable": true
                             schema:
                                 $ref: '#/components/schemas/GetCountryEnergyProfileResponse'
                 "400":
@@ -2331,6 +2391,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "snapshot":
                                     "actors":
                                         - "actorId": "example-id"
@@ -2576,6 +2640,10 @@ paths:
                                     "model": "example"
                                     "periodEnd": 1
                                     "periodStart": 1
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                             schema:
                                 $ref: '#/components/schemas/GetRegionalBriefResponse'
                 "400":
@@ -2781,6 +2849,8 @@ components:
                     description: |-
                         True when degraded=true because a stale cached score payload was served.
                          Baseline-only cold fallback sets degraded=true and stale=false.
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
             description: GetRiskScoresResponse contains composite risk scores and strategic assessments.
         CiiScore:
             type: object
@@ -2924,6 +2994,49 @@ components:
                         TrendDirection represents the directional movement of a metric over time.
                          Used in markets, GDELT tension scores, and risk assessments.
             description: StrategicRisk represents a strategic risk assessment for a country or region.
+        DataStatus:
+            type: object
+            properties:
+                fetchedAt:
+                    type: string
+                    format: int64
+                    description: |-
+                        Unix ms when the underlying data was last successfully fetched upstream.
+                         Zero means never — which is itself the answer, and the point of this field.
+                availability:
+                    type: string
+                    enum:
+                        - DATA_AVAILABILITY_UNSPECIFIED
+                        - DATA_AVAILABILITY_OK
+                        - DATA_AVAILABILITY_EMPTY
+                        - DATA_AVAILABILITY_NEVER_SEEDED
+                        - DATA_AVAILABILITY_UPSTREAM_ERROR
+                        - DATA_AVAILABILITY_STALE
+                    description: DataAvailability separates the states that a bare empty payload collapses.
+                detail:
+                    type: string
+                    description: |-
+                        Human-readable detail, safe to surface. Never contains upstream URLs or
+                         credential fragments: 5xx messages are genericised on purpose elsewhere
+                         (see server/error-mapper.ts, H-3), and this field must not become a way
+                         around that.
+            description: |-
+                DataStatus makes an EMPTY RESPONSE FALSIFIABLE.
+
+                 Measured 2026-08-19: of 147 WorldMonitor endpoints returning 200, twenty-five
+                 answered with a bare `{}` or `{"events":[]}` carrying no timestamp and no
+                 status. `get-fred-series` returning `{}` is indistinguishable from "FRED has no
+                 such series" and "we hold no key and never fetched". Every data-integrity
+                 defect found on this box that month was that shape — get-cable-health cached
+                 "no navigational warnings on Earth" for 24h off a wrong envelope key while
+                 upstream served 386; get-country-risk answered a question it was never asked.
+                 None errored. All looked fine.
+
+                 The problem is not that a response is empty — feeds are legitimately quiet.
+                 The problem is that an empty answer does not say WHY, so a consumer cannot
+                 distinguish silence from breakage. This message is the smallest thing that
+                 fixes that, and it is deliberately additive: existing clients that ignore the
+                 field keep working unchanged.
         GetPizzintStatusRequest:
             type: object
             properties:
@@ -2940,6 +3053,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/GdeltTensionPair'
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
             description: GetPizzintStatusResponse contains Pentagon Pizza Index and GDELT tension data.
         PizzintStatus:
             type: object
@@ -3099,6 +3214,8 @@ components:
             properties:
                 classification:
                     $ref: '#/components/schemas/EventClassification'
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
             description: ClassifyEventResponse contains the AI-generated event classification.
         EventClassification:
             type: object
@@ -3174,6 +3291,8 @@ components:
                 upstreamUnavailable:
                     type: boolean
                     description: True when all upstream Redis keys were unavailable. Signals CDN cache bypass.
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
             description: GetCountryRiskResponse contains composite risk intelligence for a specific country.
         GetCountryIntelBriefRequest:
             type: object
@@ -3211,6 +3330,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/BriefSource'
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
             description: GetCountryIntelBriefResponse contains an AI-generated intelligence brief for a country.
         BriefSource:
             type: object
@@ -3276,6 +3397,8 @@ components:
                 error:
                     type: string
                     description: Error message if the search failed.
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
             description: SearchGdeltDocumentsResponse contains GDELT article search results.
         GdeltArticle:
             type: object
@@ -3322,6 +3445,8 @@ components:
                     type: string
                 provider:
                     type: string
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
         ListSatellitesRequest:
             type: object
             properties:
@@ -3336,6 +3461,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/Satellite'
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
             description: ListSatellitesResponse contains the current orbital snapshot.
         Satellite:
             type: object
@@ -3397,6 +3524,8 @@ components:
                     type: integer
                     format: int64
                     description: 'Data fetch time, as Unix epoch milliseconds.. Warning: Values > 2^53 may lose precision in JavaScript'
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
             description: ListGpsInterferenceResponse contains GPS interference data and stats.
         GpsJamHex:
             type: object
@@ -3487,6 +3616,8 @@ components:
                 error:
                     type: string
                     description: Optional error message from the relay.
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
             description: OREF alert wave snapshot.
         OrefAlert:
             type: object
@@ -3839,6 +3970,8 @@ components:
                     format: double
                 countryName:
                     type: string
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
         ListSecurityAdvisoriesRequest:
             type: object
         ListSecurityAdvisoriesResponse:
@@ -3852,6 +3985,8 @@ components:
                     type: object
                     additionalProperties:
                         type: string
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
         ByCountryEntry:
             type: object
             properties:
@@ -3903,6 +4038,8 @@ components:
                 error:
                     type: string
                     description: Error message if fetch failed.
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
             description: GetGdeltTopicTimelineResponse contains tone and volume timelines for a topic.
         GdeltTimelinePoint:
             type: object
@@ -3933,6 +4070,8 @@ components:
                     type: integer
                     format: int32
                     description: Total number of composite escalation zones detected.
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
             description: ListCrossSourceSignalsResponse contains ranked cross-domain signals.
         CrossSourceSignal:
             type: object
@@ -4018,6 +4157,8 @@ components:
                     type: string
                 generatedAt:
                     type: string
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
         MarketImplicationCard:
             type: object
             properties:
@@ -4065,6 +4206,8 @@ components:
                     type: integer
                     format: int64
                     description: 'Warning: Values > 2^53 may lose precision in JavaScript'
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
         SocialVelocityPost:
             type: object
             properties:
@@ -4272,6 +4415,8 @@ components:
                     type: string
                 sprAvailable:
                     type: boolean
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
         ComputeEnergyShockScenarioRequest:
             type: object
             properties:
@@ -4463,6 +4608,8 @@ components:
             properties:
                 snapshot:
                     $ref: '#/components/schemas/RegionalSnapshot'
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
             description: |-
                 GetRegionalSnapshotResponse returns the latest RegionalSnapshot for the
                  requested region. The snapshot is written by scripts/seed-regional-snapshots.mjs
@@ -5016,6 +5163,8 @@ components:
             properties:
                 brief:
                     $ref: '#/components/schemas/RegionalBrief'
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
         RegionalBrief:
             type: object
             properties:

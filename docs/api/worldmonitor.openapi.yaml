@@ -91,6 +91,10 @@ paths:
                                       "country": "US"
                                       "delayType": "FLIGHT_DELAY_TYPE_GROUND_STOP"
                                       "id": "example-id"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "pagination":
                                     "nextCursor": "next-page-token"
                                     "totalCount": 1
@@ -184,6 +188,10 @@ paths:
                         application/json:
                             example:
                                 "cacheHit": true
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "summaries":
                                     - "avgDelayMinutes": 1
                                       "cancellationRate": 75.25
@@ -293,6 +301,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "flights":
                                     - "actualArrival": 1
                                       "actualDeparture": 1
@@ -408,6 +420,10 @@ paths:
                                           "iataCode": "JFK"
                                           "icaoCode": "example"
                                           "name": "WorldMonitor Analyst"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "source": "example"
                                 "updatedAt": 1717200000000
                             schema:
@@ -509,6 +525,10 @@ paths:
                         application/json:
                             example:
                                 "cacheHit": true
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "flights":
                                     - "actualArrival": 1
                                       "actualDeparture": 1
@@ -639,6 +659,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "positions":
                                     - "altitudeM": 1.5
                                       "callsign": "example"
@@ -740,9 +764,12 @@ paths:
                             example:
                                 "channelExists": true
                                 "channelName": "WorldMonitor Analyst"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "error": "example"
                                 "hlsUrl": "https://example.com/worldmonitor"
-                                "isLive": true
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_aviation_v1_GetYoutubeLiveStreamInfoResponse'
                 "400":
@@ -1007,6 +1034,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "items":
                                     - "id": "example-id"
                                       "imageUrl": "https://example.com/worldmonitor"
@@ -1169,6 +1200,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "degraded": true
                                 "error": "example"
                                 "flights":
@@ -1349,6 +1384,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "dates":
                                     - "date": "2026-01-15"
                                       "price": 75.25
@@ -1730,6 +1769,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "disasters":
                                     - "affectedPopulation": 1
                                       "country": "US"
@@ -1816,6 +1859,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "monitoring":
                                     "annualGrowthRate": 75.25
                                     "currentPpm": 1.5
@@ -1908,6 +1955,10 @@ paths:
                                           "extentMkm2": 1.5
                                           "month": "example"
                                     "measuredAt": 1717200000000
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_climate_v1_GetOceanIceDataResponse'
                 "400":
@@ -1985,6 +2036,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": 1717200000000
                                 "stations":
                                     - "aqi": 1
@@ -2073,6 +2128,10 @@ paths:
                         application/json:
                             example:
                                 "dataAvailable": true
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": 1717200000000
                                 "items":
                                     - "id": "example-id"
@@ -2859,6 +2918,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetched": 1
                                 "requested": 1
                                 "results":
@@ -3693,6 +3756,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "pagination":
                                     "nextCursor": "next-page-token"
                                     "totalCount": 1
@@ -3808,6 +3875,10 @@ paths:
                         application/json:
                             example:
                                 "dataAvailable": true
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": 1717200000000
                                 "summary":
                                     "countries":
@@ -4369,6 +4440,10 @@ paths:
                         application/json:
                             example:
                                 "bullishCount": 1
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "meta":
                                     "qqqSparkline":
                                         - 1.5
@@ -4396,7 +4471,6 @@ paths:
                                         "status": "example"
                                         "xlpRoc20": 1.5
                                 "timestamp": "2026-01-15T12:00:00Z"
-                                "totalCount": 1
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_economic_v1_GetMacroSignalsResponse'
                 "400":
@@ -4585,6 +4659,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "rates":
                                     - "centralBank": "example"
                                       "countryCode": "US"
@@ -4668,6 +4746,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "rates":
                                     - "countryCode": "US"
                                       "countryName": "US"
@@ -4751,6 +4833,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "entries":
                                     - "countryCode": "US"
                                       "countryName": "US"
@@ -4855,6 +4941,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetched": 1
                                 "requested": 1
                                 "results":
@@ -5006,9 +5096,12 @@ paths:
                                             "itemId": "example-id"
                                             "itemName": "WorldMonitor Analyst"
                                             "localPrice": 75.25
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": "2026-01-15T12:00:00Z"
                                 "mostExpensiveCountry": "US"
-                                "prevFetchedAt": "2026-01-15T12:00:00Z"
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_economic_v1_ListGroceryBasketPricesResponse'
                 "400":
@@ -5177,6 +5270,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "entries":
                                     - "annualGrowth": 1.5
                                       "baselineTs": "1717200000000"
@@ -5276,7 +5373,10 @@ paths:
                                       "flag": "example"
                                       "fxRate": 75.25
                                 "countryCount": 1
-                                "fetchedAt": "2026-01-15T12:00:00Z"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_economic_v1_ListFuelPricesResponse'
                 "400":
@@ -5476,6 +5576,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "events":
                                     - "actual": "example"
                                       "country": "US"
@@ -5485,7 +5589,6 @@ paths:
                                 "fromDate": "2026-01-15"
                                 "toDate": "2026-01-15"
                                 "total": 1
-                                "unavailable": true
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_economic_v1_GetEconomicCalendarResponse'
                 "400":
@@ -5735,6 +5838,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "rates":
                                     - "change1d": 1.5
                                       "date": "2026-01-15"
@@ -5840,6 +5947,10 @@ paths:
                                             "priorValue": 1.5
                                             "unit": "example"
                                             "value": 1.5
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "seededAt": "1717200000000"
                                 "unavailable": true
                             schema:
@@ -5919,6 +6030,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fillPct": 1.5
                                 "fillPctChange1d": 1.5
                                 "gasDaysConsumption": 7
@@ -5926,7 +6041,6 @@ paths:
                                     - "date": "2026-01-15"
                                       "fillPct": 1.5
                                       "gasTwh": 1.5
-                                "seededAt": "1717200000000"
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_economic_v1_GetEuGasStorageResponse'
                 "400":
@@ -6010,6 +6124,10 @@ paths:
                                         "exampleKey": 1.5
                                     "source": "example"
                                     "updatedAt": "2026-01-15"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "unavailable": true
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_economic_v1_GetEuYieldCurveResponse'
@@ -6088,13 +6206,16 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "history":
                                     - "date": "2026-01-15"
                                       "value": 1.5
                                 "label": "example"
                                 "latestDate": "40.7128"
                                 "latestValue": 1.5
-                                "seededAt": "2026-01-15T12:00:00Z"
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_economic_v1_GetEuFsiResponse'
                 "400":
@@ -6179,9 +6300,12 @@ paths:
                                       "rawValue": 1.5
                                       "score": 42.5
                                 "compositeScore": 42.5
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "label": "example"
                                 "seededAt": "2026-01-15T12:00:00Z"
-                                "unavailable": true
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_economic_v1_GetEconomicStressResponse'
                 "400":
@@ -6260,6 +6384,10 @@ paths:
                         application/json:
                             example:
                                 "currentFfpi": 1.5
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": "2026-01-15T12:00:00Z"
                                 "momPct": 1.5
                                 "points":
@@ -6268,7 +6396,6 @@ paths:
                                       "date": "2026-01-15"
                                       "ffpi": 1.5
                                       "meat": 1717200000000
-                                "yoyPct": 1.5
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_economic_v1_GetFaoFoodPriceIndexResponse'
                 "400":
@@ -6349,6 +6476,10 @@ paths:
                                 "belowObligation":
                                     - "example"
                                 "dataMonth": "example"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "ieaMembers":
                                     - "belowObligation": true
                                       "daysOfCover": 7
@@ -6367,7 +6498,6 @@ paths:
                                     "northAmerica":
                                         "avgDays": 7
                                         "netExporters": 1
-                                "unavailable": true
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_economic_v1_GetOilStocksAnalysisResponse'
                 "400":
@@ -6449,6 +6579,10 @@ paths:
                                     - "period": "daily"
                                       "stocksMb": 1.5
                                       "weeklyChangeMb": 1.5
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "euGas":
                                     "fillPct": 1.5
                                     "fillPctChange1d": 1.5
@@ -6479,9 +6613,6 @@ paths:
                                     - "period": "daily"
                                       "storBcf": 1.5
                                       "weeklyChangeBcf": 1.5
-                                "refinery":
-                                    "inputsMbpd": 1.5
-                                    "period": "daily"
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_economic_v1_GetOilInventoriesResponse'
                 "400":
@@ -6574,6 +6705,10 @@ paths:
                         application/json:
                             example:
                                 "context": "example"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "policies":
                                     - "category": "cs.AI"
                                       "country": "US"
@@ -6582,7 +6717,6 @@ paths:
                                       "measure": "example"
                                 "source": "example"
                                 "sourceUrl": "https://example.com/worldmonitor"
-                                "unavailable": true
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_economic_v1_GetEnergyCrisisPoliciesResponse'
                 "400":
@@ -6682,6 +6816,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "degraded": true
                                 "error": "example"
                                 "forecasts":
@@ -6718,7 +6856,6 @@ paths:
                                       "confidence": 0.82
                                       "createdAt": 1717200000000
                                 "generatedAt": 1717200000000
-                                "stale": true
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_forecast_v1_GetForecastsResponse'
                 "400":
@@ -6814,8 +6951,11 @@ paths:
                                       "count": 1
                                       "maxProbability": 1.5
                                       "minProbability": 1.5
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "degraded": true
-                                "error": "example"
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_forecast_v1_GetForecastScorecardResponse'
                 "400":
@@ -6904,11 +7044,14 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "error": "example"
                                 "found": true
                                 "generatedAt": 1717200000000
                                 "note": "example"
-                                "pkgKey": "example"
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_forecast_v1_GetSimulationPackageResponse'
                 "400":
@@ -7002,11 +7145,14 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "error": "example"
                                 "found": true
                                 "generatedAt": 1717200000000
                                 "note": "example"
-                                "outcomeKey": "example"
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_forecast_v1_GetSimulationOutcomeResponse'
                 "400":
@@ -7265,6 +7411,10 @@ paths:
                         application/json:
                             example:
                                 "dataAvailable": true
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": 1717200000000
                                 "summary":
                                     "activityIndex": 1.5
@@ -7361,6 +7511,10 @@ paths:
                         application/json:
                             example:
                                 "alertLevelMethodologyVersion": "example"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": 1717200000000
                                 "outbreaks":
                                     - "alertLevel": "example"
@@ -7451,6 +7605,10 @@ paths:
                                       "countryCode": "US"
                                       "lat": 40.7128
                                       "lng": -74.006
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": 1717200000000
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_health_v1_ListAirQualityAlertsResponse'
@@ -7794,6 +7952,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "statuses":
                                     - "checkedAt": 1717200000000
                                       "description": "Example WorldMonitor observation."
@@ -7914,9 +8076,12 @@ paths:
                                     "mean": 1.5
                                     "sampleCount": 1
                                     "stdDev": 1.5
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "error": "example"
                                 "learning": true
-                                "sampleCount": 1
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_infrastructure_v1_GetTemporalBaselineResponse'
                 "400":
@@ -8096,6 +8261,10 @@ paths:
                             example:
                                 "code": "example"
                                 "country": "US"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "displayName": "WorldMonitor Analyst"
                                 "error": "example"
                             schema:
@@ -8196,6 +8365,10 @@ paths:
                             example:
                                 "data":
                                     "exampleKey": "example"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "missing":
                                     - "example"
                             schema:
@@ -8437,6 +8610,10 @@ paths:
                                         "lastUpdated": 1
                                         "score": 42.5
                                         "status": "CABLE_HEALTH_STATUS_OK"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "generatedAt": 1717200000000
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_infrastructure_v1_GetCableHealthResponse'
@@ -8522,6 +8699,10 @@ paths:
                                       "multiplier": 1.5
                                       "region": "example"
                                 "computedAt": "2026-01-15T12:00:00Z"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "trackedTypes":
                                     - "example"
                             schema:
@@ -8800,6 +8981,10 @@ paths:
                                           "militaryActivity": 1.5
                                           "newsActivity": 1.5
                                       "computedAt": 1717200000000
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "degraded": true
                                 "stale": true
                                 "strategicRisks":
@@ -8893,6 +9078,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "pizzint":
                                     "activeSpikes": 1
                                     "aggregateActivity": 1.5
@@ -9022,6 +9211,10 @@ paths:
                                     "entities":
                                         - "example"
                                     "severity": "SEVERITY_LEVEL_LOW"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_intelligence_v1_ClassifyEventResponse'
                 "400":
@@ -9120,7 +9313,10 @@ paths:
                                     "computedAt": 1717200000000
                                 "countryCode": "US"
                                 "countryName": "US"
-                                "fetchedAt": 1717200000000
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_intelligence_v1_GetCountryRiskResponse'
                 "400":
@@ -9216,8 +9412,11 @@ paths:
                                 "brief": "example"
                                 "countryCode": "US"
                                 "countryName": "US"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "generatedAt": 1717200000000
-                                "model": "example"
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_intelligence_v1_GetCountryIntelBriefResponse'
                 "400":
@@ -9347,6 +9546,10 @@ paths:
                                       "language": "typescript"
                                       "source": "example"
                                       "title": "example"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "error": "example"
                                 "query": "supply chain risk"
                             schema:
@@ -9452,6 +9655,10 @@ paths:
                         application/json:
                             example:
                                 "analysis": "example"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "model": "example"
                                 "provider": "worldmonitor"
                             schema:
@@ -9589,6 +9796,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "satellites":
                                     - "alt": 1.5
                                       "country": "US"
@@ -9680,6 +9891,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": 1717200000000
                                 "hexes":
                                     - "aircraftCount": 1
@@ -9787,6 +10002,10 @@ paths:
                                       "id": "example-id"
                                       "timestampMs": 1717200000000
                                 "configured": true
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "error": "example"
                                 "history":
                                     - "alerts":
@@ -9797,7 +10016,6 @@ paths:
                                           "id": "example-id"
                                           "timestampMs": 1717200000000
                                       "timestampMs": 1717200000000
-                                "historyCount24h": 1
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_intelligence_v1_ListOrefAlertsResponse'
                 "400":
@@ -10242,7 +10460,10 @@ paths:
                                 "countryName": "US"
                                 "currencies":
                                     - "example"
-                                "headOfState": "example"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_intelligence_v1_GetCountryFactsResponse'
                 "400":
@@ -10328,6 +10549,10 @@ paths:
                                       "source": "example"
                                 "byCountry":
                                     "exampleKey": "example"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_intelligence_v1_ListSecurityAdvisoriesResponse'
                 "400":
@@ -10412,15 +10637,16 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "error": "example"
                                 "fetchedAt": "2026-01-15T12:00:00Z"
                                 "tone":
                                     - "date": "2026-01-15"
                                       "value": 1.5
                                 "topic": "military"
-                                "vol":
-                                    - "date": "2026-01-15"
-                                      "value": 1.5
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_intelligence_v1_GetGdeltTopicTimelineResponse'
                 "400":
@@ -10499,6 +10725,10 @@ paths:
                         application/json:
                             example:
                                 "compositeCount": 1
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "evaluatedAt": 1717200000000
                                 "signals":
                                     - "contributingTypes":
@@ -10601,6 +10831,10 @@ paths:
                                       "driver": "example"
                                       "name": "WorldMonitor Analyst"
                                       "narrative": "example"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "degraded": true
                                 "emptyReason": "example"
                                 "generatedAt": "2026-01-15T12:00:00Z"
@@ -10681,6 +10915,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": 1717200000000
                                 "posts":
                                     - "createdAt": 1717200000000
@@ -10774,9 +11012,12 @@ paths:
                             example:
                                 "coalShare": 1.5
                                 "crudeImportsKbd": 1.5
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "dieselDemandKbd": 1.5
                                 "dieselImportsKbd": 1.5
-                                "electricityAvailable": true
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_intelligence_v1_GetCountryEnergyProfileResponse'
                 "400":
@@ -11084,6 +11325,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "snapshot":
                                     "actors":
                                         - "actorId": "example-id"
@@ -11329,6 +11574,10 @@ paths:
                                     "model": "example"
                                     "periodEnd": 1
                                     "periodStart": 1
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_intelligence_v1_GetRegionalBriefResponse'
                 "400":
@@ -11998,6 +12247,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "finnhubSkipped": true
                                 "quotes":
                                     - "change": 1.5
@@ -12098,6 +12351,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "quotes":
                                     - "change": 1.5
                                       "change7d": 1.5
@@ -12293,6 +12550,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "sectors":
                                     - "change": 1.5
                                       "name": "WorldMonitor Analyst"
@@ -12386,6 +12647,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "stablecoins":
                                     - "change24h": 1.5
                                       "change7d": 1.5
@@ -12478,6 +12743,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "etfs":
                                     - "avgVolume": 1
                                       "direction": "example"
@@ -12626,8 +12895,11 @@ paths:
                                 "available": true
                                 "code": "US"
                                 "currency": "USD"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": "2026-01-15T12:00:00Z"
-                                "indexName": "WorldMonitor Analyst"
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_market_v1_GetCountryStockIndexResponse'
                 "400":
@@ -12705,6 +12977,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "quotes":
                                     - "change": 1.5
                                       "country": "US"
@@ -13237,6 +13513,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "sectors":
                                     - "change": 1.5
                                       "id": "example-id"
@@ -13318,6 +13598,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "tokens":
                                     - "change": 1.5
                                       "change7d": 1.5
@@ -13403,6 +13687,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "tokens":
                                     - "change": 1.5
                                       "change7d": 1.5
@@ -13488,6 +13776,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "tokens":
                                     - "change": 1.5
                                       "change7d": 1.5
@@ -13674,6 +13966,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "earnings":
                                     - "company": "example"
                                       "date": "2026-01-15"
@@ -13683,7 +13979,6 @@ paths:
                                 "fromDate": "2026-01-15"
                                 "toDate": "2026-01-15"
                                 "total": 1
-                                "unavailable": true
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_market_v1_ListEarningsCalendarResponse'
                 "400":
@@ -13761,6 +14056,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "instruments":
                                     - "assetManagerLong": "1717200000000"
                                       "assetManagerShort": "1717200000000"
@@ -13853,11 +14152,14 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": "2026-01-15T12:00:00Z"
                                 "netValue": 1.5
                                 "symbol": "AAPL"
                                 "totalBuys": 1
-                                "totalSells": 1
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_market_v1_GetInsiderTransactionsResponse'
                 "400":
@@ -13938,12 +14240,15 @@ paths:
                                 "currentPctAbove200d": 1.5
                                 "currentPctAbove20d": 1.5
                                 "currentPctAbove50d": 1.5
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "history":
                                     - "date": "2026-01-15"
                                       "pctAbove200d": 1.5
                                       "pctAbove20d": 1.5
                                       "pctAbove50d": 1.5
-                                "unavailable": true
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_market_v1_GetMarketBreadthHistoryResponse'
                 "400":
@@ -14057,18 +14362,16 @@ paths:
                                     - "currency": "USD"
                                       "flag": "example"
                                       "price": 75.25
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "drivers":
                                     - "changePct": 1.5
                                       "correlation30d": 1.5
                                       "label": "example"
                                       "symbol": "AAPL"
                                       "value": 1.5
-                                "etfFlows":
-                                    "asOfDate": "2026-01-15"
-                                    "aumUsd": 1.5
-                                    "changeM1Pct": 1.5
-                                    "changeM1Tonnes": 1.5
-                                    "changeW1Pct": 1.5
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_market_v1_GetGoldIntelligenceResponse'
                 "400":
@@ -14154,9 +14457,12 @@ paths:
                                       "basisScore": 42.5
                                       "composite": 1.5
                                       "dayNotional": "example"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": "2026-01-15T12:00:00Z"
                                 "ts": "1717200000000"
-                                "unavailable": true
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_market_v1_GetHyperliquidFlowResponse'
                 "400":
@@ -14441,6 +14747,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "theaters":
                                     - "activeFlights": 1
                                       "activeOperations":
@@ -14641,6 +14951,10 @@ paths:
                         application/json:
                             example:
                                 "configured": true
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetched": 1
                                 "requested": 1
                                 "results":
@@ -15058,6 +15372,10 @@ paths:
                                       "expansionZoom": 1
                                       "latitude": 40.7128
                                       "longitude": -74.006
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "totalInView": 1
                                 "truncated": true
                             schema:
@@ -15253,6 +15571,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": "2026-01-15T12:00:00Z"
                                 "patents":
                                     - "abstract": "example"
@@ -15351,6 +15673,10 @@ paths:
                         application/json:
                             example:
                                 "dataAvailable": true
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "events":
                                     - "basin": "example"
                                       "category": "cs.AI"
@@ -15449,11 +15775,14 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "error": "example"
                                 "errorType": "all"
                                 "fallback": true
                                 "model": "example"
-                                "provider": "openrouter"
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_news_v1_SummarizeArticleResponse'
                 "400":
@@ -15590,11 +15919,14 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "error": "example"
                                 "errorType": "all"
                                 "fallback": true
                                 "model": "example"
-                                "provider": "openrouter"
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_news_v1_SummarizeArticleResponse'
                 "400":
@@ -15698,6 +16030,10 @@ paths:
                                                   "longitude": -74.006
                                               "source": "example"
                                               "title": "example"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "feedStatuses":
                                     "exampleKey": "example"
                                 "generatedAt": "2026-01-15T12:00:00Z"
@@ -15911,6 +16247,10 @@ paths:
                         application/json:
                             example:
                                 "dataAvailable": true
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": 1717200000000
                                 "markets":
                                     - "category": "cs.AI"
@@ -16248,6 +16588,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "pagination":
                                     "nextCursor": "next-page-token"
                                     "totalCount": 1
@@ -16497,6 +16841,10 @@ paths:
                             example:
                                 "conferenceCount": 1
                                 "count": 1
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "error": "example"
                                 "events":
                                     - "coords":
@@ -16509,7 +16857,6 @@ paths:
                                       "endDate": "2026-01-15"
                                       "id": "example-id"
                                       "location": "example"
-                                "lastUpdated": "2026-01-15T12:00:00.000Z"
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_research_v1_ListTechEventsResponse'
                 "400":
@@ -16696,6 +17043,10 @@ paths:
                         application/json:
                             example:
                                 "coverage": 1.5
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": "2026-01-15T12:00:00Z"
                                 "greyedOut":
                                     - "countryCode": "US"
@@ -16709,7 +17060,6 @@ paths:
                                       "level": "example"
                                       "lowConfidence": true
                                       "overallCoverage": 1.5
-                                "partial": true
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_resilience_v1_GetResilienceRankingResponse'
                 "400":
@@ -16796,11 +17146,12 @@ paths:
                                     "scorePrefix": "example"
                                 "constructVersions":
                                     "energy": "example"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "dataVersion": "example"
                                 "deployedCommitSha": "example"
-                                "flags":
-                                    - "enabled": true
-                                      "name": "WorldMonitor Analyst"
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_resilience_v1_GetResilienceRuntimeManifestResponse'
                 "400":
@@ -16886,15 +17237,11 @@ paths:
                                       "countryName": "US"
                                       "entryCount": 1
                                       "newEntryCount": 1
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "datasetDate": "1717200000000"
-                                "entries":
-                                    - "countryCodes":
-                                        - "US"
-                                      "countryNames":
-                                          - "US"
-                                      "effectiveAt": "1717200000000"
-                                      "entityType": "SANCTIONS_ENTITY_TYPE_ENTITY"
-                                      "id": "example-id"
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_sanctions_v1_ListSanctionsPressureResponse'
                 "400":
@@ -17484,6 +17831,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "earthquakes":
                                     - "concernLevel": "example"
                                       "concernScore": 42.5
@@ -17616,8 +17967,11 @@ paths:
                                     - "chokepointId": "suez"
                                       "chokepointName": "WorldMonitor Analyst"
                                       "exposurePct": 1
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "disruptionScore": 42
-                                "fetchedAt": "2026-01-15T12:00:00Z"
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_shipping_v2_RouteIntelligenceResponse'
                 "400":
@@ -20071,9 +20425,12 @@ paths:
                                           "longitude": -74.006
                                       "confidence": "THERMAL_CONFIDENCE_LOW"
                                 "dataAvailable": true
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": "2026-01-15T12:00:00Z"
                                 "observationWindowHours": 1
-                                "sourceVersion": "example"
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_thermal_v1_ListThermalEscalationsResponse'
                 "400":
@@ -20173,6 +20530,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": "2026-01-15T12:00:00Z"
                                 "restrictions":
                                     - "affectedCountry": "US"
@@ -20291,6 +20652,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "datapoints":
                                     - "boundRate": 75.25
                                       "indicatorCode": "example"
@@ -20404,6 +20769,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": "2026-01-15T12:00:00Z"
                                 "flows":
                                     - "exportValueUsd": 1.5
@@ -20526,6 +20895,10 @@ paths:
                                       "measureType": "SPS"
                                       "notifyingCountry": "US"
                                       "objective": "example"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": "2026-01-15T12:00:00Z"
                                 "upstreamUnavailable": true
                             schema:
@@ -20605,6 +20978,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": "2026-01-15T12:00:00Z"
                                 "months":
                                     - "calendarMonth": 1
@@ -20716,6 +21093,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": "2026-01-15T12:00:00Z"
                                 "flows":
                                     - "cmdCode": "2709"
@@ -21131,11 +21512,14 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "error": "example"
                                 "lastUpdated": "2026-01-15T12:00:00.000Z"
                                 "playerUrl": "https://example.com/worldmonitor"
                                 "thumbnailUrl": "https://example.com/worldmonitor"
-                                "title": "example"
                             schema:
                                 $ref: '#/components/schemas/worldmonitor_webcam_v1_GetWebcamImageResponse'
                 "400":
@@ -21296,6 +21680,10 @@ paths:
                         application/json:
                             example:
                                 "dataAvailable": true
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": 1717200000000
                                 "fireDetections":
                                     - "brightness": 1.5
@@ -21637,6 +22025,8 @@ components:
                         $ref: '#/components/schemas/worldmonitor_aviation_v1_AirportDelayAlert'
                 pagination:
                     $ref: '#/components/schemas/worldmonitor_core_v1_PaginationResponse'
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: ListAirportDelaysResponse contains airport delay alerts matching the request.
         worldmonitor_aviation_v1_AirportDelayAlert:
             type: object
@@ -21761,6 +22151,49 @@ components:
                     format: int32
                     description: Total count of items matching the query, if known. Zero if the total is unknown.
             description: PaginationResponse contains pagination metadata returned alongside list results.
+        worldmonitor_core_v1_DataStatus:
+            type: object
+            properties:
+                fetchedAt:
+                    type: string
+                    format: int64
+                    description: |-
+                        Unix ms when the underlying data was last successfully fetched upstream.
+                         Zero means never — which is itself the answer, and the point of this field.
+                availability:
+                    type: string
+                    enum:
+                        - DATA_AVAILABILITY_UNSPECIFIED
+                        - DATA_AVAILABILITY_OK
+                        - DATA_AVAILABILITY_EMPTY
+                        - DATA_AVAILABILITY_NEVER_SEEDED
+                        - DATA_AVAILABILITY_UPSTREAM_ERROR
+                        - DATA_AVAILABILITY_STALE
+                    description: DataAvailability separates the states that a bare empty payload collapses.
+                detail:
+                    type: string
+                    description: |-
+                        Human-readable detail, safe to surface. Never contains upstream URLs or
+                         credential fragments: 5xx messages are genericised on purpose elsewhere
+                         (see server/error-mapper.ts, H-3), and this field must not become a way
+                         around that.
+            description: |-
+                DataStatus makes an EMPTY RESPONSE FALSIFIABLE.
+
+                 Measured 2026-08-19: of 147 WorldMonitor endpoints returning 200, twenty-five
+                 answered with a bare `{}` or `{"events":[]}` carrying no timestamp and no
+                 status. `get-fred-series` returning `{}` is indistinguishable from "FRED has no
+                 such series" and "we hold no key and never fetched". Every data-integrity
+                 defect found on this box that month was that shape — get-cable-health cached
+                 "no navigational warnings on Earth" for 24h off a wrong envelope key while
+                 upstream served 386; get-country-risk answered a question it was never asked.
+                 None errored. All looked fine.
+
+                 The problem is not that a response is empty — feeds are legitimately quiet.
+                 The problem is that an empty answer does not say WHY, so a consumer cannot
+                 distinguish silence from breakage. This message is the smallest thing that
+                 fixes that, and it is deliberately additive: existing clients that ignore the
+                 field keep working unchanged.
         worldmonitor_aviation_v1_GetAirportOpsSummaryRequest:
             type: object
             properties:
@@ -21784,6 +22217,8 @@ components:
                 cacheHit:
                     type: boolean
                     description: Whether the response was served from cache.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: GetAirportOpsSummaryResponse contains operational summaries for requested airports.
         worldmonitor_aviation_v1_AirportOpsSummary:
             type: object
@@ -21893,6 +22328,8 @@ components:
                     type: integer
                     format: int64
                     description: 'Last update time as Unix epoch milliseconds.. Warning: Values > 2^53 may lose precision in JavaScript'
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: ListAirportFlightsResponse contains recent flights at an airport.
         worldmonitor_aviation_v1_FlightInstance:
             type: object
@@ -22043,6 +22480,8 @@ components:
                     type: integer
                     format: int64
                     description: 'Last update time as Unix epoch milliseconds.. Warning: Values > 2^53 may lose precision in JavaScript'
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: GetCarrierOpsResponse contains carrier operations metrics.
         worldmonitor_aviation_v1_CarrierOpsSummary:
             type: object
@@ -22112,6 +22551,8 @@ components:
                 cacheHit:
                     type: boolean
                     description: Whether the response was served from cache.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: GetFlightStatusResponse contains flight status results.
         worldmonitor_aviation_v1_TrackAircraftRequest:
             type: object
@@ -22153,6 +22594,8 @@ components:
                     type: integer
                     format: int64
                     description: 'Last update time as Unix epoch milliseconds.. Warning: Values > 2^53 may lose precision in JavaScript'
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: TrackAircraftResponse contains aircraft position observations.
         worldmonitor_aviation_v1_PositionSample:
             type: object
@@ -22237,6 +22680,8 @@ components:
                 error:
                     type: string
                     description: Optional error message.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: GetYoutubeLiveStreamInfoResponse containing detection results.
         worldmonitor_aviation_v1_SearchFlightPricesRequest:
             type: object
@@ -22435,6 +22880,8 @@ components:
                     type: integer
                     format: int64
                     description: 'Last update time as Unix epoch milliseconds.. Warning: Values > 2^53 may lose precision in JavaScript'
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: ListAviationNewsResponse contains filtered aviation news items.
         worldmonitor_aviation_v1_AviationNewsItem:
             type: object
@@ -22515,6 +22962,8 @@ components:
                     type: boolean
                 error:
                     type: string
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: SearchGoogleFlightsResponse contains flight results from Google Flights.
         worldmonitor_aviation_v1_GoogleFlightResult:
             type: object
@@ -22608,6 +23057,8 @@ components:
                     type: boolean
                 error:
                     type: string
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: SearchGoogleDatesResponse contains cheapest-date results from Google Flights.
         worldmonitor_aviation_v1_DatePriceEntry:
             type: object
@@ -22767,49 +23218,6 @@ components:
             description: |-
                 ClimateAnomaly represents a temperature or precipitation deviation from historical norms.
                  Sourced from Open-Meteo / ERA5 reanalysis data.
-        worldmonitor_core_v1_DataStatus:
-            type: object
-            properties:
-                fetchedAt:
-                    type: string
-                    format: int64
-                    description: |-
-                        Unix ms when the underlying data was last successfully fetched upstream.
-                         Zero means never — which is itself the answer, and the point of this field.
-                availability:
-                    type: string
-                    enum:
-                        - DATA_AVAILABILITY_UNSPECIFIED
-                        - DATA_AVAILABILITY_OK
-                        - DATA_AVAILABILITY_EMPTY
-                        - DATA_AVAILABILITY_NEVER_SEEDED
-                        - DATA_AVAILABILITY_UPSTREAM_ERROR
-                        - DATA_AVAILABILITY_STALE
-                    description: DataAvailability separates the states that a bare empty payload collapses.
-                detail:
-                    type: string
-                    description: |-
-                        Human-readable detail, safe to surface. Never contains upstream URLs or
-                         credential fragments: 5xx messages are genericised on purpose elsewhere
-                         (see server/error-mapper.ts, H-3), and this field must not become a way
-                         around that.
-            description: |-
-                DataStatus makes an EMPTY RESPONSE FALSIFIABLE.
-
-                 Measured 2026-08-19: of 147 WorldMonitor endpoints returning 200, twenty-five
-                 answered with a bare `{}` or `{"events":[]}` carrying no timestamp and no
-                 status. `get-fred-series` returning `{}` is indistinguishable from "FRED has no
-                 such series" and "we hold no key and never fetched". Every data-integrity
-                 defect found on this box that month was that shape — get-cable-health cached
-                 "no navigational warnings on Earth" for 24h off a wrong envelope key while
-                 upstream served 386; get-country-risk answered a question it was never asked.
-                 None errored. All looked fine.
-
-                 The problem is not that a response is empty — feeds are legitimately quiet.
-                 The problem is that an empty answer does not say WHY, so a consumer cannot
-                 distinguish silence from breakage. This message is the smallest thing that
-                 fixes that, and it is deliberately additive: existing clients that ignore the
-                 field keep working unchanged.
         worldmonitor_climate_v1_ListClimateDisastersRequest:
             type: object
             properties:
@@ -22830,6 +23238,8 @@ components:
                         $ref: '#/components/schemas/worldmonitor_climate_v1_ClimateDisaster'
                 pagination:
                     $ref: '#/components/schemas/worldmonitor_core_v1_PaginationResponse'
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: ListClimateDisastersResponse contains climate disaster events.
         worldmonitor_climate_v1_ClimateDisaster:
             type: object
@@ -22885,6 +23295,8 @@ components:
             properties:
                 monitoring:
                     $ref: '#/components/schemas/worldmonitor_climate_v1_Co2Monitoring'
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_climate_v1_Co2Monitoring:
             type: object
             properties:
@@ -22937,6 +23349,8 @@ components:
             properties:
                 data:
                     $ref: '#/components/schemas/worldmonitor_climate_v1_OceanIceData'
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_climate_v1_OceanIceData:
             type: object
             properties:
@@ -22992,6 +23406,8 @@ components:
                     type: integer
                     format: int64
                     description: 'Warning: Values > 2^53 may lose precision in JavaScript'
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_climate_v1_AirQualityStation:
             type: object
             properties:
@@ -23042,6 +23458,8 @@ components:
                     description: |-
                         True when items came from a seed snapshot. False means an empty payload is
                          graceful degradation because the snapshot is unavailable.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_climate_v1_ClimateNewsItem:
             type: object
             properties:
@@ -23354,6 +23772,8 @@ components:
                     type: integer
                     format: int32
                     description: Number of countries requested.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: GetHumanitarianSummaryBatchResponse contains humanitarian summaries for the requested countries.
         worldmonitor_conflict_v1_GetHumanitarianSummaryBatchResponse_ResultsEntry:
             type: object
@@ -23812,6 +24232,8 @@ components:
                         $ref: '#/components/schemas/worldmonitor_cyber_v1_CyberThreat'
                 pagination:
                     $ref: '#/components/schemas/worldmonitor_core_v1_PaginationResponse'
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: ListCyberThreatsResponse contains cyber threats matching the request.
         worldmonitor_cyber_v1_CyberThreat:
             type: object
@@ -23930,6 +24352,8 @@ components:
                         True when summary came from a seed snapshot or live fallback. False means
                          an absent/empty summary is graceful degradation because the snapshot is
                          unavailable.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: GetDisplacementSummaryResponse contains the global displacement summary.
         worldmonitor_displacement_v1_DisplacementSummary:
             type: object
@@ -24333,6 +24757,8 @@ components:
                         True when upstream data is unavailable (fallback result).
                          True when the upstream or seed-backed variant is unavailable; empty payload fields
                          are graceful degradation, not confirmed zero data.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: GetMacroSignalsResponse contains the full macro signal dashboard with 7 signals and verdict.
         worldmonitor_economic_v1_MacroSignals:
             type: object
@@ -24543,6 +24969,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/worldmonitor_economic_v1_BisPolicyRate'
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: GetBisPolicyRatesResponse contains BIS policy rate data.
         worldmonitor_economic_v1_BisPolicyRate:
             type: object
@@ -24578,6 +25006,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/worldmonitor_economic_v1_BisExchangeRate'
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: GetBisExchangeRatesResponse contains BIS effective exchange rate data.
         worldmonitor_economic_v1_BisExchangeRate:
             type: object
@@ -24614,6 +25044,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/worldmonitor_economic_v1_BisCreditToGdp'
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: GetBisCreditResponse contains BIS credit-to-GDP data.
         worldmonitor_economic_v1_BisCreditToGdp:
             type: object
@@ -24669,6 +25101,8 @@ components:
                     type: integer
                     format: int32
                     description: Number of series requested.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: GetFredSeriesBatchResponse contains the requested FRED series data.
         worldmonitor_economic_v1_GetFredSeriesBatchResponse_ResultsEntry:
             type: object
@@ -24701,6 +25135,8 @@ components:
                     type: boolean
                 prevFetchedAt:
                     type: string
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_economic_v1_CountryBasket:
             type: object
             properties:
@@ -24814,6 +25250,8 @@ components:
                         True when upstream data is unavailable (fallback result).
                          True when the upstream or seed-backed variant is unavailable; empty payload fields
                          are graceful degradation, not confirmed zero data.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: GetNationalDebtResponse wraps the full list of national debt entries.
         worldmonitor_economic_v1_NationalDebtEntry:
             type: object
@@ -24882,6 +25320,8 @@ components:
                 countryCount:
                     type: integer
                     format: int32
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_economic_v1_FuelCountryPrice:
             type: object
             properties:
@@ -25000,6 +25440,8 @@ components:
                     description: |-
                         True when the upstream or seed-backed variant is unavailable; empty payload fields
                          are graceful degradation, not confirmed zero data.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_economic_v1_EconomicEvent:
             type: object
             properties:
@@ -25108,6 +25550,8 @@ components:
                         True when Redis key is missing or data is unavailable.
                          True when the upstream or seed-backed variant is unavailable; empty payload fields
                          are graceful degradation, not confirmed zero data.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: GetEcbFxRatesResponse contains the latest ECB reference rates.
         worldmonitor_economic_v1_EcbFxRate:
             type: object
@@ -25148,6 +25592,8 @@ components:
                         True when upstream data is unavailable (fallback result).
                          True when the upstream or seed-backed variant is unavailable; empty payload fields
                          are graceful degradation, not confirmed zero data.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: GetEurostatCountryDataResponse contains per-country CPI, unemployment, and GDP growth.
         worldmonitor_economic_v1_GetEurostatCountryDataResponse_CountriesEntry:
             type: object
@@ -25225,6 +25671,8 @@ components:
                         True when upstream data is unavailable (fallback result).
                          True when the upstream or seed-backed variant is unavailable; empty payload fields
                          are graceful degradation, not confirmed zero data.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: GetEuGasStorageResponse contains the EU aggregate gas storage snapshot.
         worldmonitor_economic_v1_EuGasStorageHistoryEntry:
             type: object
@@ -25255,6 +25703,8 @@ components:
                         True if data is not yet available in cache.
                          True when the upstream or seed-backed variant is unavailable; empty payload fields
                          are graceful degradation, not confirmed zero data.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: GetEuYieldCurveResponse contains the latest ECB Euro Area AAA sovereign yield curve.
         worldmonitor_economic_v1_EuYieldCurveData:
             type: object
@@ -25313,6 +25763,8 @@ components:
                          series has stopped publishing (issue #3845). Consumers must not present a
                          stale reading as current. Seeder-side detection is content-age
                          (STALE_CONTENT in /api/health); this flag is the per-request equivalent.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_economic_v1_EuFsiObservation:
             type: object
             properties:
@@ -25342,6 +25794,8 @@ components:
                     description: |-
                         True when the upstream or seed-backed variant is unavailable; empty payload fields
                          are graceful degradation, not confirmed zero data.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_economic_v1_EconomicStressComponent:
             type: object
             properties:
@@ -25380,6 +25834,8 @@ components:
                 yoyPct:
                     type: number
                     format: double
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_economic_v1_FaoFoodPricePoint:
             type: object
             properties:
@@ -25432,6 +25888,8 @@ components:
                         True when upstream seed data is unavailable (fallback result).
                          True when the upstream or seed-backed variant is unavailable; empty payload fields
                          are graceful degradation, not confirmed zero data.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: GetOilStocksAnalysisResponse contains the IEA oil stocks days-of-cover analysis.
         worldmonitor_economic_v1_OilStocksAnalysisMember:
             type: object
@@ -25538,6 +25996,8 @@ components:
                     $ref: '#/components/schemas/worldmonitor_economic_v1_OilInventoriesRefinery'
                 updatedAt:
                     type: string
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_economic_v1_CrudeInventoryWeekRef:
             type: object
             properties:
@@ -25686,6 +26146,8 @@ components:
                         True when upstream seed data is unavailable (fallback result).
                          True when the upstream or seed-backed variant is unavailable; empty payload fields
                          are graceful degradation, not confirmed zero data.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: GetEnergyCrisisPoliciesResponse contains energy crisis policy data from the IEA tracker.
         worldmonitor_economic_v1_EnergyCrisisPolicy:
             type: object
@@ -25747,6 +26209,8 @@ components:
                     description: |-
                         Stable machine-readable reason when degraded=true, empty otherwise.
                          Value: "forecast_backend_unavailable" on Redis/backend read failures.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_forecast_v1_Forecast:
             type: object
             properties:
@@ -26091,6 +26555,8 @@ components:
                     type: boolean
                 error:
                     type: string
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_forecast_v1_ScorecardTotals:
             type: object
             properties:
@@ -26252,6 +26718,8 @@ components:
                     description: |-
                         Populated when the Redis lookup failed. Distinguish from healthy not-found (found=false, error="").
                          Value: "redis_unavailable" on Redis errors.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_forecast_v1_GetSimulationOutcomeRequest:
             type: object
             properties:
@@ -26311,6 +26779,8 @@ components:
                          from "your run expired beyond retention" — both previously returned NOT_FOUND.
                          Added in #3734 to prevent the 30-day demand experiment from being contaminated
                          by the queued-vs-expired indistinguishability.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_forecast_v1_TriggerSimulationRequest:
             type: object
             properties:
@@ -26397,6 +26867,8 @@ components:
                     description: |-
                         True when summary is populated. False means an absent/empty summary is
                          graceful degradation because the snapshot is unavailable.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: GetGivingSummaryResponse contains the global giving activity summary.
         worldmonitor_giving_v1_GivingSummary:
             type: object
@@ -26555,6 +27027,8 @@ components:
                          signals to downstream clients that the labelling rules changed so cached
                          comparisons across versions are no longer apples-to-apples. See
                          docs/methodology/disease-alert-level.mdx for the change protocol.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_health_v1_DiseaseOutbreakItem:
             type: object
             properties:
@@ -26612,6 +27086,8 @@ components:
                     type: integer
                     format: int64
                     description: 'Warning: Values > 2^53 may lose precision in JavaScript'
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_health_v1_AirQualityAlert:
             type: object
             properties:
@@ -26806,6 +27282,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/worldmonitor_infrastructure_v1_ServiceStatus'
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: ListServiceStatusesResponse contains service operational statuses.
         worldmonitor_infrastructure_v1_ServiceStatus:
             type: object
@@ -26879,6 +27357,8 @@ components:
                 error:
                     type: string
                     description: Error message if request was invalid.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: GetTemporalBaselineResponse returns anomaly info or learning status.
         worldmonitor_infrastructure_v1_BaselineAnomaly:
             type: object
@@ -26955,6 +27435,8 @@ components:
                 error:
                     type: string
                     description: Optional error message.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: ReverseGeocodeResponse containing the resolved location details.
         worldmonitor_infrastructure_v1_GetBootstrapDataRequest:
             type: object
@@ -26981,6 +27463,8 @@ components:
                     items:
                         type: string
                         description: List of keys that were not found in cache.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: GetBootstrapDataResponse containing pooled data objects.
         worldmonitor_infrastructure_v1_GetBootstrapDataResponse_DataEntry:
             type: object
@@ -27040,6 +27524,8 @@ components:
                     additionalProperties:
                         $ref: '#/components/schemas/worldmonitor_infrastructure_v1_CableHealthRecord'
                     description: Health records keyed by cable identifier.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: GetCableHealthResponse contains health status for submarine cables with active signals.
         worldmonitor_infrastructure_v1_GetCableHealthResponse_CablesEntry:
             type: object
@@ -27105,6 +27591,8 @@ components:
                         type: string
                 computedAt:
                     type: string
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_infrastructure_v1_TemporalAnomaly:
             type: object
             properties:
@@ -27274,6 +27762,8 @@ components:
                     description: |-
                         True when degraded=true because a stale cached score payload was served.
                          Baseline-only cold fallback sets degraded=true and stale=false.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: GetRiskScoresResponse contains composite risk scores and strategic assessments.
         worldmonitor_intelligence_v1_CiiScore:
             type: object
@@ -27433,6 +27923,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/worldmonitor_intelligence_v1_GdeltTensionPair'
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: GetPizzintStatusResponse contains Pentagon Pizza Index and GDELT tension data.
         worldmonitor_intelligence_v1_PizzintStatus:
             type: object
@@ -27592,6 +28084,8 @@ components:
             properties:
                 classification:
                     $ref: '#/components/schemas/worldmonitor_intelligence_v1_EventClassification'
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: ClassifyEventResponse contains the AI-generated event classification.
         worldmonitor_intelligence_v1_EventClassification:
             type: object
@@ -27667,6 +28161,8 @@ components:
                 upstreamUnavailable:
                     type: boolean
                     description: True when all upstream Redis keys were unavailable. Signals CDN cache bypass.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: GetCountryRiskResponse contains composite risk intelligence for a specific country.
         worldmonitor_intelligence_v1_GetCountryIntelBriefRequest:
             type: object
@@ -27704,6 +28200,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/worldmonitor_intelligence_v1_BriefSource'
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: GetCountryIntelBriefResponse contains an AI-generated intelligence brief for a country.
         worldmonitor_intelligence_v1_BriefSource:
             type: object
@@ -27769,6 +28267,8 @@ components:
                 error:
                     type: string
                     description: Error message if the search failed.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: SearchGdeltDocumentsResponse contains GDELT article search results.
         worldmonitor_intelligence_v1_GdeltArticle:
             type: object
@@ -27815,6 +28315,8 @@ components:
                     type: string
                 provider:
                     type: string
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_intelligence_v1_ListSatellitesRequest:
             type: object
             properties:
@@ -27829,6 +28331,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/worldmonitor_intelligence_v1_Satellite'
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: ListSatellitesResponse contains the current orbital snapshot.
         worldmonitor_intelligence_v1_Satellite:
             type: object
@@ -27890,6 +28394,8 @@ components:
                     type: integer
                     format: int64
                     description: 'Data fetch time, as Unix epoch milliseconds.. Warning: Values > 2^53 may lose precision in JavaScript'
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: ListGpsInterferenceResponse contains GPS interference data and stats.
         worldmonitor_intelligence_v1_GpsJamHex:
             type: object
@@ -27980,6 +28486,8 @@ components:
                 error:
                     type: string
                     description: Optional error message from the relay.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: OREF alert wave snapshot.
         worldmonitor_intelligence_v1_OrefAlert:
             type: object
@@ -28332,6 +28840,8 @@ components:
                     format: double
                 countryName:
                     type: string
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_intelligence_v1_ListSecurityAdvisoriesRequest:
             type: object
         worldmonitor_intelligence_v1_ListSecurityAdvisoriesResponse:
@@ -28345,6 +28855,8 @@ components:
                     type: object
                     additionalProperties:
                         type: string
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_intelligence_v1_ListSecurityAdvisoriesResponse_ByCountryEntry:
             type: object
             properties:
@@ -28396,6 +28908,8 @@ components:
                 error:
                     type: string
                     description: Error message if fetch failed.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: GetGdeltTopicTimelineResponse contains tone and volume timelines for a topic.
         worldmonitor_intelligence_v1_GdeltTimelinePoint:
             type: object
@@ -28426,6 +28940,8 @@ components:
                     type: integer
                     format: int32
                     description: Total number of composite escalation zones detected.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: ListCrossSourceSignalsResponse contains ranked cross-domain signals.
         worldmonitor_intelligence_v1_CrossSourceSignal:
             type: object
@@ -28511,6 +29027,8 @@ components:
                     type: string
                 generatedAt:
                     type: string
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_intelligence_v1_MarketImplicationCard:
             type: object
             properties:
@@ -28558,6 +29076,8 @@ components:
                     type: integer
                     format: int64
                     description: 'Warning: Values > 2^53 may lose precision in JavaScript'
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_intelligence_v1_SocialVelocityPost:
             type: object
             properties:
@@ -28765,6 +29285,8 @@ components:
                     type: string
                 sprAvailable:
                     type: boolean
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_intelligence_v1_ComputeEnergyShockScenarioRequest:
             type: object
             properties:
@@ -28956,6 +29478,8 @@ components:
             properties:
                 snapshot:
                     $ref: '#/components/schemas/worldmonitor_intelligence_v1_RegionalSnapshot'
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: |-
                 GetRegionalSnapshotResponse returns the latest RegionalSnapshot for the
                  requested region. The snapshot is written by scripts/seed-regional-snapshots.mjs
@@ -29509,6 +30033,8 @@ components:
             properties:
                 brief:
                     $ref: '#/components/schemas/worldmonitor_intelligence_v1_RegionalBrief'
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_intelligence_v1_RegionalBrief:
             type: object
             properties:
@@ -29932,6 +30458,8 @@ components:
                 rateLimited:
                     type: boolean
                     description: True when the upstream API rate-limited the request.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: ListMarketQuotesResponse contains stock and index quotes.
         worldmonitor_market_v1_MarketQuote:
             type: object
@@ -29979,6 +30507,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/worldmonitor_market_v1_CryptoQuote'
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: ListCryptoQuotesResponse contains cryptocurrency quotes.
         worldmonitor_market_v1_CryptoQuote:
             type: object
@@ -30076,6 +30606,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/worldmonitor_market_v1_SectorPerformance'
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: GetSectorSummaryResponse contains sector performance data.
         worldmonitor_market_v1_SectorPerformance:
             type: object
@@ -30115,6 +30647,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/worldmonitor_market_v1_Stablecoin'
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: ListStablecoinMarketsResponse contains stablecoin market data.
         worldmonitor_market_v1_StablecoinSummary:
             type: object
@@ -30206,6 +30740,8 @@ components:
                 rateLimited:
                     type: boolean
                     description: True when the upstream API rate-limited the request.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: ListEtfFlowsResponse contains BTC spot ETF flow data.
         worldmonitor_market_v1_EtfFlowsSummary:
             type: object
@@ -30313,6 +30849,8 @@ components:
                 fetchedAt:
                     type: string
                     description: When the data was fetched (ISO 8601).
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: GetCountryStockIndexResponse contains the country's primary stock index data.
         worldmonitor_market_v1_ListGulfQuotesRequest:
             type: object
@@ -30325,6 +30863,8 @@ components:
                         $ref: '#/components/schemas/worldmonitor_market_v1_GulfQuote'
                 rateLimited:
                     type: boolean
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_market_v1_GulfQuote:
             type: object
             properties:
@@ -30536,6 +31076,8 @@ components:
                     description: |-
                         Extended-hours change % vs the last regular-session close. Only set when
                          extended_price is set.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_market_v1_StockAnalysisHeadline:
             type: object
             properties:
@@ -30710,6 +31252,8 @@ components:
                         $ref: '#/components/schemas/worldmonitor_market_v1_BacktestStockEvaluation'
                 engineVersion:
                     type: string
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_market_v1_BacktestStockEvaluation:
             type: object
             properties:
@@ -30774,6 +31318,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/worldmonitor_market_v1_CryptoSector'
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: ListCryptoSectorsResponse contains crypto sector performance data.
         worldmonitor_market_v1_CryptoSector:
             type: object
@@ -30799,6 +31345,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/worldmonitor_market_v1_CryptoQuote'
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: ListDefiTokensResponse contains DeFi token price data.
         worldmonitor_market_v1_ListAiTokensRequest:
             type: object
@@ -30810,6 +31358,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/worldmonitor_market_v1_CryptoQuote'
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: ListAiTokensResponse contains AI token price data.
         worldmonitor_market_v1_ListOtherTokensRequest:
             type: object
@@ -30821,6 +31371,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/worldmonitor_market_v1_CryptoQuote'
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: ListOtherTokensResponse contains other token price data.
         worldmonitor_market_v1_GetFearGreedIndexRequest:
             type: object
@@ -30913,6 +31465,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/worldmonitor_market_v1_FearGreedSectorPerformance'
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_market_v1_FearGreedCategory:
             type: object
             properties:
@@ -30967,6 +31521,8 @@ components:
                     description: |-
                         True when the upstream or seed-backed variant is unavailable; empty payload fields
                          are graceful degradation, not confirmed zero data.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_market_v1_EarningsEntry:
             type: object
             properties:
@@ -31010,6 +31566,8 @@ components:
                     description: |-
                         True when the upstream or seed-backed variant is unavailable; empty payload fields
                          are graceful degradation, not confirmed zero data.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_market_v1_CotInstrument:
             type: object
             properties:
@@ -31075,6 +31633,8 @@ components:
                         $ref: '#/components/schemas/worldmonitor_market_v1_InsiderTransaction'
                 fetchedAt:
                     type: string
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_market_v1_InsiderTransaction:
             type: object
             properties:
@@ -31116,6 +31676,8 @@ components:
                     description: |-
                         True when the upstream or seed-backed variant is unavailable; empty payload fields
                          are graceful degradation, not confirmed zero data.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_market_v1_BreadthSnapshot:
             type: object
             properties:
@@ -31192,6 +31754,8 @@ components:
                     $ref: '#/components/schemas/worldmonitor_market_v1_GoldEtfFlows'
                 cbReserves:
                     $ref: '#/components/schemas/worldmonitor_market_v1_GoldCbReserves'
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_market_v1_GoldCrossCurrencyPrice:
             type: object
             properties:
@@ -31393,6 +31957,8 @@ components:
                     description: |-
                         True when the upstream or seed-backed variant is unavailable; empty payload fields
                          are graceful degradation, not confirmed zero data.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_market_v1_HyperliquidAssetFlow:
             type: object
             properties:
@@ -31753,6 +32319,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/worldmonitor_military_v1_TheaterPosture'
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: GetTheaterPostureResponse contains theater posture assessments.
         worldmonitor_military_v1_TheaterPosture:
             type: object
@@ -31885,6 +32453,8 @@ components:
                 configured:
                     type: boolean
                     description: Whether the Wingbits API is configured.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: GetAircraftDetailsBatchResponse contains the batch lookup results.
         worldmonitor_military_v1_GetAircraftDetailsBatchResponse_ResultsEntry:
             type: object
@@ -32099,6 +32669,8 @@ components:
                     format: int32
                 truncated:
                     type: boolean
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_military_v1_MilitaryBaseEntry:
             type: object
             properties:
@@ -32305,6 +32877,8 @@ components:
                 fetchedAt:
                     type: string
                     description: ISO 8601 timestamp when data was seeded.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: ListDefensePatentsResponse contains recent defense/dual-use patent filings.
         worldmonitor_military_v1_DefensePatentFiling:
             type: object
@@ -32360,6 +32934,8 @@ components:
                     description: |-
                         True when events came from a seed snapshot. False means an empty payload is
                          graceful degradation because the snapshot is unavailable.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_natural_v1_NaturalEvent:
             type: object
             properties:
@@ -32563,6 +33139,8 @@ components:
                 statusDetail:
                     type: string
                     description: Human-readable detail for non-success statuses (skip reason, etc.).
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: SummarizeArticleResponse contains the LLM summarization result.
         worldmonitor_news_v1_GetSummarizeArticleCacheRequest:
             type: object
@@ -32600,6 +33178,8 @@ components:
                 generatedAt:
                     type: string
                     description: ISO 8601 timestamp of when this digest was generated
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_news_v1_ListFeedDigestResponse_CategoriesEntry:
             type: object
             properties:
@@ -32832,6 +33412,8 @@ components:
                     description: |-
                         True when markets were evaluated against a seed snapshot. False means an
                          empty payload is graceful degradation because the snapshot is unavailable.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: ListPredictionMarketsResponse contains prediction markets matching the request.
         worldmonitor_prediction_v1_PredictionMarket:
             type: object
@@ -32937,6 +33519,8 @@ components:
                     type: integer
                     format: int32
                     description: Observations whose normalized value was derived from CPM.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: ListRadiationObservationsResponse contains normalized readings plus coverage metadata.
         worldmonitor_radiation_v1_RadiationObservation:
             type: object
@@ -33127,6 +33711,8 @@ components:
                         $ref: '#/components/schemas/worldmonitor_research_v1_GithubRepo'
                 pagination:
                     $ref: '#/components/schemas/worldmonitor_core_v1_PaginationResponse'
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: ListTrendingReposResponse contains trending GitHub repositories.
         worldmonitor_research_v1_GithubRepo:
             type: object
@@ -33272,6 +33858,8 @@ components:
                 error:
                     type: string
                     description: Error message if success is false.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: ListTechEventsResponse contains tech events matching the request.
         worldmonitor_research_v1_TechEvent:
             type: object
@@ -33532,6 +34120,8 @@ components:
                     format: double
                 partial:
                     type: boolean
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_resilience_v1_ResilienceRankingItem:
             type: object
             properties:
@@ -33587,6 +34177,8 @@ components:
                     $ref: '#/components/schemas/worldmonitor_resilience_v1_ResilienceRuntimeConstructVersions'
                 intervals:
                     $ref: '#/components/schemas/worldmonitor_resilience_v1_ResilienceRuntimeIntervalState'
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_resilience_v1_ResilienceRuntimeFlag:
             type: object
             properties:
@@ -33689,6 +34281,8 @@ components:
                 aircraftCount:
                     type: integer
                     format: int32
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: ListSanctionsPressureResponse contains normalized OFAC pressure summaries and recent entries.
         worldmonitor_sanctions_v1_SanctionsEntry:
             type: object
@@ -33874,6 +34468,8 @@ components:
                 error:
                     type: string
                     description: Populated only when status == "failed".
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: |-
                 GetScenarioStatusResponse reflects the worker's lifecycle state.
                  "pending" — no key yet (job still queued or very-recent enqueue).
@@ -34031,6 +34627,8 @@ components:
                         $ref: '#/components/schemas/worldmonitor_seismology_v1_Earthquake'
                 pagination:
                     $ref: '#/components/schemas/worldmonitor_core_v1_PaginationResponse'
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: ListEarthquakesResponse contains the list of earthquakes matching the request filters.
         worldmonitor_seismology_v1_Earthquake:
             type: object
@@ -34138,6 +34736,8 @@ components:
                     description: |-
                         ISO-8601 timestamp of when the response was assembled. Empty string means
                          the route snapshot is unavailable/degraded, not confirmed zero exposure.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: |-
                 RouteIntelligenceResponse wire shape preserved byte-for-byte from the
                  pre-migration JSON at docs/api-shipping-v2.mdx. `fetched_at` is intentionally
@@ -35891,6 +36491,8 @@ components:
                     description: |-
                         True when clusters came from a seed snapshot. False means an empty payload
                          is graceful degradation because the snapshot is unavailable.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_thermal_v1_ThermalEscalationCluster:
             type: object
             properties:
@@ -36037,6 +36639,8 @@ components:
                 upstreamUnavailable:
                     type: boolean
                     description: True if upstream fetch failed and results may be stale/empty.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: Response containing trade restrictions and fetch metadata.
         worldmonitor_trade_v1_TradeRestriction:
             type: object
@@ -36101,6 +36705,8 @@ components:
                     description: True if upstream fetch failed and results may be stale/empty.
                 effectiveTariffRate:
                     $ref: '#/components/schemas/worldmonitor_trade_v1_EffectiveTariffRate'
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: Response containing tariff trend datapoints.
         worldmonitor_trade_v1_TariffDataPoint:
             type: object
@@ -36177,6 +36783,8 @@ components:
                 upstreamUnavailable:
                     type: boolean
                     description: True if upstream fetch failed and results may be stale/empty.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: Response containing trade flow records.
         worldmonitor_trade_v1_TradeFlowRecord:
             type: object
@@ -36244,6 +36852,8 @@ components:
                 upstreamUnavailable:
                     type: boolean
                     description: True if upstream fetch failed and results may be stale/empty.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: Response containing trade barrier notifications.
         worldmonitor_trade_v1_TradeBarrier:
             type: object
@@ -36289,6 +36899,8 @@ components:
                     type: string
                 upstreamUnavailable:
                     type: boolean
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_trade_v1_CustomsRevenueMonth:
             type: object
             properties:
@@ -36336,6 +36948,8 @@ components:
                 upstreamUnavailable:
                     type: boolean
                     description: True if seeded data is missing or stale.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: ListComtradeFlowsResponse contains strategic commodity trade flows.
         worldmonitor_trade_v1_ComtradeFlowRecord:
             type: object
@@ -36693,6 +37307,8 @@ components:
                          field carries a datetime string, never epoch milliseconds.
                 error:
                     type: string
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
         worldmonitor_wildfire_v1_ListFireDetectionsRequest:
             type: object
             properties:
@@ -36765,6 +37381,8 @@ components:
                     description: |-
                         True when fire_detections came from a seed snapshot. False means an empty
                          payload is graceful degradation because the snapshot is unavailable.
+                dataStatus:
+                    $ref: '#/components/schemas/worldmonitor_core_v1_DataStatus'
             description: ListFireDetectionsResponse contains the list of fire detections matching the request filters.
         worldmonitor_wildfire_v1_FireDetection:
             type: object

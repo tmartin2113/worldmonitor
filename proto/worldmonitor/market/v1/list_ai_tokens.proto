@@ -4,6 +4,7 @@ package worldmonitor.market.v1;
 
 import "sebuf/http/annotations.proto";
 import "worldmonitor/market/v1/market_quote.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 // ListAiTokensRequest retrieves AI crypto token prices.
 message ListAiTokensRequest {
@@ -13,4 +14,8 @@ message ListAiTokensRequest {
 message ListAiTokensResponse {
   // The list of AI token quotes.
   repeated CryptoQuote tokens = 1;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 2;
 }

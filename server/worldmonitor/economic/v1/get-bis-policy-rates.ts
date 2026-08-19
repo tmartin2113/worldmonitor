@@ -9,7 +9,7 @@ import type {
   GetBisPolicyRatesResponse,
 } from '../../../../src/generated/server/worldmonitor/economic/v1/service_server';
 
-import { getCachedJson } from '../../../_shared/redis';
+import { attach } from '../../../_shared/data-status';
 
 const SEED_CACHE_KEY = 'economic:bis:policy:v1';
 
@@ -17,10 +17,8 @@ export async function getBisPolicyRates(
   _ctx: ServerContext,
   _req: GetBisPolicyRatesRequest,
 ): Promise<GetBisPolicyRatesResponse> {
-  try {
-    const result = await getCachedJson(SEED_CACHE_KEY, true) as GetBisPolicyRatesResponse | null;
+  return attach(SEED_CACHE_KEY, 'the BIS policy-rate seeder has not written this key', (raw) => {
+    const result = raw as GetBisPolicyRatesResponse | null;
     return result || { rates: [] };
-  } catch {
-    return { rates: [] };
-  }
+  }, (out) => out.rates.length);
 }

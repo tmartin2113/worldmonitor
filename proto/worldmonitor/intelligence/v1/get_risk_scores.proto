@@ -4,6 +4,7 @@ package worldmonitor.intelligence.v1;
 
 import "sebuf/http/annotations.proto";
 import "worldmonitor/intelligence/v1/intelligence.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 // GetRiskScoresRequest specifies parameters for retrieving risk scores.
 message GetRiskScoresRequest {
@@ -23,4 +24,8 @@ message GetRiskScoresResponse {
   // True when degraded=true because a stale cached score payload was served.
   // Baseline-only cold fallback sets degraded=true and stale=false.
   bool stale = 4;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 5;
 }

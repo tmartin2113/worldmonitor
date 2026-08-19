@@ -53,6 +53,7 @@ export interface ListServiceStatusesRequest {
 
 export interface ListServiceStatusesResponse {
   statuses: ServiceStatus[];
+  dataStatus?: DataStatus;
 }
 
 export interface ServiceStatus {
@@ -78,6 +79,7 @@ export interface GetTemporalBaselineResponse {
   sampleCount: number;
   samplesNeeded: number;
   error: string;
+  dataStatus?: DataStatus;
 }
 
 export interface BaselineAnomaly {
@@ -112,6 +114,7 @@ export interface ReverseGeocodeResponse {
   code: string;
   displayName: string;
   error: string;
+  dataStatus?: DataStatus;
 }
 
 export interface GetBootstrapDataRequest {
@@ -122,6 +125,7 @@ export interface GetBootstrapDataRequest {
 export interface GetBootstrapDataResponse {
   data: Record<string, string>;
   missing: string[];
+  dataStatus?: DataStatus;
 }
 
 export interface RecordBaselineSnapshotRequest {
@@ -145,6 +149,7 @@ export interface GetCableHealthRequest {
 export interface GetCableHealthResponse {
   generatedAt: number;
   cables: Record<string, CableHealthRecord>;
+  dataStatus?: DataStatus;
 }
 
 export interface CableHealthRecord {
@@ -168,6 +173,7 @@ export interface ListTemporalAnomaliesResponse {
   anomalies: TemporalAnomaly[];
   trackedTypes: string[];
   computedAt: string;
+  dataStatus?: DataStatus;
 }
 
 export interface TemporalAnomaly {

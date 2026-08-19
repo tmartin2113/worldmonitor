@@ -4,6 +4,7 @@ package worldmonitor.news.v1;
 
 import "sebuf/http/annotations.proto";
 import "worldmonitor/news/v1/news_item.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 message ListFeedDigestRequest {
   // Digest variant: full, tech, finance, happy, commodity. Unsupported site variants, including energy, currently fall back to full.
@@ -22,6 +23,10 @@ message ListFeedDigestResponse {
   map<string, string> feed_statuses = 2;
   // ISO 8601 timestamp of when this digest was generated
   string generated_at = 3;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 4;
 }
 
 message CategoryBucket {

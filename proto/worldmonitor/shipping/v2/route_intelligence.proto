@@ -4,6 +4,7 @@ package worldmonitor.shipping.v2;
 
 import "buf/validate/validate.proto";
 import "sebuf/http/annotations.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 // RouteIntelligenceRequest scopes a route-intelligence query by origin and
 // destination country. Query-parameter names are preserved verbatim from the
@@ -68,4 +69,8 @@ message RouteIntelligenceResponse {
   // ISO-8601 timestamp of when the response was assembled. Empty string means
   // the route snapshot is unavailable/degraded, not confirmed zero exposure.
   string fetched_at = 10;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 11;
 }

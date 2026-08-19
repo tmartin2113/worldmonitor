@@ -9,7 +9,7 @@ import type {
   GetNationalDebtResponse,
 } from '../../../../src/generated/server/worldmonitor/economic/v1/service_server';
 
-import { getCachedJson } from '../../../_shared/redis';
+import { attach } from '../../../_shared/data-status';
 import { isCallerPremium } from '../../../_shared/premium-check';
 
 const SEED_CACHE_KEY = 'economic:national-debt:v1';
@@ -27,13 +27,22 @@ export async function getNationalDebt(
   _req: GetNationalDebtRequest,
 ): Promise<GetNationalDebtResponse> {
   const isPro = await isCallerPremium(ctx.request);
-  if (!isPro) return buildFallbackResult();
+  // Entitlement, not absence: the caller is not entitled to this data, which is a
+  // different answer from "we hold none" and should not read as an empty dataset.
+  if (!isPro) {
+    return {
+      ...buildFallbackResult(),
+      dataStatus: {
+        fetchedAt: '0',
+        availability: 'DATA_AVAILABILITY_EMPTY',
+        detail: 'national debt detail requires a premium caller; no lookup was performed',
+      },
+    };
+  }
 
-  try {
-    const result = await getCachedJson(SEED_CACHE_KEY, true) as GetNationalDebtResponse | null;
+  return attach(SEED_CACHE_KEY, 'the national-debt seeder has not written this key', (raw) => {
+    const result = raw as GetNationalDebtResponse | null;
     if (result && !result.unavailable && result.entries && result.entries.length > 0) return result;
     return buildFallbackResult();
-  } catch {
-    return buildFallbackResult();
-  }
+  }, (out) => out.entries?.length ?? 0);
 }

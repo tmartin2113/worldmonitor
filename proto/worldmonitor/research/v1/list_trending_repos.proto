@@ -5,6 +5,7 @@ package worldmonitor.research.v1;
 import "sebuf/http/annotations.proto";
 import "worldmonitor/core/v1/pagination.proto";
 import "worldmonitor/research/v1/research_item.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 // ListTrendingReposRequest specifies filters for retrieving trending GitHub repos.
 message ListTrendingReposRequest {
@@ -24,4 +25,8 @@ message ListTrendingReposResponse {
   repeated GithubRepo repos = 1;
   // Pagination metadata.
   worldmonitor.core.v1.PaginationResponse pagination = 2;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 3;
 }

@@ -3,6 +3,7 @@ syntax = "proto3";
 package worldmonitor.economic.v1;
 
 import "sebuf/http/annotations.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 message OilInventoriesSprSnapshot {
   double latest_stocks_mb = 1;
@@ -75,4 +76,8 @@ message GetOilInventoriesResponse {
   OilInventoriesIeaStocks iea_stocks = 5;
   OilInventoriesRefinery refinery = 6;
   string updated_at = 7;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 8;
 }

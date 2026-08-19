@@ -3,6 +3,7 @@ syntax = "proto3";
 package worldmonitor.infrastructure.v1;
 
 import "sebuf/http/annotations.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 // GetCableHealthRequest requests the current health status of all monitored submarine cables.
 message GetCableHealthRequest {}
@@ -13,6 +14,10 @@ message GetCableHealthResponse {
   int64 generated_at = 1 [(sebuf.http.int64_encoding) = INT64_ENCODING_NUMBER];
   // Health records keyed by cable identifier.
   map<string, CableHealthRecord> cables = 2;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 3;
 }
 
 // CableHealthStatus represents the computed health status of a submarine cable.

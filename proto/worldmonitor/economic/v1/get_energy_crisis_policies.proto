@@ -3,6 +3,7 @@ syntax = "proto3";
 package worldmonitor.economic.v1;
 
 import "sebuf/http/annotations.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 // EnergyCrisisPolicy represents a single government policy response to the 2026 energy crisis.
 message EnergyCrisisPolicy {
@@ -46,4 +47,8 @@ message GetEnergyCrisisPoliciesResponse {
   // True when the upstream or seed-backed variant is unavailable; empty payload fields
   // are graceful degradation, not confirmed zero data.
   bool unavailable = 6;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 7;
 }

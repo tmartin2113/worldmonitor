@@ -5,6 +5,7 @@ package worldmonitor.intelligence.v1;
 import "buf/validate/validate.proto";
 import "sebuf/http/annotations.proto";
 import "worldmonitor/intelligence/v1/intelligence.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 // ClassifyEventRequest specifies an event to classify using AI.
 message ClassifyEventRequest {
@@ -26,4 +27,8 @@ message ClassifyEventRequest {
 message ClassifyEventResponse {
   // The event classification.
   EventClassification classification = 1;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 2;
 }

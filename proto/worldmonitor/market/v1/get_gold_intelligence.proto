@@ -3,6 +3,7 @@ syntax = "proto3";
 package worldmonitor.market.v1;
 
 import "sebuf/http/annotations.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 message GoldCrossCurrencyPrice {
   string currency = 1;
@@ -111,4 +112,8 @@ message GetGoldIntelligenceResponse {
   repeated GoldDriver drivers = 16;
   GoldEtfFlows etf_flows = 17;
   GoldCbReserves cb_reserves = 18;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 19;
 }

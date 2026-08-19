@@ -87,6 +87,7 @@ export interface GetMacroSignalsResponse {
   signals?: MacroSignals;
   meta?: MacroMeta;
   unavailable: boolean;
+  dataStatus?: DataStatus;
 }
 
 export interface MacroSignals {
@@ -177,6 +178,7 @@ export interface GetBisPolicyRatesRequest {
 
 export interface GetBisPolicyRatesResponse {
   rates: BisPolicyRate[];
+  dataStatus?: DataStatus;
 }
 
 export interface BisPolicyRate {
@@ -193,6 +195,7 @@ export interface GetBisExchangeRatesRequest {
 
 export interface GetBisExchangeRatesResponse {
   rates: BisExchangeRate[];
+  dataStatus?: DataStatus;
 }
 
 export interface BisExchangeRate {
@@ -209,6 +212,7 @@ export interface GetBisCreditRequest {
 
 export interface GetBisCreditResponse {
   entries: BisCreditToGdp[];
+  dataStatus?: DataStatus;
 }
 
 export interface BisCreditToGdp {
@@ -228,6 +232,7 @@ export interface GetFredSeriesBatchResponse {
   results: Record<string, FredSeries>;
   fetched: number;
   requested: number;
+  dataStatus?: DataStatus;
 }
 
 export interface ListGroceryBasketPricesRequest {
@@ -242,6 +247,7 @@ export interface ListGroceryBasketPricesResponse {
   wowAvgPct: number;
   wowAvailable: boolean;
   prevFetchedAt: string;
+  dataStatus?: DataStatus;
 }
 
 export interface CountryBasket {
@@ -299,6 +305,7 @@ export interface GetNationalDebtResponse {
   entries: NationalDebtEntry[];
   seededAt: string;
   unavailable: boolean;
+  dataStatus?: DataStatus;
 }
 
 export interface NationalDebtEntry {
@@ -327,6 +334,7 @@ export interface ListFuelPricesResponse {
   prevFetchedAt: string;
   sourceCount: number;
   countryCount: number;
+  dataStatus?: DataStatus;
 }
 
 export interface FuelCountryPrice {
@@ -384,6 +392,7 @@ export interface GetEconomicCalendarResponse {
   toDate: string;
   total: number;
   unavailable: boolean;
+  dataStatus?: DataStatus;
 }
 
 export interface EconomicEvent {
@@ -435,6 +444,7 @@ export interface GetEcbFxRatesResponse {
   updatedAt: string;
   seededAt: string;
   unavailable: boolean;
+  dataStatus?: DataStatus;
 }
 
 export interface EcbFxRate {
@@ -451,6 +461,7 @@ export interface GetEurostatCountryDataResponse {
   countries: Record<string, EurostatCountryEntry>;
   seededAt: string;
   unavailable: boolean;
+  dataStatus?: DataStatus;
 }
 
 export interface EurostatCountryEntry {
@@ -479,6 +490,7 @@ export interface GetEuGasStorageResponse {
   seededAt: string;
   updatedAt: string;
   unavailable: boolean;
+  dataStatus?: DataStatus;
 }
 
 export interface EuGasStorageHistoryEntry {
@@ -493,6 +505,7 @@ export interface GetEuYieldCurveRequest {
 export interface GetEuYieldCurveResponse {
   data?: EuYieldCurveData;
   unavailable: boolean;
+  dataStatus?: DataStatus;
 }
 
 export interface EuYieldCurveData {
@@ -513,6 +526,7 @@ export interface GetEuFsiResponse {
   seededAt: string;
   unavailable: boolean;
   stale: boolean;
+  dataStatus?: DataStatus;
 }
 
 export interface EuFsiObservation {
@@ -529,6 +543,7 @@ export interface GetEconomicStressResponse {
   components: EconomicStressComponent[];
   seededAt: string;
   unavailable: boolean;
+  dataStatus?: DataStatus;
 }
 
 export interface EconomicStressComponent {
@@ -549,6 +564,7 @@ export interface GetFaoFoodPriceIndexResponse {
   currentFfpi: number;
   momPct: number;
   yoyPct: number;
+  dataStatus?: DataStatus;
 }
 
 export interface FaoFoodPricePoint {
@@ -571,6 +587,7 @@ export interface GetOilStocksAnalysisResponse {
   belowObligation: string[];
   regionalSummary?: OilStocksRegionalSummary;
   unavailable: boolean;
+  dataStatus?: DataStatus;
 }
 
 export interface OilStocksAnalysisMember {
@@ -617,6 +634,7 @@ export interface GetOilInventoriesResponse {
   ieaStocks?: OilInventoriesIeaStocks;
   refinery?: OilInventoriesRefinery;
   updatedAt: string;
+  dataStatus?: DataStatus;
 }
 
 export interface CrudeInventoryWeekRef {
@@ -692,6 +710,7 @@ export interface GetEnergyCrisisPoliciesResponse {
   policies: EnergyCrisisPolicy[];
   updatedAt: string;
   unavailable: boolean;
+  dataStatus?: DataStatus;
 }
 
 export interface EnergyCrisisPolicy {

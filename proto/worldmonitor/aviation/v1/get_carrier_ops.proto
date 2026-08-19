@@ -5,6 +5,7 @@ package worldmonitor.aviation.v1;
 import "buf/validate/validate.proto";
 import "sebuf/http/annotations.proto";
 import "worldmonitor/aviation/v1/carrier.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 // GetCarrierOpsRequest specifies parameters for carrier operations metrics.
 message GetCarrierOpsRequest {
@@ -51,4 +52,8 @@ message GetCarrierOpsResponse {
   string source = 2;
   // Last update time as Unix epoch milliseconds.
   int64 updated_at = 3 [(sebuf.http.int64_encoding) = INT64_ENCODING_NUMBER];
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 4;
 }

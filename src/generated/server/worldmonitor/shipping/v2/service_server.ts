@@ -19,6 +19,7 @@ export interface RouteIntelligenceResponse {
   warRiskTier: string;
   disruptionScore: number;
   fetchedAt: string;
+  dataStatus?: DataStatus;
 }
 
 export interface ChokepointExposure {
@@ -34,6 +35,12 @@ export interface BypassOption {
   addedTransitDays: number;
   addedCostMultiplier: number;
   activationThreshold: string;
+}
+
+export interface DataStatus {
+  fetchedAt: string;
+  availability: DataAvailability;
+  detail: string;
 }
 
 export interface RegisterWebhookRequest {
@@ -62,6 +69,8 @@ export interface WebhookSummary {
   createdAt: string;
   active: boolean;
 }
+
+export type DataAvailability = "DATA_AVAILABILITY_UNSPECIFIED" | "DATA_AVAILABILITY_OK" | "DATA_AVAILABILITY_EMPTY" | "DATA_AVAILABILITY_NEVER_SEEDED" | "DATA_AVAILABILITY_UPSTREAM_ERROR" | "DATA_AVAILABILITY_STALE";
 
 export interface FieldViolation {
   field: string;

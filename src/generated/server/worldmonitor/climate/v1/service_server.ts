@@ -47,6 +47,7 @@ export interface ListClimateDisastersRequest {
 export interface ListClimateDisastersResponse {
   disasters: ClimateDisaster[];
   pagination?: PaginationResponse;
+  dataStatus?: DataStatus;
 }
 
 export interface ClimateDisaster {
@@ -70,6 +71,7 @@ export interface GetCo2MonitoringRequest {
 
 export interface GetCo2MonitoringResponse {
   monitoring?: Co2Monitoring;
+  dataStatus?: DataStatus;
 }
 
 export interface Co2Monitoring {
@@ -96,6 +98,7 @@ export interface GetOceanIceDataRequest {
 
 export interface GetOceanIceDataResponse {
   data?: OceanIceData;
+  dataStatus?: DataStatus;
 }
 
 export interface OceanIceData {
@@ -122,6 +125,7 @@ export interface ListAirQualityDataRequest {
 export interface ListAirQualityDataResponse {
   stations: AirQualityStation[];
   fetchedAt: number;
+  dataStatus?: DataStatus;
 }
 
 export interface AirQualityStation {
@@ -144,6 +148,7 @@ export interface ListClimateNewsResponse {
   items: ClimateNewsItem[];
   fetchedAt: number;
   dataAvailable: boolean;
+  dataStatus?: DataStatus;
 }
 
 export interface ClimateNewsItem {

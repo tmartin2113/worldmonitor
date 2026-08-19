@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package worldmonitor.intelligence.v1;
 
+import "worldmonitor/core/v1/data_status.proto";
+
 message DeductSituationRequest {
   string query = 1;
   string geo_context = 2;
@@ -13,4 +15,8 @@ message DeductSituationResponse {
   string analysis = 1;
   string model = 2;
   string provider = 3;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 4;
 }

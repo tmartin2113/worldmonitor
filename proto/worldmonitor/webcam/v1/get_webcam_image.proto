@@ -3,6 +3,7 @@ syntax = "proto3";
 package worldmonitor.webcam.v1;
 
 import "sebuf/http/annotations.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 message GetWebcamImageRequest {
   // Webcam identifier to resolve into image and player URLs.
@@ -20,4 +21,8 @@ message GetWebcamImageResponse {
   // field carries a datetime string, never epoch milliseconds.
   string last_updated = 5;
   string error = 6;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 7;
 }

@@ -1,6 +1,7 @@
 syntax = "proto3";
 package worldmonitor.intelligence.v1;
 import "sebuf/http/annotations.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 message GetCountryEnergyProfileRequest {
   // ISO 3166-1 alpha-2 country code for the energy profile.
@@ -83,4 +84,8 @@ message GetCountryEnergyProfileResponse {
   string spr_source            = 57;  // data source citation
   string spr_as_of             = 58;  // date string (YYYY-MM)
   bool   spr_available         = 59;  // true when registry has classified data (not 'unknown')
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 60;
 }

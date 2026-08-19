@@ -12,6 +12,7 @@ export interface GetForecastsResponse {
   degraded: boolean;
   stale: boolean;
   error: string;
+  dataStatus?: DataStatus;
 }
 
 export interface Forecast {
@@ -139,6 +140,12 @@ export interface ResolutionSpec {
   question?: string;
 }
 
+export interface DataStatus {
+  fetchedAt: string;
+  availability: DataAvailability;
+  detail: string;
+}
+
 export interface GetForecastScorecardRequest {
 }
 
@@ -156,6 +163,7 @@ export interface GetForecastScorecardResponse {
   degraded: boolean;
   stale: boolean;
   error: string;
+  dataStatus?: DataStatus;
 }
 
 export interface ScorecardTotals {
@@ -225,6 +233,7 @@ export interface GetSimulationPackageResponse {
   generatedAt: number;
   note: string;
   error: string;
+  dataStatus?: DataStatus;
 }
 
 export interface GetSimulationOutcomeRequest {
@@ -242,6 +251,7 @@ export interface GetSimulationOutcomeResponse {
   error: string;
   theaterSummariesJson: string;
   processing: boolean;
+  dataStatus?: DataStatus;
 }
 
 export interface TriggerSimulationRequest {
@@ -254,6 +264,8 @@ export interface TriggerSimulationResponse {
   pkgFingerprint: string;
   reason: string;
 }
+
+export type DataAvailability = "DATA_AVAILABILITY_UNSPECIFIED" | "DATA_AVAILABILITY_OK" | "DATA_AVAILABILITY_EMPTY" | "DATA_AVAILABILITY_NEVER_SEEDED" | "DATA_AVAILABILITY_UPSTREAM_ERROR" | "DATA_AVAILABILITY_STALE";
 
 export interface FieldViolation {
   field: string;

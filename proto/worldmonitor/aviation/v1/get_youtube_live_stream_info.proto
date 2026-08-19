@@ -3,6 +3,7 @@ syntax = "proto3";
 package worldmonitor.aviation.v1;
 
 import "sebuf/http/annotations.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 // GetYoutubeLiveStreamInfoRequest parameters for detecting live status.
 message GetYoutubeLiveStreamInfoRequest {
@@ -28,4 +29,8 @@ message GetYoutubeLiveStreamInfoResponse {
   string title = 6;
   // Optional error message.
   string error = 7;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 8;
 }

@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package worldmonitor.intelligence.v1;
 
+import "worldmonitor/core/v1/data_status.proto";
+
 
 message SecurityAdvisoryItem {
   string title = 1;
@@ -18,4 +20,8 @@ message ListSecurityAdvisoriesRequest {}
 message ListSecurityAdvisoriesResponse {
   repeated SecurityAdvisoryItem advisories = 1;
   map<string, string> by_country = 2;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 3;
 }

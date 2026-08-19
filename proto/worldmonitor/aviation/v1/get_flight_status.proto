@@ -5,6 +5,7 @@ package worldmonitor.aviation.v1;
 import "buf/validate/validate.proto";
 import "sebuf/http/annotations.proto";
 import "worldmonitor/aviation/v1/flight_instance.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 // GetFlightStatusRequest specifies a flight to look up.
 message GetFlightStatusRequest {
@@ -33,4 +34,8 @@ message GetFlightStatusResponse {
   string source = 2;
   // Whether the response was served from cache.
   bool cache_hit = 3;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 4;
 }

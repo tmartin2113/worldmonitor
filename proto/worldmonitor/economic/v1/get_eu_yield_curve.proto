@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package worldmonitor.economic.v1;
 
+import "worldmonitor/core/v1/data_status.proto";
+
 // GetEuYieldCurveRequest fetches the ECB Euro Area AAA sovereign yield curve.
 message GetEuYieldCurveRequest {}
 
@@ -25,4 +27,8 @@ message GetEuYieldCurveResponse {
   // True when the upstream or seed-backed variant is unavailable; empty payload fields
   // are graceful degradation, not confirmed zero data.
   bool unavailable = 2;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 3;
 }

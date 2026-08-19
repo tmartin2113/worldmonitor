@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package worldmonitor.market.v1;
 
+import "worldmonitor/core/v1/data_status.proto";
+
 // GulfQuote represents a Gulf region market quote (index, currency, or oil).
 message GulfQuote {
   string symbol = 1;
@@ -19,4 +21,8 @@ message ListGulfQuotesRequest {}
 message ListGulfQuotesResponse {
   repeated GulfQuote quotes = 1;
   bool rate_limited = 2;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 3;
 }

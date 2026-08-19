@@ -87,6 +87,7 @@ export interface GetTheaterPostureRequest {
 
 export interface GetTheaterPostureResponse {
   theaters: TheaterPosture[];
+  dataStatus?: DataStatus;
 }
 
 export interface TheaterPosture {
@@ -135,6 +136,7 @@ export interface GetAircraftDetailsBatchResponse {
   fetched: number;
   requested: number;
   configured: boolean;
+  dataStatus?: DataStatus;
 }
 
 export interface GetWingbitsStatusRequest {
@@ -213,6 +215,7 @@ export interface ListMilitaryBasesResponse {
   clusters: MilitaryBaseCluster[];
   totalInView: number;
   truncated: boolean;
+  dataStatus?: DataStatus;
 }
 
 export interface MilitaryBaseEntry {
@@ -292,6 +295,7 @@ export interface ListDefensePatentsResponse {
   patents: DefensePatentFiling[];
   total: number;
   fetchedAt: string;
+  dataStatus?: DataStatus;
 }
 
 export interface DefensePatentFiling {

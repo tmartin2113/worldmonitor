@@ -3,6 +3,7 @@ syntax = "proto3";
 package worldmonitor.news.v1;
 
 import "buf/validate/validate.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 // SummarizeArticleRequest specifies parameters for LLM article summarization.
 message SummarizeArticleRequest {
@@ -68,4 +69,8 @@ message SummarizeArticleResponse {
   // 4 = cached (bool), 7 = skipped (bool), 8 = reason (string).
   reserved 4, 7, 8;
   reserved "cached", "skipped", "reason";
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 13;
 }

@@ -177,6 +177,36 @@ export function withCount(status: DataStatus, count: number): DataStatus {
   };
 }
 
+/**
+ * Attach a data_status to a handler that reads ONE seeded key, without rewriting
+ * its payload logic.
+ *
+ * Most handlers are shaped `try { const r = await getCachedJson(K, true); ...map...
+ * } catch { ...empty... }`. The try/catch exists only to guard the cache read,
+ * which `readSeeded` already handles — and the catch is what silently converted a
+ * Redis fault into the same empty payload a quiet feed produces. This keeps the
+ * mapping verbatim and supplies the envelope around it:
+ *
+ *   return attach(KEY, 'the X seeder needs X_API_KEY', (raw) => {
+ *     const result = raw as FooResponse | null;
+ *     return result || { entries: [] };
+ *   });
+ *
+ * `count` refines OK vs EMPTY from what the handler actually returns; pass it when
+ * the payload has an obvious primary collection.
+ */
+export async function attach<T extends object>(
+  key: string,
+  whenMissing: string,
+  body: (raw: unknown) => T | Promise<T>,
+  count?: (out: T) => number,
+): Promise<T & { dataStatus: DataStatus }> {
+  const read = await readSeeded(key, whenMissing);
+  const out = await body(read.data);
+  const status = count ? withCount(read.status, count(out)) : read.status;
+  return { ...out, dataStatus: status };
+}
+
 /** A handler that answered fully from its own inputs — no cache, no upstream. */
 export function answeredDirectly(detail = ''): DataStatus {
   return { fetchedAt: '0', availability: 'DATA_AVAILABILITY_OK', detail: sanitizeDetail(detail) };

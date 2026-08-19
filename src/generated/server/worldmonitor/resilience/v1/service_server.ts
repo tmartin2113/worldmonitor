@@ -70,6 +70,7 @@ export interface GetResilienceRankingResponse {
   total: number;
   coverage: number;
   partial: boolean;
+  dataStatus?: DataStatus;
 }
 
 export interface ResilienceRankingItem {
@@ -80,6 +81,12 @@ export interface ResilienceRankingItem {
   overallCoverage: number;
   rankStable: boolean;
   headlineEligible: boolean;
+}
+
+export interface DataStatus {
+  fetchedAt: string;
+  availability: DataAvailability;
+  detail: string;
 }
 
 export interface GetResilienceRuntimeManifestRequest {
@@ -97,6 +104,7 @@ export interface GetResilienceRuntimeManifestResponse {
   rankingCache?: ResilienceRankingCacheState;
   constructVersions?: ResilienceRuntimeConstructVersions;
   intervals?: ResilienceRuntimeIntervalState;
+  dataStatus?: DataStatus;
 }
 
 export interface ResilienceRuntimeFlag {
@@ -129,6 +137,8 @@ export interface ResilienceRuntimeIntervalState {
   sampleCountry: string;
   lastObservedAt: string;
 }
+
+export type DataAvailability = "DATA_AVAILABILITY_UNSPECIFIED" | "DATA_AVAILABILITY_OK" | "DATA_AVAILABILITY_EMPTY" | "DATA_AVAILABILITY_NEVER_SEEDED" | "DATA_AVAILABILITY_UPSTREAM_ERROR" | "DATA_AVAILABILITY_STALE";
 
 export interface FieldViolation {
   field: string;

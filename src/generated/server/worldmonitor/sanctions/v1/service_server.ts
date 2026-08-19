@@ -17,6 +17,7 @@ export interface ListSanctionsPressureResponse {
   newEntryCount: number;
   vesselCount: number;
   aircraftCount: number;
+  dataStatus?: DataStatus;
 }
 
 export interface SanctionsEntry {
@@ -47,6 +48,12 @@ export interface ProgramSanctionsPressure {
   newEntryCount: number;
 }
 
+export interface DataStatus {
+  fetchedAt: string;
+  availability: DataAvailability;
+  detail: string;
+}
+
 export interface LookupSanctionEntityRequest {
   q: string;
   maxResults: number;
@@ -65,6 +72,8 @@ export interface SanctionEntityMatch {
   countryCodes: string[];
   programs: string[];
 }
+
+export type DataAvailability = "DATA_AVAILABILITY_UNSPECIFIED" | "DATA_AVAILABILITY_OK" | "DATA_AVAILABILITY_EMPTY" | "DATA_AVAILABILITY_NEVER_SEEDED" | "DATA_AVAILABILITY_UPSTREAM_ERROR" | "DATA_AVAILABILITY_STALE";
 
 export type SanctionsEntityType = "SANCTIONS_ENTITY_TYPE_UNSPECIFIED" | "SANCTIONS_ENTITY_TYPE_ENTITY" | "SANCTIONS_ENTITY_TYPE_INDIVIDUAL" | "SANCTIONS_ENTITY_TYPE_VESSEL" | "SANCTIONS_ENTITY_TYPE_AIRCRAFT";
 

@@ -4,6 +4,7 @@ package worldmonitor.market.v1;
 
 import "sebuf/http/annotations.proto";
 import "worldmonitor/market/v1/market_quote.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 // ListMarketQuotesRequest specifies which stock/index symbols to retrieve.
 message ListMarketQuotesRequest {
@@ -24,4 +25,8 @@ message ListMarketQuotesResponse {
 
   // True when the upstream API rate-limited the request.
   bool rate_limited = 4;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 5;
 }

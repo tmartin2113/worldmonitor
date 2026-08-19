@@ -4,6 +4,7 @@ package worldmonitor.intelligence.v1;
 
 import "buf/validate/validate.proto";
 import "sebuf/http/annotations.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 message GetRegionalBriefRequest {
   // Stable regional brief identifier, such as "middle-east".
@@ -18,6 +19,10 @@ message GetRegionalBriefRequest {
 
 message GetRegionalBriefResponse {
   RegionalBrief brief = 1;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 2;
 }
 
 // RegionalBrief is a weekly LLM-synthesized intelligence summary for one

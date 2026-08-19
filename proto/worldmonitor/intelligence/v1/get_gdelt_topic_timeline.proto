@@ -3,6 +3,7 @@ syntax = "proto3";
 package worldmonitor.intelligence.v1;
 
 import "sebuf/http/annotations.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 // GetGdeltTopicTimelineRequest retrieves tone and volume timelines for a GDELT intel topic.
 message GetGdeltTopicTimelineRequest {
@@ -30,4 +31,8 @@ message GetGdeltTopicTimelineResponse {
   string fetched_at = 4;
   // Error message if fetch failed.
   string error = 5;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 6;
 }

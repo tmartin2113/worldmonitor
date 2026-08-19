@@ -3,6 +3,7 @@ syntax = "proto3";
 package worldmonitor.intelligence.v1;
 
 import "sebuf/http/annotations.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 // SocialVelocityPost represents a trending Reddit post with velocity scoring.
 message SocialVelocityPost {
@@ -31,4 +32,8 @@ message GetSocialVelocityRequest {}
 message GetSocialVelocityResponse {
   repeated SocialVelocityPost posts = 1;
   int64 fetched_at = 2 [(sebuf.http.int64_encoding) = INT64_ENCODING_NUMBER];
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 3;
 }

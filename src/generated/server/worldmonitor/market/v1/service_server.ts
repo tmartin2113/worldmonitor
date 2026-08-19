@@ -10,6 +10,7 @@ export interface ListMarketQuotesResponse {
   finnhubSkipped: boolean;
   skipReason: string;
   rateLimited: boolean;
+  dataStatus?: DataStatus;
 }
 
 export interface MarketQuote {
@@ -21,12 +22,19 @@ export interface MarketQuote {
   sparkline: number[];
 }
 
+export interface DataStatus {
+  fetchedAt: string;
+  availability: DataAvailability;
+  detail: string;
+}
+
 export interface ListCryptoQuotesRequest {
   ids: string[];
 }
 
 export interface ListCryptoQuotesResponse {
   quotes: CryptoQuote[];
+  dataStatus?: DataStatus;
 }
 
 export interface CryptoQuote {
@@ -56,18 +64,13 @@ export interface CommodityQuote {
   sparkline: number[];
 }
 
-export interface DataStatus {
-  fetchedAt: string;
-  availability: DataAvailability;
-  detail: string;
-}
-
 export interface GetSectorSummaryRequest {
   period: string;
 }
 
 export interface GetSectorSummaryResponse {
   sectors: SectorPerformance[];
+  dataStatus?: DataStatus;
 }
 
 export interface SectorPerformance {
@@ -84,6 +87,7 @@ export interface ListStablecoinMarketsResponse {
   timestamp: string;
   summary?: StablecoinSummary;
   stablecoins: Stablecoin[];
+  dataStatus?: DataStatus;
 }
 
 export interface StablecoinSummary {
@@ -116,6 +120,7 @@ export interface ListEtfFlowsResponse {
   summary?: EtfFlowsSummary;
   etfs: EtfFlow[];
   rateLimited: boolean;
+  dataStatus?: DataStatus;
 }
 
 export interface EtfFlowsSummary {
@@ -152,6 +157,7 @@ export interface GetCountryStockIndexResponse {
   weekChangePercent: number;
   currency: string;
   fetchedAt: string;
+  dataStatus?: DataStatus;
 }
 
 export interface ListGulfQuotesRequest {
@@ -160,6 +166,7 @@ export interface ListGulfQuotesRequest {
 export interface ListGulfQuotesResponse {
   quotes: GulfQuote[];
   rateLimited: boolean;
+  dataStatus?: DataStatus;
 }
 
 export interface GulfQuote {
@@ -238,6 +245,7 @@ export interface AnalyzeStockResponse {
   marketSession: string;
   extendedPrice?: number;
   extendedChangePercent?: number;
+  dataStatus?: DataStatus;
 }
 
 export interface StockAnalysisHeadline {
@@ -314,6 +322,7 @@ export interface BacktestStockResponse {
   generatedAt: string;
   evaluations: BacktestStockEvaluation[];
   engineVersion: string;
+  dataStatus?: DataStatus;
 }
 
 export interface BacktestStockEvaluation {
@@ -344,6 +353,7 @@ export interface ListCryptoSectorsRequest {
 
 export interface ListCryptoSectorsResponse {
   sectors: CryptoSector[];
+  dataStatus?: DataStatus;
 }
 
 export interface CryptoSector {
@@ -357,6 +367,7 @@ export interface ListDefiTokensRequest {
 
 export interface ListDefiTokensResponse {
   tokens: CryptoQuote[];
+  dataStatus?: DataStatus;
 }
 
 export interface ListAiTokensRequest {
@@ -364,6 +375,7 @@ export interface ListAiTokensRequest {
 
 export interface ListAiTokensResponse {
   tokens: CryptoQuote[];
+  dataStatus?: DataStatus;
 }
 
 export interface ListOtherTokensRequest {
@@ -371,6 +383,7 @@ export interface ListOtherTokensRequest {
 
 export interface ListOtherTokensResponse {
   tokens: CryptoQuote[];
+  dataStatus?: DataStatus;
 }
 
 export interface GetFearGreedIndexRequest {
@@ -407,6 +420,7 @@ export interface GetFearGreedIndexResponse {
   hygPrice: number;
   tltPrice: number;
   sectorPerformance: FearGreedSectorPerformance[];
+  dataStatus?: DataStatus;
 }
 
 export interface FearGreedCategory {
@@ -434,6 +448,7 @@ export interface ListEarningsCalendarResponse {
   toDate: string;
   total: number;
   unavailable: boolean;
+  dataStatus?: DataStatus;
 }
 
 export interface EarningsEntry {
@@ -456,6 +471,7 @@ export interface GetCotPositioningResponse {
   instruments: CotInstrument[];
   reportDate: string;
   unavailable: boolean;
+  dataStatus?: DataStatus;
 }
 
 export interface CotInstrument {
@@ -483,6 +499,7 @@ export interface GetInsiderTransactionsResponse {
   netValue: number;
   transactions: InsiderTransaction[];
   fetchedAt: string;
+  dataStatus?: DataStatus;
 }
 
 export interface InsiderTransaction {
@@ -503,6 +520,7 @@ export interface GetMarketBreadthHistoryResponse {
   updatedAt: string;
   history: BreadthSnapshot[];
   unavailable: boolean;
+  dataStatus?: DataStatus;
 }
 
 export interface BreadthSnapshot {
@@ -534,6 +552,7 @@ export interface GetGoldIntelligenceResponse {
   drivers: GoldDriver[];
   etfFlows?: GoldEtfFlows;
   cbReserves?: GoldCbReserves;
+  dataStatus?: DataStatus;
 }
 
 export interface GoldCrossCurrencyPrice {
@@ -630,6 +649,7 @@ export interface GetHyperliquidFlowResponse {
   assetCount: number;
   assets: HyperliquidAssetFlow[];
   unavailable: boolean;
+  dataStatus?: DataStatus;
 }
 
 export interface HyperliquidAssetFlow {

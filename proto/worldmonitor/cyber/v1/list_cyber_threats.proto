@@ -6,6 +6,7 @@ import "sebuf/http/annotations.proto";
 import "worldmonitor/core/v1/pagination.proto";
 import "worldmonitor/core/v1/severity.proto";
 import "worldmonitor/cyber/v1/cyber_threat.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 // ListCyberThreatsRequest specifies filters for retrieving cyber threat indicators.
 message ListCyberThreatsRequest {
@@ -33,4 +34,8 @@ message ListCyberThreatsResponse {
   repeated CyberThreat threats = 1;
   // Pagination metadata.
   worldmonitor.core.v1.PaginationResponse pagination = 2;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 3;
 }

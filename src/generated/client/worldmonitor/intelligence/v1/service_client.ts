@@ -10,6 +10,7 @@ export interface GetRiskScoresResponse {
   strategicRisks: StrategicRisk[];
   degraded: boolean;
   stale: boolean;
+  dataStatus?: DataStatus;
 }
 
 export interface CiiScore {
@@ -41,6 +42,12 @@ export interface StrategicRisk {
   trend: TrendDirection;
 }
 
+export interface DataStatus {
+  fetchedAt: string;
+  availability: DataAvailability;
+  detail: string;
+}
+
 export interface GetPizzintStatusRequest {
   includeGdelt: boolean;
 }
@@ -48,6 +55,7 @@ export interface GetPizzintStatusRequest {
 export interface GetPizzintStatusResponse {
   pizzint?: PizzintStatus;
   tensionPairs: GdeltTensionPair[];
+  dataStatus?: DataStatus;
 }
 
 export interface PizzintStatus {
@@ -97,6 +105,7 @@ export interface ClassifyEventRequest {
 
 export interface ClassifyEventResponse {
   classification?: EventClassification;
+  dataStatus?: DataStatus;
 }
 
 export interface EventClassification {
@@ -121,6 +130,7 @@ export interface GetCountryRiskResponse {
   sanctionsCount: number;
   fetchedAt: number;
   upstreamUnavailable: boolean;
+  dataStatus?: DataStatus;
 }
 
 export interface GetCountryIntelBriefRequest {
@@ -135,6 +145,7 @@ export interface GetCountryIntelBriefResponse {
   model: string;
   generatedAt: number;
   sources: BriefSource[];
+  dataStatus?: DataStatus;
 }
 
 export interface BriefSource {
@@ -156,6 +167,7 @@ export interface SearchGdeltDocumentsResponse {
   articles: GdeltArticle[];
   query: string;
   error: string;
+  dataStatus?: DataStatus;
 }
 
 export interface GdeltArticle {
@@ -178,6 +190,7 @@ export interface DeductSituationResponse {
   analysis: string;
   model: string;
   provider: string;
+  dataStatus?: DataStatus;
 }
 
 export interface ListSatellitesRequest {
@@ -186,6 +199,7 @@ export interface ListSatellitesRequest {
 
 export interface ListSatellitesResponse {
   satellites: Satellite[];
+  dataStatus?: DataStatus;
 }
 
 export interface Satellite {
@@ -209,6 +223,7 @@ export interface ListGpsInterferenceResponse {
   stats?: GpsJamStats;
   source: string;
   fetchedAt: number;
+  dataStatus?: DataStatus;
 }
 
 export interface GpsJamHex {
@@ -239,6 +254,7 @@ export interface ListOrefAlertsResponse {
   totalHistoryCount: number;
   timestampMs: number;
   error: string;
+  dataStatus?: DataStatus;
 }
 
 export interface OrefAlert {
@@ -388,6 +404,7 @@ export interface GetCountryFactsResponse {
   currencies: string[];
   areaSqKm: number;
   countryName: string;
+  dataStatus?: DataStatus;
 }
 
 export interface ListSecurityAdvisoriesRequest {
@@ -396,6 +413,7 @@ export interface ListSecurityAdvisoriesRequest {
 export interface ListSecurityAdvisoriesResponse {
   advisories: SecurityAdvisoryItem[];
   byCountry: Record<string, string>;
+  dataStatus?: DataStatus;
 }
 
 export interface SecurityAdvisoryItem {
@@ -418,6 +436,7 @@ export interface GetGdeltTopicTimelineResponse {
   vol: GdeltTimelinePoint[];
   fetchedAt: string;
   error: string;
+  dataStatus?: DataStatus;
 }
 
 export interface GdeltTimelinePoint {
@@ -432,6 +451,7 @@ export interface ListCrossSourceSignalsResponse {
   signals: CrossSourceSignal[];
   evaluatedAt: number;
   compositeCount: number;
+  dataStatus?: DataStatus;
 }
 
 export interface CrossSourceSignal {
@@ -455,6 +475,7 @@ export interface ListMarketImplicationsResponse {
   degraded: boolean;
   emptyReason: string;
   generatedAt: string;
+  dataStatus?: DataStatus;
 }
 
 export interface MarketImplicationCard {
@@ -482,6 +503,7 @@ export interface GetSocialVelocityRequest {
 export interface GetSocialVelocityResponse {
   posts: SocialVelocityPost[];
   fetchedAt: number;
+  dataStatus?: DataStatus;
 }
 
 export interface SocialVelocityPost {
@@ -560,6 +582,7 @@ export interface GetCountryEnergyProfileResponse {
   sprSource: string;
   sprAsOf: string;
   sprAvailable: boolean;
+  dataStatus?: DataStatus;
 }
 
 export interface ComputeEnergyShockScenarioRequest {
@@ -647,6 +670,7 @@ export interface GetRegionalSnapshotRequest {
 
 export interface GetRegionalSnapshotResponse {
   snapshot?: RegionalSnapshot;
+  dataStatus?: DataStatus;
 }
 
 export interface RegionalSnapshot {
@@ -855,6 +879,7 @@ export interface GetRegionalBriefRequest {
 
 export interface GetRegionalBriefResponse {
   brief?: RegionalBrief;
+  dataStatus?: DataStatus;
 }
 
 export interface RegionalBrief {
@@ -869,6 +894,8 @@ export interface RegionalBrief {
   provider: string;
   model: string;
 }
+
+export type DataAvailability = "DATA_AVAILABILITY_UNSPECIFIED" | "DATA_AVAILABILITY_OK" | "DATA_AVAILABILITY_EMPTY" | "DATA_AVAILABILITY_NEVER_SEEDED" | "DATA_AVAILABILITY_UPSTREAM_ERROR" | "DATA_AVAILABILITY_STALE";
 
 export type SeverityLevel = "SEVERITY_LEVEL_UNSPECIFIED" | "SEVERITY_LEVEL_LOW" | "SEVERITY_LEVEL_MEDIUM" | "SEVERITY_LEVEL_HIGH";
 

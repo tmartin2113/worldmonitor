@@ -4,6 +4,7 @@ package worldmonitor.intelligence.v1;
 
 import "sebuf/http/annotations.proto";
 import "worldmonitor/intelligence/v1/gps_jamming.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 // ListGpsInterferenceRequest specifies filters for GPS interference data.
 message ListGpsInterferenceRequest {
@@ -21,4 +22,8 @@ message ListGpsInterferenceResponse {
   string source = 3;
   // Data fetch time, as Unix epoch milliseconds.
   int64 fetched_at = 4 [(sebuf.http.int64_encoding) = INT64_ENCODING_NUMBER];
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 5;
 }

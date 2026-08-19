@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package worldmonitor.economic.v1;
 
+import "worldmonitor/core/v1/data_status.proto";
+
 // OilStocksAnalysisMember holds days-of-cover data and obligation status for one IEA member country.
 message OilStocksAnalysisMember {
   // ISO 3166-1 alpha-2 country code.
@@ -74,4 +76,8 @@ message GetOilStocksAnalysisResponse {
   // True when the upstream or seed-backed variant is unavailable; empty payload fields
   // are graceful degradation, not confirmed zero data.
   bool unavailable = 6;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 7;
 }

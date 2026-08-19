@@ -177,6 +177,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "statuses":
                                     - "checkedAt": 1717200000000
                                       "description": "Example WorldMonitor observation."
@@ -297,9 +301,12 @@ paths:
                                     "mean": 1.5
                                     "sampleCount": 1
                                     "stdDev": 1.5
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "error": "example"
                                 "learning": true
-                                "sampleCount": 1
                             schema:
                                 $ref: '#/components/schemas/GetTemporalBaselineResponse'
                 "400":
@@ -479,6 +486,10 @@ paths:
                             example:
                                 "code": "example"
                                 "country": "US"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "displayName": "WorldMonitor Analyst"
                                 "error": "example"
                             schema:
@@ -579,6 +590,10 @@ paths:
                             example:
                                 "data":
                                     "exampleKey": "example"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "missing":
                                     - "example"
                             schema:
@@ -820,6 +835,10 @@ paths:
                                         "lastUpdated": 1
                                         "score": 42.5
                                         "status": "CABLE_HEALTH_STATUS_OK"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "generatedAt": 1717200000000
                             schema:
                                 $ref: '#/components/schemas/GetCableHealthResponse'
@@ -905,6 +924,10 @@ paths:
                                       "multiplier": 1.5
                                       "region": "example"
                                 "computedAt": "2026-01-15T12:00:00Z"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "trackedTypes":
                                     - "example"
                             schema:
@@ -1447,6 +1470,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/ServiceStatus'
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
             description: ListServiceStatusesResponse contains service operational statuses.
         ServiceStatus:
             type: object
@@ -1520,6 +1545,8 @@ components:
                 error:
                     type: string
                     description: Error message if request was invalid.
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
             description: GetTemporalBaselineResponse returns anomaly info or learning status.
         BaselineAnomaly:
             type: object
@@ -1596,6 +1623,8 @@ components:
                 error:
                     type: string
                     description: Optional error message.
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
             description: ReverseGeocodeResponse containing the resolved location details.
         GetBootstrapDataRequest:
             type: object
@@ -1622,6 +1651,8 @@ components:
                     items:
                         type: string
                         description: List of keys that were not found in cache.
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
             description: GetBootstrapDataResponse containing pooled data objects.
         DataEntry:
             type: object
@@ -1681,6 +1712,8 @@ components:
                     additionalProperties:
                         $ref: '#/components/schemas/CableHealthRecord'
                     description: Health records keyed by cable identifier.
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
             description: GetCableHealthResponse contains health status for submarine cables with active signals.
         CablesEntry:
             type: object
@@ -1746,6 +1779,8 @@ components:
                         type: string
                 computedAt:
                     type: string
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
         TemporalAnomaly:
             type: object
             properties:

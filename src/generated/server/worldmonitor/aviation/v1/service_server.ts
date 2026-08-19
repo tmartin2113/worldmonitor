@@ -11,6 +11,7 @@ export interface ListAirportDelaysRequest {
 export interface ListAirportDelaysResponse {
   alerts: AirportDelayAlert[];
   pagination?: PaginationResponse;
+  dataStatus?: DataStatus;
 }
 
 export interface AirportDelayAlert {
@@ -43,6 +44,12 @@ export interface PaginationResponse {
   totalCount: number;
 }
 
+export interface DataStatus {
+  fetchedAt: string;
+  availability: DataAvailability;
+  detail: string;
+}
+
 export interface GetAirportOpsSummaryRequest {
   airports: string[];
 }
@@ -50,6 +57,7 @@ export interface GetAirportOpsSummaryRequest {
 export interface GetAirportOpsSummaryResponse {
   summaries: AirportOpsSummary[];
   cacheHit: boolean;
+  dataStatus?: DataStatus;
 }
 
 export interface AirportOpsSummary {
@@ -80,6 +88,7 @@ export interface ListAirportFlightsResponse {
   totalAvailable: number;
   source: string;
   updatedAt: number;
+  dataStatus?: DataStatus;
 }
 
 export interface FlightInstance {
@@ -129,6 +138,7 @@ export interface GetCarrierOpsResponse {
   carriers: CarrierOpsSummary[];
   source: string;
   updatedAt: number;
+  dataStatus?: DataStatus;
 }
 
 export interface CarrierOpsSummary {
@@ -153,6 +163,7 @@ export interface GetFlightStatusResponse {
   flights: FlightInstance[];
   source: string;
   cacheHit: boolean;
+  dataStatus?: DataStatus;
 }
 
 export interface TrackAircraftRequest {
@@ -168,6 +179,7 @@ export interface TrackAircraftResponse {
   positions: PositionSample[];
   source: string;
   updatedAt: number;
+  dataStatus?: DataStatus;
 }
 
 export interface PositionSample {
@@ -197,6 +209,7 @@ export interface GetYoutubeLiveStreamInfoResponse {
   hlsUrl: string;
   title: string;
   error: string;
+  dataStatus?: DataStatus;
 }
 
 export interface SearchFlightPricesRequest {
@@ -252,6 +265,7 @@ export interface ListAviationNewsResponse {
   items: AviationNewsItem[];
   source: string;
   updatedAt: number;
+  dataStatus?: DataStatus;
 }
 
 export interface AviationNewsItem {
@@ -282,6 +296,7 @@ export interface SearchGoogleFlightsResponse {
   flights: GoogleFlightResult[];
   degraded: boolean;
   error: string;
+  dataStatus?: DataStatus;
 }
 
 export interface GoogleFlightResult {
@@ -320,6 +335,7 @@ export interface SearchGoogleDatesResponse {
   dates: DatePriceEntry[];
   degraded: boolean;
   error: string;
+  dataStatus?: DataStatus;
 }
 
 export interface DatePriceEntry {
@@ -343,6 +359,8 @@ export type FlightDirection = "FLIGHT_DIRECTION_UNSPECIFIED" | "FLIGHT_DIRECTION
 export type FlightInstanceStatus = "FLIGHT_INSTANCE_STATUS_UNSPECIFIED" | "FLIGHT_INSTANCE_STATUS_SCHEDULED" | "FLIGHT_INSTANCE_STATUS_BOARDING" | "FLIGHT_INSTANCE_STATUS_DEPARTED" | "FLIGHT_INSTANCE_STATUS_AIRBORNE" | "FLIGHT_INSTANCE_STATUS_LANDED" | "FLIGHT_INSTANCE_STATUS_ARRIVED" | "FLIGHT_INSTANCE_STATUS_CANCELLED" | "FLIGHT_INSTANCE_STATUS_DIVERTED" | "FLIGHT_INSTANCE_STATUS_UNKNOWN";
 
 export type PositionSource = "POSITION_SOURCE_UNSPECIFIED" | "POSITION_SOURCE_OPENSKY" | "POSITION_SOURCE_WINGBITS" | "POSITION_SOURCE_SIMULATED";
+
+export type DataAvailability = "DATA_AVAILABILITY_UNSPECIFIED" | "DATA_AVAILABILITY_OK" | "DATA_AVAILABILITY_EMPTY" | "DATA_AVAILABILITY_NEVER_SEEDED" | "DATA_AVAILABILITY_UPSTREAM_ERROR" | "DATA_AVAILABILITY_STALE";
 
 export interface FieldViolation {
   field: string;

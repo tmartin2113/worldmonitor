@@ -139,6 +139,10 @@ paths:
                         application/json:
                             example:
                                 "coverage": 1.5
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": "2026-01-15T12:00:00Z"
                                 "greyedOut":
                                     - "countryCode": "US"
@@ -152,7 +156,6 @@ paths:
                                       "level": "example"
                                       "lowConfidence": true
                                       "overallCoverage": 1.5
-                                "partial": true
                             schema:
                                 $ref: '#/components/schemas/GetResilienceRankingResponse'
                 "400":
@@ -239,11 +242,12 @@ paths:
                                     "scorePrefix": "example"
                                 "constructVersions":
                                     "energy": "example"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "dataVersion": "example"
                                 "deployedCommitSha": "example"
-                                "flags":
-                                    - "enabled": true
-                                      "name": "WorldMonitor Analyst"
                             schema:
                                 $ref: '#/components/schemas/GetResilienceRuntimeManifestResponse'
                 "400":
@@ -614,6 +618,8 @@ components:
                     format: double
                 partial:
                     type: boolean
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
         ResilienceRankingItem:
             type: object
             properties:
@@ -639,6 +645,49 @@ components:
                          coverage >= 0.85) AND !lowConfidence. GetResilienceRanking includes
                          only eligible countries in items[]; scored but ineligible countries
                          remain in greyedOut[].
+        DataStatus:
+            type: object
+            properties:
+                fetchedAt:
+                    type: string
+                    format: int64
+                    description: |-
+                        Unix ms when the underlying data was last successfully fetched upstream.
+                         Zero means never — which is itself the answer, and the point of this field.
+                availability:
+                    type: string
+                    enum:
+                        - DATA_AVAILABILITY_UNSPECIFIED
+                        - DATA_AVAILABILITY_OK
+                        - DATA_AVAILABILITY_EMPTY
+                        - DATA_AVAILABILITY_NEVER_SEEDED
+                        - DATA_AVAILABILITY_UPSTREAM_ERROR
+                        - DATA_AVAILABILITY_STALE
+                    description: DataAvailability separates the states that a bare empty payload collapses.
+                detail:
+                    type: string
+                    description: |-
+                        Human-readable detail, safe to surface. Never contains upstream URLs or
+                         credential fragments: 5xx messages are genericised on purpose elsewhere
+                         (see server/error-mapper.ts, H-3), and this field must not become a way
+                         around that.
+            description: |-
+                DataStatus makes an EMPTY RESPONSE FALSIFIABLE.
+
+                 Measured 2026-08-19: of 147 WorldMonitor endpoints returning 200, twenty-five
+                 answered with a bare `{}` or `{"events":[]}` carrying no timestamp and no
+                 status. `get-fred-series` returning `{}` is indistinguishable from "FRED has no
+                 such series" and "we hold no key and never fetched". Every data-integrity
+                 defect found on this box that month was that shape — get-cable-health cached
+                 "no navigational warnings on Earth" for 24h off a wrong envelope key while
+                 upstream served 386; get-country-risk answered a question it was never asked.
+                 None errored. All looked fine.
+
+                 The problem is not that a response is empty — feeds are legitimately quiet.
+                 The problem is that an empty answer does not say WHY, so a consumer cannot
+                 distinguish silence from breakage. This message is the smallest thing that
+                 fixes that, and it is deliberately additive: existing clients that ignore the
+                 field keep working unchanged.
         GetResilienceRuntimeManifestRequest:
             type: object
         GetResilienceRuntimeManifestResponse:
@@ -669,6 +718,8 @@ components:
                     $ref: '#/components/schemas/ResilienceRuntimeConstructVersions'
                 intervals:
                     $ref: '#/components/schemas/ResilienceRuntimeIntervalState'
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
         ResilienceRuntimeFlag:
             type: object
             properties:

@@ -4,6 +4,7 @@ package worldmonitor.market.v1;
 
 import "buf/validate/validate.proto";
 import "sebuf/http/annotations.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 // ListEtfFlowsRequest is empty; the handler uses a fixed list of BTC spot ETFs.
 message ListEtfFlowsRequest {}
@@ -59,4 +60,8 @@ message ListEtfFlowsResponse {
   repeated EtfFlow etfs = 3;
   // True when the upstream API rate-limited the request.
   bool rate_limited = 4;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 5;
 }

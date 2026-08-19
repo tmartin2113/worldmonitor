@@ -4,6 +4,7 @@ package worldmonitor.market.v1;
 
 import "buf/validate/validate.proto";
 import "sebuf/http/annotations.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 message BacktestStockEvaluation {
   int64 analysis_at = 1 [(sebuf.http.int64_encoding) = INT64_ENCODING_NUMBER];
@@ -60,4 +61,8 @@ message BacktestStockResponse {
   string generated_at = 16;
   repeated BacktestStockEvaluation evaluations = 17;
   string engine_version = 18;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 19;
 }

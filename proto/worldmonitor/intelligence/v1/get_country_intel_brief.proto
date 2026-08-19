@@ -4,6 +4,7 @@ package worldmonitor.intelligence.v1;
 
 import "buf/validate/validate.proto";
 import "sebuf/http/annotations.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 // GetCountryIntelBriefRequest specifies which country to generate a brief for.
 message GetCountryIntelBriefRequest {
@@ -44,4 +45,8 @@ message GetCountryIntelBriefResponse {
   int64 generated_at = 5 [(sebuf.http.int64_encoding) = INT64_ENCODING_NUMBER];
   // Source articles used to ground the generated brief.
   repeated BriefSource sources = 6;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 7;
 }

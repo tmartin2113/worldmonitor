@@ -9,7 +9,7 @@ import type {
   GetFaoFoodPriceIndexResponse,
 } from '../../../../src/generated/server/worldmonitor/economic/v1/service_server';
 
-import { getCachedJson } from '../../../_shared/redis';
+import { attach } from '../../../_shared/data-status';
 
 const SEED_CACHE_KEY = 'economic:fao-ffpi:v1';
 
@@ -25,11 +25,9 @@ export async function getFaoFoodPriceIndex(
   _ctx: ServerContext,
   _req: GetFaoFoodPriceIndexRequest,
 ): Promise<GetFaoFoodPriceIndexResponse> {
-  try {
-    const result = await getCachedJson(SEED_CACHE_KEY, true) as GetFaoFoodPriceIndexResponse | null;
+  return attach(SEED_CACHE_KEY, 'the FAO food-price seeder has not written this key', (raw) => {
+    const result = raw as GetFaoFoodPriceIndexResponse | null;
     if (!result?.points?.length) return EMPTY;
     return result;
-  } catch {
-    return EMPTY;
-  }
+  }, (out) => out.points?.length ?? 0);
 }

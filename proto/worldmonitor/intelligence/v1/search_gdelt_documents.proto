@@ -4,6 +4,7 @@ package worldmonitor.intelligence.v1;
 
 import "buf/validate/validate.proto";
 import "sebuf/http/annotations.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 // SearchGdeltDocumentsRequest specifies filters for searching GDELT news articles.
 message SearchGdeltDocumentsRequest {
@@ -59,4 +60,8 @@ message SearchGdeltDocumentsResponse {
   string query = 2;
   // Error message if the search failed.
   string error = 3;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 4;
 }

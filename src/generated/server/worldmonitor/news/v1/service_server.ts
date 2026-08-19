@@ -22,6 +22,13 @@ export interface SummarizeArticleResponse {
   errorType: string;
   status: SummarizeStatus;
   statusDetail: string;
+  dataStatus?: DataStatus;
+}
+
+export interface DataStatus {
+  fetchedAt: string;
+  availability: DataAvailability;
+  detail: string;
 }
 
 export interface GetSummarizeArticleCacheRequest {
@@ -37,6 +44,7 @@ export interface ListFeedDigestResponse {
   categories: Record<string, CategoryBucket>;
   feedStatuses: Record<string, string>;
   generatedAt: string;
+  dataStatus?: DataStatus;
 }
 
 export interface CategoryBucket {
@@ -77,6 +85,8 @@ export interface StoryMeta {
   sourceCount: number;
   phase: StoryPhase;
 }
+
+export type DataAvailability = "DATA_AVAILABILITY_UNSPECIFIED" | "DATA_AVAILABILITY_OK" | "DATA_AVAILABILITY_EMPTY" | "DATA_AVAILABILITY_NEVER_SEEDED" | "DATA_AVAILABILITY_UPSTREAM_ERROR" | "DATA_AVAILABILITY_STALE";
 
 export type StoryPhase = "STORY_PHASE_UNSPECIFIED" | "STORY_PHASE_BREAKING" | "STORY_PHASE_DEVELOPING" | "STORY_PHASE_SUSTAINED" | "STORY_PHASE_FADING";
 

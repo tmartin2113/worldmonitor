@@ -4,6 +4,7 @@ package worldmonitor.market.v1;
 
 import "buf/validate/validate.proto";
 import "sebuf/http/annotations.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 message InsiderTransaction {
   string name = 1;
@@ -32,4 +33,8 @@ message GetInsiderTransactionsResponse {
   double net_value = 5;
   repeated InsiderTransaction transactions = 6;
   string fetched_at = 7;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 8;
 }

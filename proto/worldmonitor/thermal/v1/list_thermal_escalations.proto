@@ -4,6 +4,7 @@ package worldmonitor.thermal.v1;
 
 import "sebuf/http/annotations.proto";
 import "worldmonitor/thermal/v1/thermal_escalation_cluster.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 message ListThermalEscalationsRequest {
   // Maximum number of thermal escalation clusters to return.
@@ -31,4 +32,8 @@ message ListThermalEscalationsResponse {
   // True when clusters came from a seed snapshot. False means an empty payload
   // is graceful degradation because the snapshot is unavailable.
   bool data_available = 6;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 7;
 }

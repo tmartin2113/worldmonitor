@@ -3,6 +3,7 @@ syntax = "proto3";
 package worldmonitor.intelligence.v1;
 
 import "sebuf/http/annotations.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 // CrossSourceSignalType enumerates all monitored cross-domain signal categories.
 enum CrossSourceSignalType {
@@ -72,4 +73,8 @@ message ListCrossSourceSignalsResponse {
   int64 evaluated_at = 2 [(sebuf.http.int64_encoding) = INT64_ENCODING_NUMBER];
   // Total number of composite escalation zones detected.
   int32 composite_count = 3;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 4;
 }

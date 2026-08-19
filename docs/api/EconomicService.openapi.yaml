@@ -367,6 +367,10 @@ paths:
                         application/json:
                             example:
                                 "bullishCount": 1
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "meta":
                                     "qqqSparkline":
                                         - 1.5
@@ -394,7 +398,6 @@ paths:
                                         "status": "example"
                                         "xlpRoc20": 1.5
                                 "timestamp": "2026-01-15T12:00:00Z"
-                                "totalCount": 1
                             schema:
                                 $ref: '#/components/schemas/GetMacroSignalsResponse'
                 "400":
@@ -583,6 +586,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "rates":
                                     - "centralBank": "example"
                                       "countryCode": "US"
@@ -666,6 +673,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "rates":
                                     - "countryCode": "US"
                                       "countryName": "US"
@@ -749,6 +760,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "entries":
                                     - "countryCode": "US"
                                       "countryName": "US"
@@ -853,6 +868,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetched": 1
                                 "requested": 1
                                 "results":
@@ -1004,9 +1023,12 @@ paths:
                                             "itemId": "example-id"
                                             "itemName": "WorldMonitor Analyst"
                                             "localPrice": 75.25
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": "2026-01-15T12:00:00Z"
                                 "mostExpensiveCountry": "US"
-                                "prevFetchedAt": "2026-01-15T12:00:00Z"
                             schema:
                                 $ref: '#/components/schemas/ListGroceryBasketPricesResponse'
                 "400":
@@ -1175,6 +1197,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "entries":
                                     - "annualGrowth": 1.5
                                       "baselineTs": "1717200000000"
@@ -1274,7 +1300,10 @@ paths:
                                       "flag": "example"
                                       "fxRate": 75.25
                                 "countryCount": 1
-                                "fetchedAt": "2026-01-15T12:00:00Z"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                             schema:
                                 $ref: '#/components/schemas/ListFuelPricesResponse'
                 "400":
@@ -1474,6 +1503,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "events":
                                     - "actual": "example"
                                       "country": "US"
@@ -1483,7 +1516,6 @@ paths:
                                 "fromDate": "2026-01-15"
                                 "toDate": "2026-01-15"
                                 "total": 1
-                                "unavailable": true
                             schema:
                                 $ref: '#/components/schemas/GetEconomicCalendarResponse'
                 "400":
@@ -1733,6 +1765,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "rates":
                                     - "change1d": 1.5
                                       "date": "2026-01-15"
@@ -1838,6 +1874,10 @@ paths:
                                             "priorValue": 1.5
                                             "unit": "example"
                                             "value": 1.5
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "seededAt": "1717200000000"
                                 "unavailable": true
                             schema:
@@ -1917,6 +1957,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fillPct": 1.5
                                 "fillPctChange1d": 1.5
                                 "gasDaysConsumption": 7
@@ -1924,7 +1968,6 @@ paths:
                                     - "date": "2026-01-15"
                                       "fillPct": 1.5
                                       "gasTwh": 1.5
-                                "seededAt": "1717200000000"
                             schema:
                                 $ref: '#/components/schemas/GetEuGasStorageResponse'
                 "400":
@@ -2008,6 +2051,10 @@ paths:
                                         "exampleKey": 1.5
                                     "source": "example"
                                     "updatedAt": "2026-01-15"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "unavailable": true
                             schema:
                                 $ref: '#/components/schemas/GetEuYieldCurveResponse'
@@ -2086,13 +2133,16 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "history":
                                     - "date": "2026-01-15"
                                       "value": 1.5
                                 "label": "example"
                                 "latestDate": "40.7128"
                                 "latestValue": 1.5
-                                "seededAt": "2026-01-15T12:00:00Z"
                             schema:
                                 $ref: '#/components/schemas/GetEuFsiResponse'
                 "400":
@@ -2177,9 +2227,12 @@ paths:
                                       "rawValue": 1.5
                                       "score": 42.5
                                 "compositeScore": 42.5
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "label": "example"
                                 "seededAt": "2026-01-15T12:00:00Z"
-                                "unavailable": true
                             schema:
                                 $ref: '#/components/schemas/GetEconomicStressResponse'
                 "400":
@@ -2258,6 +2311,10 @@ paths:
                         application/json:
                             example:
                                 "currentFfpi": 1.5
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": "2026-01-15T12:00:00Z"
                                 "momPct": 1.5
                                 "points":
@@ -2266,7 +2323,6 @@ paths:
                                       "date": "2026-01-15"
                                       "ffpi": 1.5
                                       "meat": 1717200000000
-                                "yoyPct": 1.5
                             schema:
                                 $ref: '#/components/schemas/GetFaoFoodPriceIndexResponse'
                 "400":
@@ -2347,6 +2403,10 @@ paths:
                                 "belowObligation":
                                     - "example"
                                 "dataMonth": "example"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "ieaMembers":
                                     - "belowObligation": true
                                       "daysOfCover": 7
@@ -2365,7 +2425,6 @@ paths:
                                     "northAmerica":
                                         "avgDays": 7
                                         "netExporters": 1
-                                "unavailable": true
                             schema:
                                 $ref: '#/components/schemas/GetOilStocksAnalysisResponse'
                 "400":
@@ -2447,6 +2506,10 @@ paths:
                                     - "period": "daily"
                                       "stocksMb": 1.5
                                       "weeklyChangeMb": 1.5
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "euGas":
                                     "fillPct": 1.5
                                     "fillPctChange1d": 1.5
@@ -2477,9 +2540,6 @@ paths:
                                     - "period": "daily"
                                       "storBcf": 1.5
                                       "weeklyChangeBcf": 1.5
-                                "refinery":
-                                    "inputsMbpd": 1.5
-                                    "period": "daily"
                             schema:
                                 $ref: '#/components/schemas/GetOilInventoriesResponse'
                 "400":
@@ -2572,6 +2632,10 @@ paths:
                         application/json:
                             example:
                                 "context": "example"
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "policies":
                                     - "category": "cs.AI"
                                       "country": "US"
@@ -2580,7 +2644,6 @@ paths:
                                       "measure": "example"
                                 "source": "example"
                                 "sourceUrl": "https://example.com/worldmonitor"
-                                "unavailable": true
                             schema:
                                 $ref: '#/components/schemas/GetEnergyCrisisPoliciesResponse'
                 "400":
@@ -3014,6 +3077,8 @@ components:
                         True when upstream data is unavailable (fallback result).
                          True when the upstream or seed-backed variant is unavailable; empty payload fields
                          are graceful degradation, not confirmed zero data.
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
             description: GetMacroSignalsResponse contains the full macro signal dashboard with 7 signals and verdict.
         MacroSignals:
             type: object
@@ -3224,6 +3289,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/BisPolicyRate'
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
             description: GetBisPolicyRatesResponse contains BIS policy rate data.
         BisPolicyRate:
             type: object
@@ -3259,6 +3326,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/BisExchangeRate'
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
             description: GetBisExchangeRatesResponse contains BIS effective exchange rate data.
         BisExchangeRate:
             type: object
@@ -3295,6 +3364,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/BisCreditToGdp'
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
             description: GetBisCreditResponse contains BIS credit-to-GDP data.
         BisCreditToGdp:
             type: object
@@ -3350,6 +3421,8 @@ components:
                     type: integer
                     format: int32
                     description: Number of series requested.
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
             description: GetFredSeriesBatchResponse contains the requested FRED series data.
         ResultsEntry:
             type: object
@@ -3382,6 +3455,8 @@ components:
                     type: boolean
                 prevFetchedAt:
                     type: string
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
         CountryBasket:
             type: object
             properties:
@@ -3495,6 +3570,8 @@ components:
                         True when upstream data is unavailable (fallback result).
                          True when the upstream or seed-backed variant is unavailable; empty payload fields
                          are graceful degradation, not confirmed zero data.
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
             description: GetNationalDebtResponse wraps the full list of national debt entries.
         NationalDebtEntry:
             type: object
@@ -3563,6 +3640,8 @@ components:
                 countryCount:
                     type: integer
                     format: int32
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
         FuelCountryPrice:
             type: object
             properties:
@@ -3681,6 +3760,8 @@ components:
                     description: |-
                         True when the upstream or seed-backed variant is unavailable; empty payload fields
                          are graceful degradation, not confirmed zero data.
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
         EconomicEvent:
             type: object
             properties:
@@ -3789,6 +3870,8 @@ components:
                         True when Redis key is missing or data is unavailable.
                          True when the upstream or seed-backed variant is unavailable; empty payload fields
                          are graceful degradation, not confirmed zero data.
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
             description: GetEcbFxRatesResponse contains the latest ECB reference rates.
         EcbFxRate:
             type: object
@@ -3829,6 +3912,8 @@ components:
                         True when upstream data is unavailable (fallback result).
                          True when the upstream or seed-backed variant is unavailable; empty payload fields
                          are graceful degradation, not confirmed zero data.
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
             description: GetEurostatCountryDataResponse contains per-country CPI, unemployment, and GDP growth.
         CountriesEntry:
             type: object
@@ -3906,6 +3991,8 @@ components:
                         True when upstream data is unavailable (fallback result).
                          True when the upstream or seed-backed variant is unavailable; empty payload fields
                          are graceful degradation, not confirmed zero data.
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
             description: GetEuGasStorageResponse contains the EU aggregate gas storage snapshot.
         EuGasStorageHistoryEntry:
             type: object
@@ -3936,6 +4023,8 @@ components:
                         True if data is not yet available in cache.
                          True when the upstream or seed-backed variant is unavailable; empty payload fields
                          are graceful degradation, not confirmed zero data.
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
             description: GetEuYieldCurveResponse contains the latest ECB Euro Area AAA sovereign yield curve.
         EuYieldCurveData:
             type: object
@@ -3994,6 +4083,8 @@ components:
                          series has stopped publishing (issue #3845). Consumers must not present a
                          stale reading as current. Seeder-side detection is content-age
                          (STALE_CONTENT in /api/health); this flag is the per-request equivalent.
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
         EuFsiObservation:
             type: object
             properties:
@@ -4023,6 +4114,8 @@ components:
                     description: |-
                         True when the upstream or seed-backed variant is unavailable; empty payload fields
                          are graceful degradation, not confirmed zero data.
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
         EconomicStressComponent:
             type: object
             properties:
@@ -4061,6 +4154,8 @@ components:
                 yoyPct:
                     type: number
                     format: double
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
         FaoFoodPricePoint:
             type: object
             properties:
@@ -4113,6 +4208,8 @@ components:
                         True when upstream seed data is unavailable (fallback result).
                          True when the upstream or seed-backed variant is unavailable; empty payload fields
                          are graceful degradation, not confirmed zero data.
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
             description: GetOilStocksAnalysisResponse contains the IEA oil stocks days-of-cover analysis.
         OilStocksAnalysisMember:
             type: object
@@ -4219,6 +4316,8 @@ components:
                     $ref: '#/components/schemas/OilInventoriesRefinery'
                 updatedAt:
                     type: string
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
         CrudeInventoryWeekRef:
             type: object
             properties:
@@ -4367,6 +4466,8 @@ components:
                         True when upstream seed data is unavailable (fallback result).
                          True when the upstream or seed-backed variant is unavailable; empty payload fields
                          are graceful degradation, not confirmed zero data.
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
             description: GetEnergyCrisisPoliciesResponse contains energy crisis policy data from the IEA tracker.
         EnergyCrisisPolicy:
             type: object

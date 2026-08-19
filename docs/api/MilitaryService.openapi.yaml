@@ -237,6 +237,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "theaters":
                                     - "activeFlights": 1
                                       "activeOperations":
@@ -437,6 +441,10 @@ paths:
                         application/json:
                             example:
                                 "configured": true
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetched": 1
                                 "requested": 1
                                 "results":
@@ -854,6 +862,10 @@ paths:
                                       "expansionZoom": 1
                                       "latitude": 40.7128
                                       "longitude": -74.006
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "totalInView": 1
                                 "truncated": true
                             schema:
@@ -1049,6 +1061,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "fetchedAt": "2026-01-15T12:00:00Z"
                                 "patents":
                                     - "abstract": "example"
@@ -1591,6 +1607,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/TheaterPosture'
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
             description: GetTheaterPostureResponse contains theater posture assessments.
         TheaterPosture:
             type: object
@@ -1723,6 +1741,8 @@ components:
                 configured:
                     type: boolean
                     description: Whether the Wingbits API is configured.
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
             description: GetAircraftDetailsBatchResponse contains the batch lookup results.
         ResultsEntry:
             type: object
@@ -1937,6 +1957,8 @@ components:
                     format: int32
                 truncated:
                     type: boolean
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
         MilitaryBaseEntry:
             type: object
             properties:
@@ -2143,6 +2165,8 @@ components:
                 fetchedAt:
                     type: string
                     description: ISO 8601 timestamp when data was seeded.
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
             description: ListDefensePatentsResponse contains recent defense/dual-use patent filings.
         DefensePatentFiling:
             type: object

@@ -13,6 +13,7 @@ export interface ListPredictionMarketsResponse {
   pagination?: PaginationResponse;
   fetchedAt: number;
   dataAvailable: boolean;
+  dataStatus?: DataStatus;
 }
 
 export interface PredictionMarket {
@@ -30,6 +31,14 @@ export interface PaginationResponse {
   nextCursor: string;
   totalCount: number;
 }
+
+export interface DataStatus {
+  fetchedAt: string;
+  availability: DataAvailability;
+  detail: string;
+}
+
+export type DataAvailability = "DATA_AVAILABILITY_UNSPECIFIED" | "DATA_AVAILABILITY_OK" | "DATA_AVAILABILITY_EMPTY" | "DATA_AVAILABILITY_NEVER_SEEDED" | "DATA_AVAILABILITY_UPSTREAM_ERROR" | "DATA_AVAILABILITY_STALE";
 
 export type MarketSource = "MARKET_SOURCE_UNSPECIFIED" | "MARKET_SOURCE_POLYMARKET" | "MARKET_SOURCE_KALSHI";
 

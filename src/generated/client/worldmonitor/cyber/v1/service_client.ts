@@ -14,6 +14,7 @@ export interface ListCyberThreatsRequest {
 export interface ListCyberThreatsResponse {
   threats: CyberThreat[];
   pagination?: PaginationResponse;
+  dataStatus?: DataStatus;
 }
 
 export interface CyberThreat {
@@ -41,7 +42,15 @@ export interface PaginationResponse {
   totalCount: number;
 }
 
+export interface DataStatus {
+  fetchedAt: string;
+  availability: DataAvailability;
+  detail: string;
+}
+
 export type CriticalityLevel = "CRITICALITY_LEVEL_UNSPECIFIED" | "CRITICALITY_LEVEL_LOW" | "CRITICALITY_LEVEL_MEDIUM" | "CRITICALITY_LEVEL_HIGH" | "CRITICALITY_LEVEL_CRITICAL";
+
+export type DataAvailability = "DATA_AVAILABILITY_UNSPECIFIED" | "DATA_AVAILABILITY_OK" | "DATA_AVAILABILITY_EMPTY" | "DATA_AVAILABILITY_NEVER_SEEDED" | "DATA_AVAILABILITY_UPSTREAM_ERROR" | "DATA_AVAILABILITY_STALE";
 
 export type CyberThreatIndicatorType = "CYBER_THREAT_INDICATOR_TYPE_UNSPECIFIED" | "CYBER_THREAT_INDICATOR_TYPE_IP" | "CYBER_THREAT_INDICATOR_TYPE_DOMAIN" | "CYBER_THREAT_INDICATOR_TYPE_URL";
 

@@ -8,6 +8,7 @@ export interface ListDiseaseOutbreaksResponse {
   outbreaks: DiseaseOutbreakItem[];
   fetchedAt: number;
   alertLevelMethodologyVersion: string;
+  dataStatus?: DataStatus;
 }
 
 export interface DiseaseOutbreakItem {
@@ -25,12 +26,19 @@ export interface DiseaseOutbreakItem {
   cases: number;
 }
 
+export interface DataStatus {
+  fetchedAt: string;
+  availability: DataAvailability;
+  detail: string;
+}
+
 export interface ListAirQualityAlertsRequest {
 }
 
 export interface ListAirQualityAlertsResponse {
   alerts: AirQualityAlert[];
   fetchedAt: number;
+  dataStatus?: DataStatus;
 }
 
 export interface AirQualityAlert {
@@ -45,6 +53,8 @@ export interface AirQualityAlert {
   measuredAt: number;
   source: string;
 }
+
+export type DataAvailability = "DATA_AVAILABILITY_UNSPECIFIED" | "DATA_AVAILABILITY_OK" | "DATA_AVAILABILITY_EMPTY" | "DATA_AVAILABILITY_NEVER_SEEDED" | "DATA_AVAILABILITY_UPSTREAM_ERROR" | "DATA_AVAILABILITY_STALE";
 
 export interface FieldViolation {
   field: string;

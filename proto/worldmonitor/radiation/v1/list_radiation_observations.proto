@@ -4,6 +4,7 @@ package worldmonitor.radiation.v1;
 
 import "sebuf/http/annotations.proto";
 import "worldmonitor/radiation/v1/radiation_observation.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 // ListRadiationObservationsRequest specifies optional result limits.
 message ListRadiationObservationsRequest {
@@ -51,4 +52,8 @@ message ListRadiationObservationsResponse {
 
   // Observations whose normalized value was derived from CPM.
   int32 converted_from_cpm_count = 11;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 13;
 }

@@ -4,7 +4,7 @@ import type {
   GetEconomicCalendarResponse,
   EconomicEvent,
 } from '../../../../src/generated/server/worldmonitor/economic/v1/service_server';
-import { getCachedJson } from '../../../_shared/redis';
+import { attach } from '../../../_shared/data-status';
 
 const SEED_CACHE_KEY = 'economic:econ-calendar:v1';
 
@@ -22,8 +22,8 @@ export async function getEconomicCalendar(
   _ctx: ServerContext,
   _req: GetEconomicCalendarRequest,
 ): Promise<GetEconomicCalendarResponse> {
-  try {
-    const result = await getCachedJson(SEED_CACHE_KEY, true) as GetEconomicCalendarResponse | null;
+  return attach(SEED_CACHE_KEY, 'the economic-calendar seeder has not written this key', (raw) => {
+    const result = raw as GetEconomicCalendarResponse | null;
     if (result && !result.unavailable && Array.isArray(result.events) && result.events.length > 0) {
       return {
         events: result.events as EconomicEvent[],
@@ -34,7 +34,5 @@ export async function getEconomicCalendar(
       };
     }
     return buildFallbackResult();
-  } catch {
-    return buildFallbackResult();
-  }
+  }, (out) => out.events.length);
 }

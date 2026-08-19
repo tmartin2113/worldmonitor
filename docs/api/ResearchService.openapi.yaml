@@ -186,6 +186,10 @@ paths:
                     content:
                         application/json:
                             example:
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "pagination":
                                     "nextCursor": "next-page-token"
                                     "totalCount": 1
@@ -435,6 +439,10 @@ paths:
                             example:
                                 "conferenceCount": 1
                                 "count": 1
+                                "dataStatus":
+                                    "availability": "DATA_AVAILABILITY_OK"
+                                    "detail": "example"
+                                    "fetchedAt": "1717200000000"
                                 "error": "example"
                                 "events":
                                     - "coords":
@@ -447,7 +455,6 @@ paths:
                                       "endDate": "2026-01-15"
                                       "id": "example-id"
                                       "location": "example"
-                                "lastUpdated": "2026-01-15T12:00:00.000Z"
                             schema:
                                 $ref: '#/components/schemas/ListTechEventsResponse'
                 "400":
@@ -769,6 +776,8 @@ components:
                         $ref: '#/components/schemas/GithubRepo'
                 pagination:
                     $ref: '#/components/schemas/PaginationResponse'
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
             description: ListTrendingReposResponse contains trending GitHub repositories.
         GithubRepo:
             type: object
@@ -914,6 +923,8 @@ components:
                 error:
                     type: string
                     description: Error message if success is false.
+                dataStatus:
+                    $ref: '#/components/schemas/DataStatus'
             description: ListTechEventsResponse contains tech events matching the request.
         TechEvent:
             type: object

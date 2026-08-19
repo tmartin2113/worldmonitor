@@ -3,6 +3,7 @@ syntax = "proto3";
 package worldmonitor.economic.v1;
 
 import "worldmonitor/economic/v1/bis_data.proto";
+import "worldmonitor/core/v1/data_status.proto";
 
 // GetBisExchangeRatesRequest requests effective exchange rates.
 message GetBisExchangeRatesRequest {}
@@ -11,4 +12,8 @@ message GetBisExchangeRatesRequest {}
 message GetBisExchangeRatesResponse {
   // The list of exchange rates by country.
   repeated BisExchangeRate rates = 1;
+  // Why this payload looks the way it does. Distinguishes a genuinely empty
+  // result from "never fetched" and from "the fetch failed" — states a bare
+  // empty payload collapses into one unfalsifiable answer.
+  worldmonitor.core.v1.DataStatus data_status = 2;
 }
