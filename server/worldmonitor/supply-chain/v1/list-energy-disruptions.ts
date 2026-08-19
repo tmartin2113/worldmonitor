@@ -1,4 +1,4 @@
-import { getCachedJson } from '../../../_shared/redis';
+import { attach } from '../../../_shared/data-status';
 import { ENERGY_DISRUPTIONS_KEY } from '../../../_shared/cache-keys';
 import type {
   ListEnergyDisruptionsRequest,
@@ -80,7 +80,8 @@ export async function listEnergyDisruptions(
   _ctx: unknown,
   req: ListEnergyDisruptionsRequest,
 ): Promise<ListEnergyDisruptionsResponse> {
-  const raw = (await getCachedJson(ENERGY_DISRUPTIONS_KEY)) as RawRegistry | null;
+  return attach(ENERGY_DISRUPTIONS_KEY, 'the energy-disruption registry has not been written', (cached) => {
+  const raw = cached as RawRegistry | null;
 
   // upstreamUnavailable fires only on raw-null (Redis returned nothing),
   // matching the contract enforced by sibling handlers (list-pipelines,
@@ -111,4 +112,5 @@ export async function listEnergyDisruptions(
     classifierVersion: raw.classifierVersion ?? 'v1',
     upstreamUnavailable: false,
   };
+  }, (out) => out.events.length);
 }

@@ -5,7 +5,7 @@ import type {
   ListSatellitesResponse,
   Satellite,
 } from '../../../../src/generated/server/worldmonitor/intelligence/v1/service_server';
-import { getCachedJson } from '../../../_shared/redis';
+import { attach } from '../../../_shared/data-status';
 
 const REDIS_KEY = 'intelligence:satellites:tle:v1';
 
@@ -49,7 +49,7 @@ export const listSatellites: IntelligenceServiceHandler['listSatellites'] = asyn
   _ctx: ServerContext,
   req: ListSatellitesRequest,
 ): Promise<ListSatellitesResponse> => {
-  const cached = await getCachedJson(REDIS_KEY, true);
+  return attach(REDIS_KEY, 'the satellite seeder has not written this key', (cached) => {
   if (!cached || typeof cached !== 'object') {
     return { satellites: [] };
   }
@@ -68,4 +68,5 @@ export const listSatellites: IntelligenceServiceHandler['listSatellites'] = asyn
     });
 
   return { satellites };
+  }, (out) => out.satellites.length);
 };

@@ -1,4 +1,4 @@
-import { getCachedJson } from '../../../_shared/redis';
+import { attach } from '../../../_shared/data-status';
 import { FUEL_SHORTAGES_KEY } from '../../../_shared/cache-keys';
 import type {
   GetFuelShortageDetailRequest,
@@ -28,10 +28,12 @@ export async function getFuelShortageDetail(
       shortage: undefined,
       fetchedAt: new Date().toISOString(),
       unavailable: true,
+      dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: 'no shortage_id supplied; nothing was looked up' },
     };
   }
 
-  const raw = (await getCachedJson(FUEL_SHORTAGES_KEY)) as RawRegistry | null;
+  return attach(FUEL_SHORTAGES_KEY, 'the fuel-shortage registry has not been written', (cached) => {
+  const raw = cached as RawRegistry | null;
   const entry = raw?.shortages?.[req.shortageId];
   if (!entry) {
     return {
@@ -55,4 +57,5 @@ export async function getFuelShortageDetail(
     fetchedAt: raw?.updatedAt ?? new Date().toISOString(),
     unavailable: false,
   };
+  }, (out) => (out.shortage ? 1 : 0));
 }

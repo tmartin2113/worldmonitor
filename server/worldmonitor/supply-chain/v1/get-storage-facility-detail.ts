@@ -1,4 +1,4 @@
-import { getCachedJson } from '../../../_shared/redis';
+import { attach } from '../../../_shared/data-status';
 import { STORAGE_FACILITIES_KEY } from '../../../_shared/cache-keys';
 import type {
   GetStorageFacilityDetailRequest,
@@ -27,10 +27,12 @@ export async function getStorageFacilityDetail(
       revisions: [],
       fetchedAt: new Date().toISOString(),
       unavailable: true,
+      dataStatus: { fetchedAt: '0', availability: 'DATA_AVAILABILITY_EMPTY', detail: 'no facility_id supplied; nothing was looked up' },
     };
   }
 
-  const raw = (await getCachedJson(STORAGE_FACILITIES_KEY)) as RawRegistry | null;
+  return attach(STORAGE_FACILITIES_KEY, 'the storage-facility registry has not been written', (cached) => {
+  const raw = cached as RawRegistry | null;
   const entry = raw?.facilities?.[req.facilityId];
   if (!entry) {
     return {
@@ -57,4 +59,5 @@ export async function getStorageFacilityDetail(
     fetchedAt: raw?.updatedAt ?? new Date().toISOString(),
     unavailable: false,
   };
+  }, (out) => (out.facility ? 1 : 0));
 }

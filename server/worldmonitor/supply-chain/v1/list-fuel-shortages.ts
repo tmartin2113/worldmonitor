@@ -1,4 +1,4 @@
-import { getCachedJson } from '../../../_shared/redis';
+import { attach } from '../../../_shared/data-status';
 import { FUEL_SHORTAGES_KEY } from '../../../_shared/cache-keys';
 import type {
   ListFuelShortagesRequest,
@@ -86,7 +86,8 @@ export async function listFuelShortages(
   _ctx: unknown,
   req: ListFuelShortagesRequest,
 ): Promise<ListFuelShortagesResponse> {
-  const raw = (await getCachedJson(FUEL_SHORTAGES_KEY)) as RawRegistry | null;
+  return attach(FUEL_SHORTAGES_KEY, 'the fuel-shortage registry has not been written', (cached) => {
+  const raw = cached as RawRegistry | null;
   if (!raw?.shortages) {
     return {
       shortages: [],
@@ -107,4 +108,5 @@ export async function listFuelShortages(
     classifierVersion: raw.classifierVersion ?? 'v1',
     upstreamUnavailable: false,
   };
+  }, (out) => out.shortages.length);
 }
