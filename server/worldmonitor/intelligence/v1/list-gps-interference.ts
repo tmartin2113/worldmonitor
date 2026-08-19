@@ -6,7 +6,7 @@ import type {
   GpsJamHex,
   InterferenceLevel,
 } from '../../../../src/generated/server/worldmonitor/intelligence/v1/service_server';
-import { getCachedJson } from '../../../_shared/redis';
+import { readSeeded, type DataStatus } from '../../../_shared/data-status';
 
 const REDIS_KEY = 'intelligence:gpsjam:v2';
 const REDIS_KEY_V1 = 'intelligence:gpsjam:v1';
@@ -68,14 +68,27 @@ function normalizeHex(hex: GpsJamCachedHex): GpsJamHex {
   };
 }
 
+// A CASCADE: the current key, then the legacy v1 key normalized forward.
+// Serving the legacy shape is not the same answer as serving the current one,
+// so the caller is told which it got.
+let lastLoadStatus: DataStatus = { fetchedAt: '0', availability: 'DATA_AVAILABILITY_UNSPECIFIED', detail: '' };
+
 async function loadGpsJamData(): Promise<GpsJamCachedData | null> {
-  const current = await getCachedJson(REDIS_KEY, true);
+  const cur = await readSeeded(REDIS_KEY, 'the GPS-interference seeder has not written the current key');
+  const current = cur.data;
   if (current && typeof current === 'object') {
+    lastLoadStatus = cur.status;
     return current as GpsJamCachedData;
   }
 
-  const legacy = await getCachedJson(REDIS_KEY_V1, true);
-  if (!legacy || typeof legacy !== 'object') return null;
+  const leg = await readSeeded(REDIS_KEY_V1, 'no legacy GPS-interference snapshot either');
+  const legacy = leg.data;
+  if (!legacy || typeof legacy !== 'object') { lastLoadStatus = cur.status; return null; }
+  lastLoadStatus = {
+    fetchedAt: leg.status.fetchedAt,
+    availability: 'DATA_AVAILABILITY_STALE',
+    detail: 'the current GPS-interference key was unavailable; serving the normalized legacy v1 snapshot',
+  };
   const payload = legacy as GpsJamCachedData;
   if (!Array.isArray(payload.hexes)) return null;
 
@@ -106,6 +119,7 @@ export const listGpsInterference: IntelligenceServiceHandler['listGpsInterferenc
       stats: { totalHexes: 0, highCount: 0, mediumCount: 0 },
       source: '',
       fetchedAt: 0,
+      dataStatus: lastLoadStatus,
     };
   }
 
@@ -131,5 +145,6 @@ export const listGpsInterference: IntelligenceServiceHandler['listGpsInterferenc
     stats,
     source: data.source || 'gpsjam.org',
     fetchedAt: toFetchedAt(data.fetchedAt),
+    dataStatus: lastLoadStatus,
   };
 };

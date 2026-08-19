@@ -1,4 +1,4 @@
-import { getCachedJson } from '../../../_shared/redis';
+import { cacheTally } from '../../../_shared/data-status';
 import { PIPELINES_GAS_KEY, PIPELINES_OIL_KEY } from '../../../_shared/cache-keys';
 import type {
   ListPipelinesRequest,
@@ -116,9 +116,12 @@ export async function listPipelines(
   const wantGas = !req.commodityType || req.commodityType === 'gas';
   const wantOil = !req.commodityType || req.commodityType === 'oil';
 
+  // Only registries the caller actually asked for are counted, so filtering to
+  // gas cannot make a complete answer look PARTIAL for a missing oil key.
+  const tally = cacheTally('the pipeline registries have not been written');
   const [gasRaw, oilRaw] = await Promise.all([
-    wantGas ? getCachedJson(PIPELINES_GAS_KEY) as Promise<RawRegistry | null> : Promise.resolve(null),
-    wantOil ? getCachedJson(PIPELINES_OIL_KEY) as Promise<RawRegistry | null> : Promise.resolve(null),
+    wantGas ? tally.read<RawRegistry>(PIPELINES_GAS_KEY) : Promise.resolve(null),
+    wantOil ? tally.read<RawRegistry>(PIPELINES_OIL_KEY) : Promise.resolve(null),
   ]);
 
   // upstreamUnavailable = "we tried to read a registry and Redis returned
@@ -137,6 +140,7 @@ export async function listPipelines(
       fetchedAt: new Date().toISOString(),
       classifierVersion: '',
       upstreamUnavailable: true,
+      dataStatus: tally.status(),
     };
   }
 
@@ -159,5 +163,6 @@ export async function listPipelines(
     fetchedAt,
     classifierVersion,
     upstreamUnavailable: false,
+    dataStatus: tally.status(),
   };
 }

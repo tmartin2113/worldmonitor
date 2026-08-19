@@ -6,7 +6,7 @@ import type {
 } from '../../../../src/generated/server/worldmonitor/intelligence/v1/service_server';
 import { ValidationError } from '../../../../src/generated/server/worldmonitor/intelligence/v1/service_server';
 
-import { getCachedJson } from '../../../_shared/redis';
+import { cacheTally } from '../../../_shared/data-status';
 import { CII_RISK_SCORE_CACHE_KEYS } from '../../../_shared/cache-keys';
 import { TIER1_COUNTRIES } from './_shared';
 
@@ -52,10 +52,15 @@ export async function getCountryRisk(
     ]);
   }
 
+  // Three independent inputs. The fail-closed branch below is right — a partial
+  // read must not be cached as a confident "no sanctions" — but it reported the
+  // same `upstreamUnavailable: true` whether one key was missing or all three,
+  // and whether they were absent or unreadable. PARTIAL says which.
+  const tally = cacheTally('the country-risk inputs have not been written');
   const [riskRaw, advisoriesRaw, sanctionsRaw] = await Promise.all([
-    getCachedJson(RISK_SCORES_KEY, true),
-    getCachedJson(ADVISORIES_KEY, true),
-    getCachedJson(SANCTIONS_COUNTS_KEY, true),
+    tally.read(RISK_SCORES_KEY),
+    tally.read(ADVISORIES_KEY),
+    tally.read(SANCTIONS_COUNTS_KEY),
   ]);
 
   // Any missing upstream key: fail closed to prevent CDN-caching of partial
@@ -71,6 +76,7 @@ export async function getCountryRisk(
       sanctionsCount: 0,
       fetchedAt: UNKNOWN_CII_COMPUTED_AT,
       upstreamUnavailable: true,
+      dataStatus: tally.status(),
     };
   }
 
@@ -93,5 +99,6 @@ export async function getCountryRisk(
     sanctionsCount,
     fetchedAt: cii?.computedAt ?? UNKNOWN_CII_COMPUTED_AT,
     upstreamUnavailable: false,
+    dataStatus: tally.status(),
   };
 }
