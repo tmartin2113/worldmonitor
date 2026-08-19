@@ -9,7 +9,7 @@ import type {
 import { ValidationError } from '../../../../src/generated/server/worldmonitor/supply_chain/v1/service_server';
 
 import { isCallerPremium } from '../../../_shared/premium-check';
-import { getCachedJson } from '../../../_shared/redis';
+import { cacheTally } from '../../../_shared/data-status';
 import { CHOKEPOINT_REGISTRY } from '../../../_shared/chokepoint-registry';
 import { CHOKEPOINT_STATUS_KEY } from '../../../_shared/cache-keys';
 import {
@@ -91,9 +91,10 @@ export async function getMultiSectorCostShock(
 
   // Seeder writes the products payload via raw key (no env-prefix) — read raw.
   const productsKey = `comtrade:bilateral-hs4:${iso2}:v1`;
+  const tally = cacheTally('the multi-sector cost-shock inputs have not been written');
   const [productsCache, statusCache] = await Promise.all([
-    getCachedJson(productsKey, true).catch(() => null) as Promise<CountryProductsCache | null>,
-    getCachedJson(CHOKEPOINT_STATUS_KEY).catch(() => null) as Promise<{ chokepoints?: ChokepointInfo[] } | null>,
+    tally.read<CountryProductsCache>(productsKey),
+    tally.read<{ chokepoints?: ChokepointInfo[] }>(CHOKEPOINT_STATUS_KEY),
   ]);
 
   const products = Array.isArray(productsCache?.products) ? productsCache.products : [];
@@ -125,5 +126,9 @@ export async function getMultiSectorCostShock(
     totalAddedCost,
     fetchedAt: new Date().toISOString(),
     unavailableReason: '',
+    // Both inputs were read through `.catch(() => null)`. Losing the products
+    // cache changes which sectors can be modelled at all; losing chokepoint
+    // status downgrades the war-risk inputs to static registry values.
+    dataStatus: tally.status(),
   };
 }
