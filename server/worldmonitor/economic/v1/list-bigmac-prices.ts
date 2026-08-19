@@ -9,7 +9,7 @@ import type {
   ListBigMacPricesResponse,
 } from '../../../../src/generated/server/worldmonitor/economic/v1/service_server';
 
-import { getCachedJson } from '../../../_shared/redis';
+import { attach } from '../../../_shared/data-status';
 
 const SEED_CACHE_KEY = 'economic:bigmac:v1';
 
@@ -17,13 +17,11 @@ export async function listBigMacPrices(
   _ctx: ServerContext,
   _req: ListBigMacPricesRequest,
 ): Promise<ListBigMacPricesResponse> {
-  try {
-    const result = await getCachedJson(SEED_CACHE_KEY, true) as ListBigMacPricesResponse | null;
+  return attach(SEED_CACHE_KEY, 'the Big Mac index seeder has not written this key', (raw) => {
+    const result = raw as ListBigMacPricesResponse | null;
     if (!result?.countries?.length) {
       return { countries: [], fetchedAt: '', cheapestCountry: '', mostExpensiveCountry: '', wowAvgPct: 0, wowAvailable: false, prevFetchedAt: '' };
     }
     return result;
-  } catch {
-    return { countries: [], fetchedAt: '', cheapestCountry: '', mostExpensiveCountry: '', wowAvgPct: 0, wowAvailable: false, prevFetchedAt: '' };
-  }
+  }, (out) => out.countries.length);
 }

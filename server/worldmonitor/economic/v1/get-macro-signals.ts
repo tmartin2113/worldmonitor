@@ -9,7 +9,7 @@ import type {
   GetMacroSignalsResponse,
 } from '../../../../src/generated/server/worldmonitor/economic/v1/service_server';
 
-import { getCachedJson } from '../../../_shared/redis';
+import { attach } from '../../../_shared/data-status';
 
 const SEED_CACHE_KEY = 'economic:macro-signals:v1';
 
@@ -37,11 +37,9 @@ export async function getMacroSignals(
   _ctx: ServerContext,
   _req: GetMacroSignalsRequest,
 ): Promise<GetMacroSignalsResponse> {
-  try {
-    const result = await getCachedJson(SEED_CACHE_KEY, true) as GetMacroSignalsResponse | null;
+  return attach(SEED_CACHE_KEY, 'the macro-signals seeder has not written this key', (raw) => {
+    const result = raw as GetMacroSignalsResponse | null;
     if (result && !result.unavailable && result.totalCount > 0) return result;
     return buildFallbackResult();
-  } catch {
-    return buildFallbackResult();
-  }
+  }, (out) => out.totalCount ?? 0);
 }

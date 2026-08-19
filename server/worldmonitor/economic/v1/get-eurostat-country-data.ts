@@ -9,7 +9,7 @@ import type {
   GetEurostatCountryDataResponse,
 } from '../../../../src/generated/server/worldmonitor/economic/v1/service_server';
 
-import { getCachedJson } from '../../../_shared/redis';
+import { attach } from '../../../_shared/data-status';
 
 const SEED_CACHE_KEY = 'economic:eurostat-country-data:v1';
 
@@ -25,8 +25,8 @@ export async function getEurostatCountryData(
   _ctx: ServerContext,
   _req: GetEurostatCountryDataRequest,
 ): Promise<GetEurostatCountryDataResponse> {
-  try {
-    const raw = await getCachedJson(SEED_CACHE_KEY, true) as Record<string, unknown> | null;
+  return attach(SEED_CACHE_KEY, 'the Eurostat seeder has not written this key', (cached) => {
+    const raw = cached as Record<string, unknown> | null;
     if (!raw || !raw.countries || Object.keys(raw.countries as object).length === 0) {
       return buildFallbackResult();
     }
@@ -35,7 +35,5 @@ export async function getEurostatCountryData(
       seededAt: String(raw.seededAt ?? '0'),
       unavailable: false,
     };
-  } catch {
-    return buildFallbackResult();
-  }
+  }, (out) => Object.keys(out.countries ?? {}).length);
 }

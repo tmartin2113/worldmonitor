@@ -5,7 +5,7 @@ import type {
   EcbFxRate,
 } from '../../../../src/generated/server/worldmonitor/economic/v1/service_server';
 
-import { getCachedJson } from '../../../_shared/redis';
+import { attach } from '../../../_shared/data-status';
 
 const SEED_CACHE_KEY = 'economic:ecb-fx-rates:v1';
 
@@ -17,8 +17,8 @@ export async function getEcbFxRates(
   _ctx: ServerContext,
   _req: GetEcbFxRatesRequest,
 ): Promise<GetEcbFxRatesResponse> {
-  try {
-    const cached = await getCachedJson(SEED_CACHE_KEY, true) as {
+  return attach(SEED_CACHE_KEY, 'the ECB FX seeder has not written this key', (raw) => {
+    const cached = raw as {
       rates: Record<string, { rate: number; date: string; change1d: number }>;
       updatedAt: string;
       seededAt: number;
@@ -41,7 +41,5 @@ export async function getEcbFxRates(
       seededAt: String(cached.seededAt ?? 0),
       unavailable: false,
     };
-  } catch {
-    return buildFallback();
-  }
+  }, (out) => out.rates.length);
 }
