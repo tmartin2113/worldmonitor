@@ -1302,6 +1302,9 @@ export async function runSeed(domain, resource, canonicalKey, fetchFn, opts = {}
     contentMeta,           // (rawData) => {newestItemAt, oldestItemAt} | null
     maxContentAgeMin,      // positive integer minutes — opts in together with contentMeta
     fetchPhaseTimeoutMs,   // hard ceiling on the fetch phase; defaults to lockTtlMs + margin (#4786)
+    assertFetchOk,         // (data) => string | null — see the block below runSeed's
+                           // fetch phase. Lets a fetcher that CANNOT throw declare
+                           // its own run degraded instead of publishing an empty.
   } = opts;
   const contractMode = typeof declareRecords === 'function';
   if (contractMode) {
@@ -1432,6 +1435,47 @@ export async function runSeed(domain, resource, canonicalKey, fetchFn, opts = {}
     console.log(`\n=== Failed gracefully (${Math.round(durationMs)}ms) ===`);
     await exitAfterTelemetryFlush(GRACEFUL_FETCH_FAILURE_EXIT_CODE);
   }
+  // ── DID THE FETCH ACTUALLY SUCCEED? ──────────────────────────────────────
+  // A THROWN fetch failure is handled above and never publishes: the lock is
+  // released, TTLs on existing keys are extended, and the prior good data stays.
+  // The hole is a fetcher that SWALLOWS its own error and returns `[]` — then
+  // `data` looks fine, `declareRecords` returns 0, and with `zeroIsValid: true`
+  // the run publishes `state: 'OK_ZERO'`. The API's data_status faithfully
+  // reports that as EMPTY, whose documented meaning is "fetched successfully and
+  // there genuinely is nothing". The envelope tells the truth about a lie told
+  // one layer below it.
+  //
+  // Measured 2026-08-19: seed-aviation skipped every failed RSS feed under
+  // Promise.allSettled and published `{items: []}` — a total outage rendered
+  // identical to a quiet news day. That one was fixed by throwing, which is the
+  // right answer when a fetcher CAN throw. `assertFetchOk` is for the ones that
+  // cannot: aggregators over allSettled, partial-coverage loops, anything whose
+  // failure is a COUNT rather than an exception.
+  //
+  // Returning a reason takes the same path as a thrown failure — no publish,
+  // TTLs extended, graceful exit — because a degraded run must never overwrite
+  // good data with a confident empty.
+  if (typeof assertFetchOk === 'function') {
+    let degradedReason = null;
+    try {
+      degradedReason = assertFetchOk(data) || null;
+    } catch (err) {
+      // A THROWING health assertion is itself a failure signal, not a reason to
+      // proceed as if the run were clean.
+      degradedReason = `assertFetchOk threw: ${err && err.message ? err.message : err}`;
+    }
+    if (degradedReason) {
+      await releaseLock(`${domain}:${resource}`, runId);
+      console.error(`  FETCH DEGRADED: ${degradedReason}`);
+      const ttl = ttlSeconds || 600;
+      const keys = [canonicalKey, `seed-meta:${domain}:${resource}`];
+      if (extraKeys) keys.push(...extraKeys.map(ek => ek.key));
+      await extendExistingTtl(keys, ttl);
+      console.log(`\n=== Failed gracefully — degraded fetch, previous data preserved (${Math.round(Date.now() - startMs)}ms) ===`);
+      await exitAfterTelemetryFlush(GRACEFUL_FETCH_FAILURE_EXIT_CODE);
+    }
+  }
+
   // Transition to publish phase — handler stays installed but switches
   // behavior via the phase tracker.
   currentPhase = 'publish';
