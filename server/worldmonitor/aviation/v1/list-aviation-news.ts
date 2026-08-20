@@ -58,7 +58,13 @@ function matchesEntities(text: string, entities: string[]): string[] {
     return entities.filter(e => lower.includes(e.toLowerCase()));
 }
 
-async function fetchFeed(feedUrl: string, sourceName: string): Promise<RssItem[]> {
+// Returns null when the feed could not be READ, [] when it was read and had
+// nothing. The caller counts non-null results: skipping one dead feed is right,
+// but skipping ALL of them and caching `{items: []}` is not — cachedFetchJson
+// stores a non-null result as a SUCCESS for the full TTL, so a total RSS outage
+// would serve "no aviation news" to every caller in that window. Same defect as
+// scripts/seed-aviation.mjs, which had it in the seeder half.
+async function fetchFeed(feedUrl: string, sourceName: string): Promise<RssItem[] | null> {
     try {
         const resp = await fetch(feedUrl, {
             headers: {
@@ -67,11 +73,11 @@ async function fetchFeed(feedUrl: string, sourceName: string): Promise<RssItem[]
             },
             signal: AbortSignal.timeout(8_000),
         });
-        if (!resp.ok) return [];
+        if (!resp.ok) return null;
         const xml = await resp.text();
         return parseRssItems(xml, sourceName);
     } catch {
-        return [];
+        return null;
     }
 }
 
@@ -91,11 +97,20 @@ export async function listAviationNews(
             cacheKey, CACHE_TTL, async () => {
                 const allItems: RssItem[] = [];
 
+                let feedsOk = 0;
                 await Promise.allSettled(
-                    AVIATION_RSS_FEEDS.map(f => fetchFeed(f.url, f.name).then(items => allItems.push(...items)))
+                    AVIATION_RSS_FEEDS.map(f => fetchFeed(f.url, f.name).then(items => {
+                        if (items === null) return;
+                        feedsOk += 1;
+                        allItems.push(...items);
+                    }))
                 );
 
                 const cutoff = now - windowMs;
+                // Returning null here makes cachedFetchJson negative-cache briefly
+                // instead of storing an empty result as a successful one.
+                if (AVIATION_RSS_FEEDS.length > 0 && feedsOk === 0) return null;
+
                 const filtered: AviationNewsItem[] = [];
 
                 for (const item of allItems) {

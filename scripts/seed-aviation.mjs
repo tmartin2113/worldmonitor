@@ -651,14 +651,21 @@ async function fetchIcaoNotams() {
       console.warn('[NOTAM] ICAO quota exhausted ("Reach call limit")');
       return null;
     }
+    // null, not []. This function ALREADY returns null for quota exhaustion so the
+    // caller can signal "we could not check" rather than blanking the key — but an
+    // HTTP error and a bot-challenge HTML page returned [], which merges into
+    // `closedIcaos: []` with `skipped: false, quotaExhausted: false`. That reads as
+    // "we checked, and no airports are closed". For an airport-closure feed that is
+    // the wrong direction to fail in, and it is the same distinction this file
+    // already draws one branch above.
     if (!resp.ok) {
       console.warn(`[NOTAM] ICAO HTTP ${resp.status}`);
-      return [];
+      return null;
     }
     const ct = resp.headers.get('content-type') || '';
     if (ct.includes('text/html')) {
       console.warn('[NOTAM] ICAO returned HTML (challenge page)');
-      return [];
+      return null;
     }
     try {
       const data = JSON.parse(body);
@@ -681,7 +688,11 @@ async function seedNotamClosures() {
   const t0 = Date.now();
   const notams = await fetchIcaoNotams();
   if (notams === null) {
-    // Quota exhausted — don't blank the key; signal upstream to touch TTL.
+    // Unreadable for ANY reason — quota, HTTP error or a challenge page. Don't
+    // blank the key; signal upstream to touch TTL. The flag is still named
+    // quotaExhausted because that is the contract the caller already handles, and
+    // every case it now covers means the same thing to that caller: we could not
+    // check, so do not publish "no closures".
     return { closedIcaos: [], restrictedIcaos: [], reasons: {}, quotaExhausted: true, skipped: false };
   }
 
