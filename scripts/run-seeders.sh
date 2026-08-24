@@ -99,10 +99,31 @@ run_seed() {
   fi
 }
 
-ok=0 fail=0 skip=0 timedout=0
+ok=0 fail=0 skip=0 timedout=0 excluded=0 nokey=0 deferred=0
+
+# MANUAL-ONLY SEEDERS ARE EXCLUDED, NOT RUN AND COUNTED AS FAILURES.
+#
+# seed-consumer-prices.mjs requires --force by design: an authoritative publisher
+# owns its keys with a 26h TTL, this script writes 10-60min TTLs, and whichever runs
+# last wins. Its own header says "Do NOT configure as a cron". The nightly glob ran
+# it anyway, it correctly refused, and the refusal was logged as FAIL every night —
+# so a working safety guard was indistinguishable from a broken seeder in the only
+# place anyone looks.
+#
+# Detected from the file's own docstring rather than a hardcoded list, so a future
+# manual-only seeder is excluded the day it is written instead of the day someone
+# notices it in the failure count.
+manual_only() {
+  head -40 "$1" | grep -qiE 'MANUAL FALLBACK|Do NOT configure as a|MANUAL ONLY'
+}
 
 for f in "$SCRIPT_DIR"/seed-*.mjs; do
   name="$(basename "$f")"
+  if manual_only "$f"; then
+    printf "→ %s ... EXCLUDED (manual-only by its own header)\n" "$name"
+    excluded=$((excluded + 1))
+    continue
+  fi
   printf "→ %s ... " "$name"
   output=$(run_seed "$f")
   rc=$?
@@ -130,6 +151,30 @@ for f in "$SCRIPT_DIR"/seed-*.mjs; do
   elif echo "$last" | grep -qE 'failed:[1-9]'; then
     printf "FAIL (%s)\n" "$last"
     fail=$((fail + 1))
+  # A CREDENTIAL DECLINE IS NOT A CRASH, AND ITS MESSAGE IS NOT ON THE LAST LINE.
+  #
+  # seed-health-air-quality prints "Missing OPENAQ_API_KEY" and then ends with
+  # "=== Fatal configuration error ==="; seed-eia-petroleum prints "EIA_API_KEY not
+  # set" and ends "=== Failed gracefully ===". The skip branch below only reads the
+  # LAST line, so both were counted as FAIL every night. A seeder correctly
+  # declining for want of a key is indistinguishable from one that crashed — the
+  # same defect already found for manual-only scripts, one layer along.
+  #
+  # NOKEY is its own state rather than folded into SKIP, because it is ACTIONABLE:
+  # it names the exact credential to obtain. Burying it in a skip count is how it
+  # stayed invisible.
+  elif echo "$output" | grep -qoE '(Missing|missing) [A-Z][A-Z0-9_]*_(API_)?KEY|[A-Z][A-Z0-9_]*_(API_)?KEY not set'; then
+    key=$(echo "$output" | grep -oE '[A-Z][A-Z0-9_]*_(API_)?KEY' | head -1)
+    printf "NOKEY (needs %s)\n" "$key"
+    nokey=$((nokey + 1))
+  # A PREREQUISITE SEEDER IS A DEPENDENCY PROBLEM, NOT A FAILURE. The runner globs
+  # seed-*.mjs alphabetically, so seed-climate-anomalies runs BEFORE the
+  # seed-climate-zone-normals baseline it requires — a guaranteed nightly failure
+  # that ordering alone would fix.
+  elif echo "$output" | grep -qiE 'run (node )?scripts/seed-[a-z0-9-]+\.mjs (first|before)'; then
+    dep=$(echo "$output" | grep -oE 'scripts/seed-[a-z0-9-]+\.mjs' | head -1)
+    printf "DEFERRED (needs %s to run first)\n" "$(basename "$dep")"
+    deferred=$((deferred + 1))
   elif echo "$last" | grep -qi "skip\|not set\|missing.*key\|not found"; then
     printf "SKIP (%s)\n" "$last"
     skip=$((skip + 1))
@@ -143,4 +188,4 @@ for f in "$SCRIPT_DIR"/seed-*.mjs; do
 done
 
 echo ""
-echo "Done: $ok ok, $skip skipped, $fail failed, $timedout timed out"
+echo "Done: $ok ok, $skip skipped, $fail failed, $timedout timed out, $excluded manual-only, $nokey missing-credential, $deferred dependency-deferred"
