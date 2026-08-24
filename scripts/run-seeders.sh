@@ -99,7 +99,7 @@ run_seed() {
   fi
 }
 
-ok=0 fail=0 skip=0 timedout=0 excluded=0 nokey=0 deferred=0
+ok=0 fail=0 skip=0 timedout=0 excluded=0 nokey=0 deferred=0 depfail=0
 
 # MANUAL-ONLY SEEDERS ARE EXCLUDED, NOT RUN AND COUNTED AS FAILURES.
 #
@@ -175,6 +175,20 @@ for f in "$SCRIPT_DIR"/seed-*.mjs; do
     dep=$(echo "$output" | grep -oE 'scripts/seed-[a-z0-9-]+\.mjs' | head -1)
     printf "DEFERRED (needs %s to run first)\n" "$(basename "$dep")"
     deferred=$((deferred + 1))
+  # A MISSING NPM PACKAGE IS A BUILD DEFECT, NOT A DATA FAILURE, and it is the
+  # least legible of all of them: node prints the stack trace and then its own
+  # version banner, so the LAST line is "Node.js v24.18.0". Reported that way,
+  # seed-digest-notifications has spent every night announcing its runtime
+  # version instead of the fact that it imports `resend`, which is not in
+  # package.json.
+  #
+  # Named separately because the fix is a one-line dependency add — and because
+  # a package absent on EVERY run is not the same event as a feed that failed
+  # today. Lumping them together is what let this sit unfixed.
+  elif echo "$output" | grep -qE "Cannot find (module|package)|ERR_MODULE_NOT_FOUND"; then
+    mod=$(echo "$output" | grep -oE "Cannot find (module|package) '[^']+'" | head -1 | grep -oE "'[^']+'" | tr -d "'")
+    printf "DEPFAIL (missing package %s — not in package.json)\n" "${mod:-unknown}"
+    depfail=$((depfail + 1))
   elif echo "$last" | grep -qi "skip\|not set\|missing.*key\|not found"; then
     printf "SKIP (%s)\n" "$last"
     skip=$((skip + 1))
@@ -188,4 +202,4 @@ for f in "$SCRIPT_DIR"/seed-*.mjs; do
 done
 
 echo ""
-echo "Done: $ok ok, $skip skipped, $fail failed, $timedout timed out, $excluded manual-only, $nokey missing-credential, $deferred dependency-deferred"
+echo "Done: $ok ok, $skip skipped, $fail failed, $timedout timed out, $excluded manual-only, $nokey missing-credential, $deferred dependency-deferred, $depfail missing-package"
