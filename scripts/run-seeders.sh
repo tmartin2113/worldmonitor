@@ -185,6 +185,31 @@ for f in "$SCRIPT_DIR"/seed-*.mjs; do
   # Named separately because the fix is a one-line dependency add — and because
   # a package absent on EVERY run is not the same event as a feed that failed
   # today. Lumping them together is what let this sit unfixed.
+  # A BUNDLE HIDES ITS CHILD'S REASON. Bundles run sections in-process and report
+  # only "[Bundle:x] Finished ... failed:1", so every classification below is blind
+  # to WHY. seed-bundle-health is the proof: it fails solely because Air-Quality
+  # cannot find OPENAQ_API_KEY — a credential decline, the exact thing NOKEY was
+  # built to surface — and it was being counted as a generic FAIL anyway.
+  #
+  # This is the SAME defect a third time: first manual-only scripts, then seeders
+  # whose decline was not on the last line, now bundles that swallow the child's
+  # message. Each layer re-hid the reason one level up.
+  #
+  # So classify by the SECTION reasons, not the bundle summary. If every failing
+  # section is a credential decline, the bundle is NOKEY like any other seeder;
+  # otherwise it stays FAIL but NAMES the sections instead of quoting a count.
+  elif echo "$output" | grep -qE '^\[Bundle:[^]]+\] section=.* status=FAILED'; then
+    secs=$(echo "$output" | grep -oE 'section=[A-Za-z0-9_-]+ status=FAILED' | sed 's/section=//;s/ status=FAILED//' | paste -sd, -)
+    nfail=$(echo "$output" | grep -cE 'section=.* status=FAILED')
+    nkey=$(echo "$output" | grep -cE '(Missing|missing) [A-Z][A-Z0-9_]*_(API_)?KEY|[A-Z][A-Z0-9_]*_(API_)?KEY (missing|not set)')
+    if [ "$nkey" -ge "$nfail" ]; then
+      key=$(echo "$output" | grep -oE '[A-Z][A-Z0-9_]*_(API_)?KEY' | head -1)
+      printf "NOKEY (bundle section %s needs %s)\n" "$secs" "$key"
+      nokey=$((nokey + 1))
+    else
+      printf "FAIL (bundle sections: %s)\n" "$secs"
+      fail=$((fail + 1))
+    fi
   elif echo "$output" | grep -qE "Cannot find (module|package)|ERR_MODULE_NOT_FOUND"; then
     mod=$(echo "$output" | grep -oE "Cannot find (module|package) '[^']+'" | head -1 | grep -oE "'[^']+'" | tr -d "'")
     printf "DEPFAIL (missing package %s — not in package.json)\n" "${mod:-unknown}"
