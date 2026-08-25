@@ -40,7 +40,7 @@ async function fetchAll() {
   const data = await resp.json();
   const raw = Array.isArray(data?.earningsCalendar) ? data.earningsCalendar : [];
 
-  const earnings = raw
+  const ranked = raw
     .filter(e => e.symbol)
     .map(e => {
       const epsEst = e.epsEstimate != null ? Number(e.epsEstimate) : null;
@@ -81,8 +81,23 @@ async function fetchAll() {
     .sort((a, b) => {
       if (a.date !== b.date) return a.date.localeCompare(b.date);
       return (b.revenueEstimate ?? 0) - (a.revenueEstimate ?? 0);
-    })
-    .slice(0, 100);
+    });
+
+  // A CHRONOLOGICAL SORT FOLLOWED BY slice(0, 100) KEEPS THE OLDEST 100.
+  // The request window is from-7d to +14d, so the API does return upcoming
+  // earnings — and every one of them was being discarded by the cap. The stored
+  // calendar held 100 events dated entirely in the PAST WEEK, which is the half
+  // that cannot be traded. An earnings calendar that only knows what already
+  // happened is not a calendar.
+  //
+  // Forward events are taken FIRST and only then is the remainder backfilled
+  // with recent history, so the cap can no longer silently drop the future.
+  const todayET = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/New_York' }))
+    .toISOString().slice(0, 10);   // ET, not UTC — after 8pm ET a UTC date is tomorrow
+  const upcoming = ranked.filter(e => e.date >= todayET);
+  const recent = ranked.filter(e => e.date < todayET).reverse();  // most recent first
+  const earnings = [...upcoming, ...recent].slice(0, 100);
+  console.log(`  ${upcoming.length} upcoming, ${recent.length} recent; kept ${earnings.length}`);
 
   console.log(`  Fetched ${earnings.length} earnings entries (from ${raw.length} total)`);
   return { earnings, unavailable: false };
@@ -90,7 +105,12 @@ async function fetchAll() {
 
 function validate(data) {
   // >= 3 distinguishes a healthy result from an over-aggressive filter or a near-empty API response
-  return Array.isArray(data?.earnings) && data.earnings.length >= 3;
+  // Row count alone passed a calendar made entirely of the past. The point of
+  // this feed is what is COMING, so at least one forward-dated event is required.
+  if (!Array.isArray(data?.earnings) || data.earnings.length < 3) return false;
+  const todayET = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/New_York' }))
+    .toISOString().slice(0, 10);
+  return data.earnings.some(e => e.date >= todayET);
 }
 
 export function declareRecords(data) {
