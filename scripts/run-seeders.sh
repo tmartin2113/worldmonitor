@@ -163,8 +163,26 @@ for f in "$SCRIPT_DIR"/seed-*.mjs; do
   # NOKEY is its own state rather than folded into SKIP, because it is ACTIONABLE:
   # it names the exact credential to obtain. Burying it in a skip count is how it
   # stayed invisible.
-  elif echo "$output" | grep -qoE '(Missing|missing) [A-Z][A-Z0-9_]*_(API_)?KEY|[A-Z][A-Z0-9_]*_(API_)?KEY not set'; then
-    key=$(echo "$output" | grep -oE '[A-Z][A-Z0-9_]*_(API_)?KEY' | head -1)
+    #
+    # A FOURTH PHRASING, 2026-08-31. The pattern above required a var ending in _KEY with
+    # the decline words adjacent to it, so three more declines were counted FAIL nightly:
+    #   seed-aviation                 "No AVIATIONSTACK_API key"   - no _KEY suffix
+    #   seed-recovery-reexport-share  "COMTRADE_API_KEYS not set"  - plural breaks adjacency
+    #   seed-climate-disasters        "RELIEFWEB_APPNAME not set"  - not a KEY at all
+    # Widened to any credential-SHAPED token next to a decline phrase.
+    #
+    # BROADENING THIS HIDES REAL FAILURES IF IT OVERREACHES, so it was tested in BOTH
+    # directions before shipping: 5/5 known declines classify NOKEY, and 6/6 genuine
+    # failures still classify FAIL - HTTP 403, an exhausted ollama budget, a missing npm
+    # package, a connect timeout, a 500, and a TypeError.
+    elif echo "$output" | grep -qoE '(Missing|missing|No|no) +[A-Z][A-Z0-9_]{2,}(_KEY|_KEYS|_TOKEN|_SECRET|_API|_APPNAME|_PASSWORD|_USER)?( +key)?|[A-Z][A-Z0-9_]{2,}(_KEY|_KEYS|_TOKEN|_SECRET|_API|_APPNAME|_PASSWORD|_USER) +not set'; then
+      # NAME EVERY CREDENTIAL IT DECLINED FOR, from the decline lines only.
+      # A head -1 over the whole output named the first credential-shaped token anywhere:
+      # seed-aviation reported ICAO_API_KEY, which is a PARTIAL skip (it still wrote FAA
+      # data), while the credential that actually failed the run was AVIATIONSTACK_API.
+      # Naming one of several sends the reader shopping for the wrong thing, so list all.
+      key=$(echo "$output" | grep -oE '(Missing|missing|No|no) +[A-Z][A-Z0-9_]{2,}(_KEY|_KEYS|_TOKEN|_SECRET|_API|_APPNAME|_PASSWORD|_USER)?( +key)?|[A-Z][A-Z0-9_]{2,}(_KEY|_KEYS|_TOKEN|_SECRET|_API|_APPNAME|_PASSWORD|_USER) +not set' \
+            | grep -oE '[A-Z][A-Z0-9_]{2,}(_KEY|_KEYS|_TOKEN|_SECRET|_API|_APPNAME|_PASSWORD|_USER)' | sort -u | paste -sd, -)
     printf "NOKEY (needs %s)\n" "$key"
     nokey=$((nokey + 1))
   # A PREREQUISITE SEEDER IS A DEPENDENCY PROBLEM, NOT A FAILURE. The runner globs
