@@ -118,6 +118,19 @@ function spawnSeed(scriptPath, { timeoutMs, label, bundleStartedAtMs }) {
     // dropped a different subset of Run ID / Mode / seed_complete lines
     // despite identical code paths). Bundle-level lines survive reliably.
     let lastSeedComplete = null;
+    // A BUNDLE MUST NOT SWALLOW ITS CHILD'S REASON.
+    // On a non-zero exit this reported `reason=exit 1` and nothing else, so
+    // run-seeders.sh -- which classifies a bundle by its SECTION reasons precisely so a
+    // credential decline is not counted as a failure -- was handed a string that can never
+    // match one. seed-bundle-health is the case in point: it fails solely because
+    // Air-Quality cannot find OPENAQ_API_KEY, and was counted FAIL every night. The child's
+    // own line says exactly that, and it already flows through these callbacks; it was
+    // simply never retained.
+    let declineLine = null;
+    const DECLINE_RE = /(?:Missing|missing|No|no)\s+[A-Z][A-Z0-9_]{2,}(?:_KEY|_KEYS|_TOKEN|_SECRET|_API|_APPNAME|_PASSWORD|_USER)?(?:\s+key)?|[A-Z][A-Z0-9_]{2,}(?:_KEY|_KEYS|_TOKEN|_SECRET|_API|_APPNAME|_PASSWORD|_USER)\s+not set/;
+    const noteDecline = (line) => {
+      if (!declineLine && DECLINE_RE.test(line)) declineLine = line.trim().slice(0, 160);
+    };
     // BUNDLE_RUN_STARTED_AT_MS lets consumer seeders detect when a cohort
     // peer's seed-meta predates the current bundle run and fall back to a
     // hard default instead of reading a stale peer key. See plan
@@ -132,6 +145,7 @@ function spawnSeed(scriptPath, { timeoutMs, label, bundleStartedAtMs }) {
 
     streamLines(child.stdout, (line) => {
       console.log(`  [${label}] ${line}`);
+      noteDecline(line);
       const idx = line.indexOf('{"event":"seed_complete"');
       if (idx >= 0) {
         try {
@@ -139,7 +153,7 @@ function spawnSeed(scriptPath, { timeoutMs, label, bundleStartedAtMs }) {
         } catch { /* malformed JSON — keep previous */ }
       }
     });
-    streamLines(child.stderr, (line) => console.warn(`  [${label}] ${line}`));
+    streamLines(child.stderr, (line) => { console.warn(`  [${label}] ${line}`); noteDecline(line); });
 
     let settled = false;
     let timedOut = false;
@@ -188,7 +202,16 @@ function spawnSeed(scriptPath, { timeoutMs, label, bundleStartedAtMs }) {
           reason: `graceful fetch failure (exit ${GRACEFUL_FETCH_FAILURE_EXIT_CODE})`,
         });
       } else {
-        settle({ elapsed, ok: false, reason: `exit ${code ?? 'null'}${signal ? ` (signal ${signal})` : ''}` });
+        // Promote a credential decline into the reason; otherwise keep the bare exit
+        // code. Only a decline is promoted -- arbitrary child text in a one-line summary
+        // would be noise, and a wrong reason is worse than none.
+        settle({
+          elapsed,
+          ok: false,
+          reason: declineLine
+            ? `exit ${code ?? 'null'}: ${declineLine}`
+            : `exit ${code ?? 'null'}${signal ? ` (signal ${signal})` : ''}`,
+        });
       }
     });
   });

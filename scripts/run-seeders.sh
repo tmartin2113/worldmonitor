@@ -225,9 +225,14 @@ for f in "$SCRIPT_DIR"/seed-*.mjs; do
   elif echo "$output" | grep -qE '^\[Bundle:[^]]+\] section=.* status=FAILED'; then
     secs=$(echo "$output" | grep -oE 'section=[A-Za-z0-9_-]+ status=FAILED' | sed 's/section=//;s/ status=FAILED//' | paste -sd, -)
     nfail=$(echo "$output" | grep -cE 'section=.* status=FAILED')
-    nkey=$(echo "$output" | grep -cE '(Missing|missing) [A-Z][A-Z0-9_]*_(API_)?KEY|[A-Z][A-Z0-9_]*_(API_)?KEY (missing|not set)')
+      # SCOPE THE COUNT TO THE FAILED SECTIONS' OWN REASONS. Counting declines anywhere
+      # in the output let unrelated mentions outvote a genuine failure. The bundle runner
+      # now puts the child's decline INTO reason=, so the failing sections can be asked
+      # directly whether EVERY one of them declined for a credential.
+      failreasons=$(echo "$output" | grep -E '^\[Bundle:[^]]+\] section=.* status=FAILED')
+      nkey=$(printf '%s\n' "$failreasons" | grep -cE '(Missing|missing|No|no) +[A-Z][A-Z0-9_]{2,}(_KEY|_KEYS|_TOKEN|_SECRET|_API|_APPNAME|_PASSWORD|_USER)?( +key)?|[A-Z][A-Z0-9_]{2,}(_KEY|_KEYS|_TOKEN|_SECRET|_API|_APPNAME|_PASSWORD|_USER) +(missing|not set)')
     if [ "$nkey" -ge "$nfail" ]; then
-      key=$(echo "$output" | grep -oE '[A-Z][A-Z0-9_]*_(API_)?KEY' | head -1)
+        key=$(printf '%s\n' "$failreasons" | grep -oE '[A-Z][A-Z0-9_]{2,}(_KEY|_KEYS|_TOKEN|_SECRET|_API|_APPNAME|_PASSWORD|_USER)' | sort -u | paste -sd, -)
       printf "NOKEY (bundle section %s needs %s)\n" "$secs" "$key"
       nokey=$((nokey + 1))
     else
