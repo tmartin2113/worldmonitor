@@ -117,6 +117,12 @@ manual_only() {
   head -40 "$1" | grep -qiE 'MANUAL FALLBACK|Do NOT configure as a|MANUAL ONLY'
 }
 
+# RUN MARKER. The cron entry appends (it used to truncate, so there was exactly one run
+# in the file and no way to tell a rising failure count from a stable one). An appending
+# log needs a delimiter or the runs blur into one wall of text, so stamp the start and
+# stamp the summary — same shape as seeder-tier.log, which has always appended.
+echo "=== $(date -u +%FT%TZ) run-seeders start ==="
+
 for f in "$SCRIPT_DIR"/seed-*.mjs; do
   name="$(basename "$f")"
   if manual_only "$f"; then
@@ -245,4 +251,4 @@ for f in "$SCRIPT_DIR"/seed-*.mjs; do
 done
 
 echo ""
-echo "Done: $ok ok, $skip skipped, $fail failed, $timedout timed out, $excluded manual-only, $nokey missing-credential, $deferred dependency-deferred, $depfail missing-package"
+echo "$(date -u +%FT%TZ) Done: $ok ok, $skip skipped, $fail failed, $timedout timed out, $excluded manual-only, $nokey missing-credential, $deferred dependency-deferred, $depfail missing-package"
