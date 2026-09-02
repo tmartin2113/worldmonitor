@@ -648,13 +648,21 @@ async function runBacktest() {
 
     let auc = 0.5;
     let pass = false;
+    let noData = false;
 
     if (positiveCount > 0 && positiveCount < aligned.length) {
       auc = computeAuc(predictions, labels);
       pass = checkGate(auc, AUC_THRESHOLD, GATE_WIDTH);
     } else if (positiveCount === 0) {
       console.log(`  [WARN] No positive events detected, AUC defaults to 0.5`);
+      // NO DATA IS NOT A SCORE. `auc` stays at its 0.5 initialiser here, and the summary
+      // table then printed "0.500 / 0.72 / FAIL" — which reads as a model with no
+      // discriminative power. It is not a model result at all: on 2026-09-02
+      // conflict:ucdp-events:v1 was ABSENT (UCDP began returning 401 and its seeder
+      // printed FATAL while exiting 0), so the family saw zero events and the sentinel
+      // was rendered as a measurement. Flag it so the summary can say which it is.
       pass = false;
+      noData = true;
     }
 
     const topFalseNegatives = findFalseNegatives(scores, eventLabels, 3);
@@ -670,6 +678,9 @@ async function runBacktest() {
       threshold: AUC_THRESHOLD,
       gateWidth: GATE_WIDTH,
       pass,
+      // Carried into the summary AND the JSON output: a consumer must be able to tell
+      // "scored 0.500" from "never scored", which is the whole point of the flag.
+      noData,
       n: aligned.length,
       positives: positiveCount,
       topFalseNegatives,
@@ -715,13 +726,20 @@ async function runBacktest() {
   console.log('------------------------  -----  -----  ------');
   for (const f of familyResults) {
     const name = f.label.padEnd(24);
-    const auc = f.auc.toFixed(3);
+    // A family with no events did not score 0.500 — it was never scored. Printing the
+    // sentinel as a number is how a dead upstream feed came to look like a weak model.
+    const auc = f.noData ? '  -  ' : f.auc.toFixed(3);
     const gate = (f.threshold - f.gateWidth).toFixed(2);
-    const status = f.pass ? 'PASS' : 'FAIL';
+    const status = f.noData ? 'NO DATA' : (f.pass ? 'PASS' : 'FAIL');
     console.log(`${name}  ${auc}  ${gate}   ${status}`);
   }
   console.log('');
-  console.log(`Overall: ${passCount}/${familyResults.length} families passed. ${overallPass ? 'ALL GATES MET.' : 'SOME GATES FAILED.'}`);
+  const noDataCount = familyResults.filter((f) => f.noData).length;
+  const scored = familyResults.length - noDataCount;
+  const gateFails = familyResults.filter((f) => !f.pass && !f.noData).length;
+  console.log(`Overall: ${passCount}/${scored} scored families passed`
+    + (noDataCount ? `, ${noDataCount} NOT SCORED (no data — a missing feed, not a weak model)` : '')
+    + `. ${overallPass ? 'ALL GATES MET.' : (gateFails ? 'SOME GATES FAILED.' : 'NO GATE FAILED; the shortfall is missing data.')}`);
 
   return output;
 }
@@ -774,7 +792,14 @@ if (isMain) {
       }
       const failed = (result.families ?? []).filter((family) => !family.pass);
       if (!result.overallPass || failed.length > 0) {
-        console.error(`[backtest] ${failed.length} family gate(s) failed: ${failed.map((family) => family.id).join(', ')}`);
+        // Say which it is. "1 family gate(s) failed: conflict-spillover" described a
+        // missing upstream feed as a model that underperformed its gate, and that is
+        // the sentence a reader acts on. Still exits non-zero — an absent feed is a
+        // real problem — but it names the right problem.
+        const nd = failed.filter((family) => family.noData);
+        const gf = failed.filter((family) => !family.noData);
+        if (gf.length) console.error(`[backtest] ${gf.length} family gate(s) failed: ${gf.map((f) => f.id).join(', ')}`);
+        if (nd.length) console.error(`[backtest] ${nd.length} family NOT SCORED — no data: ${nd.map((f) => f.id).join(', ')} (fix the feed, not the model)`);
       }
       process.exitCode = backtestCliExitCode(result, strict);
     })
