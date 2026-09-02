@@ -350,6 +350,30 @@ for f in "$SCRIPT_DIR"/seed-*.mjs; do
   # "ran:3 skipped:0 deferred:0 failed:0" — so `skipped:0`, which says nothing was
   # skipped, matched the skip test and printed SKIP. Third instance of this exact defect
   # in one file: read the NUMBERS, not a keyword that happens to appear next to them.
+  # A SEEDER THAT PRINTS "FATAL:" DID NOT SUCCEED, WHATEVER ITS EXIT CODE.
+  #
+  # seed-ucdp-events.mjs ends with `console.error('FATAL:', ...)` and then `process.exit(0)`
+  # on purpose — its comment says crashing would restart the container, and that health
+  # would flag the resulting stale data via seed-meta. The first half is a fair call. The
+  # second half cannot fire when the key was NEVER written: there is no stale value to
+  # compare against, so nothing flagged it.
+  #
+  # Measured 2026-09-02: UCDP's GED API began returning 401 for every candidate version,
+  # the seeder printed FATAL, exited 0, and this sweep printed `OK` for THREE CONSECUTIVE
+  # DAYS. Downstream, conflict:ucdp-events:v1 stayed absent and the resilience backtest
+  # scored that family 0.500 — reporting a dead feed as a weak model.
+  #
+  # This does not touch the seeder's exit code, so the container-restart reasoning stands.
+  # It fixes the reporting: the sweep may not call a run OK when the run said FATAL.
+  #
+  # Anchored to `FATAL:` at the start of a line so ordinary prose ("0 fatal errors",
+  # "no fatal issues") cannot trip it. Placed AFTER the NOKEY branch on purpose: a
+  # "FATAL: Missing X_API_KEY" is still a credential decline, and naming the credential is
+  # more actionable than naming the word FATAL.
+  elif printf '%s' "$output" | grep -qE '^[[:space:]]*FATAL:'; then
+    printf "FAIL (printed FATAL but exited %s: %s)\n" "$rc" \
+      "$(printf '%s' "$output" | grep -E '^[[:space:]]*FATAL:' | head -1 | cut -c1-110)"
+    fail=$((fail + 1))
   elif echo "$last" | grep -qE 'ran:[1-9][0-9]*.*failed:0'; then
     printf "OK (%s)\n" "$last"
   elif echo "$last" | grep -qi "skip\|not set\|missing.*key\|not found"; then
