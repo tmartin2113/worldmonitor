@@ -149,7 +149,7 @@ run_seed() {
   fi
 }
 
-ok=0 fail=0 skip=0 timedout=0 excluded=0 nokey=0 deferred=0 depfail=0
+ok=0 fail=0 skip=0 timedout=0 excluded=0 nokey=0 nodata=0 deferred=0 depfail=0
 
 # MANUAL-ONLY SEEDERS ARE EXCLUDED, NOT RUN AND COUNTED AS FAILURES.
 #
@@ -370,6 +370,26 @@ for f in "$SCRIPT_DIR"/seed-*.mjs; do
   # "no fatal issues") cannot trip it. Placed AFTER the NOKEY branch on purpose: a
   # "FATAL: Missing X_API_KEY" is still a credential decline, and naming the credential is
   # more actionable than naming the word FATAL.
+  # A RUN THAT FETCHED NOTHING IS NOT OK EITHER — even though nothing crashed.
+  #
+  # seed-gdelt-intel.mjs measured 2026-09-02: every GDELT topic fetch fails, it retries
+  # 3x with backoff (which is where 150 of its 150 seconds go), gives up, and the shared
+  # harness logs
+  #   SKIPPED: validation failed (empty data) — seed-meta refreshed (recordCount=0)
+  #   === Done (150057ms, no write) ===
+  # then exits 0. The sweep printed OK. It writes nothing and serves the previous cache.
+  #
+  # This is NOT the same as a crash, and calling it FAIL would be wrong: degrading to
+  # last-good data is the harness working as designed. But it is not success either — the
+  # feed produced nothing — so it gets its own state, the way a credential decline gets
+  # NOKEY. The distinction that matters to a reader is "ran and wrote nothing", which
+  # neither OK nor FAIL conveys.
+  #
+  # Placed after FATAL and NOKEY: a run that also said FATAL, or named a missing
+  # credential, has a more specific story to tell.
+  elif printf '%s' "$output" | grep -qE 'no write\) ===|validation failed \(empty'; then
+    printf "NO-DATA (ran %ss, fetched nothing, previous cache still served)\n" "$_elapsed"
+    nodata=$((nodata + 1))
   elif printf '%s' "$output" | grep -qE '^[[:space:]]*FATAL:'; then
     printf "FAIL (printed FATAL but exited %s: %s)\n" "$rc" \
       "$(printf '%s' "$output" | grep -E '^[[:space:]]*FATAL:' | head -1 | cut -c1-110)"
@@ -389,4 +409,4 @@ for f in "$SCRIPT_DIR"/seed-*.mjs; do
 done
 
 echo ""
-echo "$(date -u +%FT%TZ) Done: $ok ok, $skip skipped, $fail failed, $timedout timed out, $excluded manual-only, $nokey missing-credential, $deferred dependency-deferred, $depfail missing-package"
+echo "$(date -u +%FT%TZ) Done: $ok ok, $skip skipped, $fail failed, $timedout timed out, $excluded manual-only, $nokey missing-credential, $nodata fetched-nothing, $deferred dependency-deferred, $depfail missing-package"
