@@ -8,13 +8,25 @@ loadEnvFile(import.meta.url);
 const CANONICAL_KEY = 'intelligence:gdelt-intel:v1';
 const CACHE_TTL = 86400; // 24h — intentionally much longer than the 2h cron so verifySeedKey always has a prior snapshot to merge from when GDELT 429s all topics
 const TIMELINE_TTL = 43200; // 12h = 2× cron interval; tone/vol must survive until next 6h run
-// HTTPS by default. Overridable because outbound TCP/443 to api.gdeltproject.org is
-// DURABLY BLOCKED from the prime box (measured 2026-09-02): DNS resolves, port 80 serves
-// the identical query at HTTP 200 in ~5s, and 443 never completes the TCP handshake —
-// which surfaces as a bare `fetch failed` / UND_ERR_CONNECT_TIMEOUT with no status code,
-// so nothing upstream could name it. Ruled out: auth (port 80 needs none), IPv6 (no AAAA
-// record; forced -4 fails identically), and rate limiting (120s and 300s of complete
-// quiet changed nothing). Other hosts reach :443 fine from the same box.
+// HTTPS by default. Overridable because HTTPS to api.gdeltproject.org is unusable from
+// the prime box (measured 2026-09-02), while plain HTTP to the same host works: port 80
+// serves the identical public query at HTTP 200 in ~5s.
+//
+// The precise mechanism is NOT a TCP block, which is what a first pass concluded and this
+// comment previously said. Sampled directly: raw TCP connect to :443 succeeds 7 times in
+// 10, but no TLS session EVER establishes (curl 0/5, openssl s_client times out every
+// time). The failure surfaces to Node as a bare `fetch failed` / UND_ERR_CONNECT_TIMEOUT
+// because no handshake ever completes, so there is no status code to report and nothing
+// upstream could name it.
+//
+// Ruled out, each having been a working hypothesis first:
+//   auth       — port 80 serves the same query with no credential.
+//   IPv6       — no AAAA record for the host; forced -4 fails identically.
+//   rate limit — 120s and 300s of complete quiet changed nothing.
+//   MTU        — a minimal ClientHello (TLS1.2, one cipher) times out too.
+//   SNI filter — absent, correct, and unrelated SNI all time out identically.
+// Other hosts reach :443 from this box fine. Whether a local firewall rule is responsible
+// could not be determined: reading iptables needs a password this process does not have.
 //
 // The designed workaround — a Decodo residential-proxy fallback in fetchGdeltJson — is
 // inert here because PROXY_URL is unset, so all that remained was ~150s of retry backoff
