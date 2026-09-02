@@ -1,7 +1,7 @@
 {
-  "generatedAt": 1779975092521,
-  "_formula": "pc",
-  "methodologyFormula": "pillar-combined-penalized-v1",
+  "generatedAt": 1788374427111,
+  "_formula": "d6",
+  "methodologyFormula": "domain-weighted-6d",
   "holdoutPeriod": "2024-2025",
   "aucThreshold": 0.75,
   "gateWidth": 0.03,
@@ -15,21 +15,22 @@
         "Frozen 2024-2025 reference set curated from IMF AREAER exchange-arrangement reporting and IMF country surveillance notes on major devaluations.",
         "https://www.imf.org/en/Publications/Annual-Report-on-Exchange-Arrangements-and-Exchange-Restrictions"
       ],
-      "auc": 0.752,
+      "auc": 0.772,
       "threshold": 0.75,
       "gateWidth": 0.03,
       "pass": true,
-      "n": 170,
+      "noData": false,
+      "n": 194,
       "positives": 11,
       "topFalseNegatives": [
         "AR",
-        "LK",
-        "EG"
+        "LB",
+        "LK"
       ],
       "topFalsePositives": [
         "SD",
         "SO",
-        "CD"
+        "NE"
       ]
     },
     {
@@ -41,21 +42,22 @@
         "Frozen 2024-2025 reference set curated from IMF sovereign-debt restructuring/program material plus major rating-agency default and downgrade actions.",
         "https://www.imf.org/en/Topics/sovereign-debt"
       ],
-      "auc": 0.727,
+      "auc": 0.769,
       "threshold": 0.75,
       "gateWidth": 0.03,
       "pass": true,
-      "n": 170,
+      "noData": false,
+      "n": 194,
       "positives": 15,
       "topFalseNegatives": [
         "AR",
-        "LK",
+        "LB",
         "SV"
       ],
       "topFalsePositives": [
         "SD",
         "SO",
-        "CD"
+        "NE"
       ]
     },
     {
@@ -68,21 +70,22 @@
         "https://www.iea.org/reports/electricity-2025",
         "https://reliefweb.int/"
       ],
-      "auc": 0.86,
+      "auc": 0.796,
       "threshold": 0.75,
       "gateWidth": 0.03,
       "pass": true,
-      "n": 170,
-      "positives": 9,
+      "noData": false,
+      "n": 194,
+      "positives": 12,
       "topFalseNegatives": [
-        "EC",
-        "BD",
-        "LB"
+        "LB",
+        "IQ",
+        "EC"
       ],
       "topFalsePositives": [
         "SO",
-        "CD",
-        "NE"
+        "NE",
+        "ET"
       ]
     },
     {
@@ -93,21 +96,22 @@
       "labelSources": [
         "Live Redis payload from resilience:static:fao, sourced from the IPC/FAO food-crisis seeding path."
       ],
-      "auc": 0.947,
+      "auc": 0.887,
       "threshold": 0.75,
       "gateWidth": 0.03,
       "pass": true,
-      "n": 170,
-      "positives": 49,
+      "noData": false,
+      "n": 194,
+      "positives": 43,
       "topFalseNegatives": [
-        "GT",
-        "LS",
-        "SV"
+        "TL",
+        "CV",
+        "LS"
       ],
       "topFalsePositives": [
+        "CD",
         "IR",
-        "VE",
-        "CG"
+        "GQ"
       ]
     },
     {
@@ -118,20 +122,21 @@
       "labelSources": [
         "Live Redis payload from displacement:summary:v1:<year>, sourced from the UNHCR displacement summary seeding path."
       ],
-      "auc": 0.787,
+      "auc": 0.834,
       "threshold": 0.75,
       "gateWidth": 0.03,
       "pass": true,
-      "n": 170,
-      "positives": 42,
+      "noData": false,
+      "n": 194,
+      "positives": 47,
       "topFalseNegatives": [
-        "PE",
+        "NI",
         "RS",
-        "CO"
+        "PE"
       ],
       "topFalsePositives": [
-        "ZW",
-        "DJ",
+        "GQ",
+        "MW",
         "BJ"
       ]
     },
@@ -145,21 +150,22 @@
         "https://sanctionssearch.ofac.treas.gov/",
         "https://www.sanctionsmap.eu/"
       ],
-      "auc": 0.809,
+      "auc": 0.736,
       "threshold": 0.75,
       "gateWidth": 0.03,
       "pass": true,
-      "n": 170,
-      "positives": 8,
+      "noData": false,
+      "n": 194,
+      "positives": 11,
       "topFalseNegatives": [
-        "BY",
         "RU",
+        "BY",
         "MM"
       ],
       "topFalsePositives": [
         "SO",
-        "CD",
-        "NE"
+        "NE",
+        "ET"
       ]
     },
     {
@@ -170,29 +176,26 @@
       "labelSources": [
         "Live Redis payload from conflict:ucdp-events:v1, sourced from the UCDP event seeding path."
       ],
-      "auc": 0.807,
+      "auc": 0.5,
       "threshold": 0.75,
       "gateWidth": 0.03,
-      "pass": true,
-      "n": 170,
-      "positives": 25,
-      "topFalseNegatives": [
-        "CO",
-        "IL",
-        "PH"
-      ],
+      "pass": false,
+      "noData": true,
+      "n": 194,
+      "positives": 0,
+      "topFalseNegatives": [],
       "topFalsePositives": [
-        "CD",
-        "SS",
-        "YE"
+        "SD",
+        "SO",
+        "NE"
       ]
     }
   ],
-  "overallPass": true,
+  "overallPass": false,
   "summary": {
     "totalFamilies": 7,
-    "passed": 7,
-    "failed": 0,
-    "totalCountries": 170
+    "passed": 6,
+    "failed": 1,
+    "totalCountries": 194
   }
 }
