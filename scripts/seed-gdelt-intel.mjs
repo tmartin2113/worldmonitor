@@ -25,8 +25,21 @@ const TIMELINE_TTL = 43200; // 12h = 2× cron interval; tone/vol must survive un
 //   rate limit — 120s and 300s of complete quiet changed nothing.
 //   MTU        — a minimal ClientHello (TLS1.2, one cipher) times out too.
 //   SNI filter — absent, correct, and unrelated SNI all time out identically.
-// Other hosts reach :443 from this box fine. Whether a local firewall rule is responsible
-// could not be determined: reading iptables needs a password this process does not have.
+//
+// NOT a local firewall rule, and NOT GDELT blocking this network — both checked:
+//   iptables/nft   — OUTPUT policy ACCEPT with no DROP rules; nothing matches
+//                    104.197.47.124; the only :443 rules are docker-bridge ACCEPTs with
+//                    zero packet counters.
+//   GDELT's TLS    — gdeltproject.org and www.gdeltproject.org (136.69.101.18) serve
+//                    HTTPS 200/301 from this same box, right now.
+// The failure is specific to the API host's IP on 443, and SNI-independent:
+// 104.197.47.124:443 answers no TLS for ANY server name (its own, www's, or example.com),
+// while :80 on that same IP serves fine. There is one A record, so no alternate IP to try.
+//
+// Consistent with that IP's TLS listener being unavailable to this network — either the
+// host itself or something upstream of it. Distinguishing those needs an external vantage
+// point (try the same HTTPS request from a phone on cellular); it cannot be settled from
+// inside this box.
 //
 // The designed workaround — a Decodo residential-proxy fallback in fetchGdeltJson — is
 // inert here because PROXY_URL is unset, so all that remained was ~150s of retry backoff
