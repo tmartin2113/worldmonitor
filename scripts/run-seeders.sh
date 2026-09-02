@@ -73,6 +73,17 @@ fi
 # the outer cap would false-kill it mid-run and orphan the in-flight section child.
 SEED_TIMEOUT="${SEED_TIMEOUT:-1800}"
 
+# Append-only runtime history, consumed by scripts/timeout-audit.py to catch budgets that
+# are tight rather than impossible. One line per seeder and per bundle SECTION.
+RUNTIMES="${SEEDER_RUNTIMES:-$PROJECT_DIR/state/seeder-runtimes.tsv}"
+mkdir -p "$(dirname "$RUNTIMES")" 2>/dev/null || true
+# Bound it. ~155 rows a night, so 20000 keeps roughly four months of history — enough to
+# see a budget drifting toward its ceiling, and small enough that the audit reads it in
+# one gulp. Trimmed BEFORE the run appends, so a single sweep never loses its own rows.
+if [ -f "$RUNTIMES" ] && [ "$(wc -l < "$RUNTIMES" 2>/dev/null || echo 0)" -gt 20000 ]; then
+  tail -n 15000 "$RUNTIMES" > "$RUNTIMES.trim" 2>/dev/null && mv "$RUNTIMES.trim" "$RUNTIMES"
+fi
+
 # Resolve once whether the outer cap is usable (timeout(1) present and a positive
 # numeric budget). Non-numeric/empty SEED_TIMEOUT → test errors → disabled (plain node).
 if command -v timeout >/dev/null 2>&1 && [ "${SEED_TIMEOUT:-0}" -gt 0 ] 2>/dev/null; then
@@ -202,9 +213,30 @@ for f in "$SCRIPT_DIR"/seed-*.mjs; do
     continue
   fi
   printf "→ %s ... " "$name"
+  _t0=$(date +%s)
   output=$(run_seed "$f")
   rc=$?
+  _elapsed=$(( $(date +%s) - _t0 ))
   last=$(echo "$output" | tail -1)
+
+  # RUNTIME HISTORY. The timeout audit could only ever prove a budget IMPOSSIBLE
+  # (inner timeout >= outer budget). It could not see a budget that is merely TIGHT — a
+  # section whose real runtime sits at 90% of its budget passes every static check and
+  # then fails on the first slow day. Catching that needs measurements, and the sweep was
+  # throwing them away: the bundle runner already prints
+  #   section=<label> status=OK elapsed=<n>s
+  # and this loop captured that output only to grep one classification line out of it.
+  #
+  # Wall time is recorded for EVERY seeder, not just bundles, because it needs no
+  # cooperation from the seeder — a script that logs nothing is still timed.
+  {
+    printf '%s\t%s\t%s\t%s\n' "$(date -Is)" "$name" "$_elapsed" "rc=$rc"
+    printf '%s' "$output" \
+      | sed -nE 's/.*section=([A-Za-z0-9_-]+) status=([A-Z]+) elapsed=([0-9.]+)s.*/\1\t\3\t\2/p' \
+      | while IFS="$(printf '\t')" read -r _sec _el _st; do
+          printf '%s\t%s\t%s\t%s\n' "$(date -Is)" "${name%.mjs}/$_sec" "$_el" "$_st"
+        done
+  } >> "$RUNTIMES" 2>/dev/null || true
 
   # timeout(1) exits 124 when it had to terminate the child, or 128+signal
   # (137 = SIGKILL after the -k grace) when SIGTERM was ignored. Only trust this

@@ -144,6 +144,68 @@ if wfind:
     print()
     findings.extend(wfind)
 
+# ── MEASURED RUNTIMES ─────────────────────────────────────────────────────────
+# The static checks above can only prove a budget IMPOSSIBLE. A budget that is merely
+# TIGHT — real runtime at 90% of the ceiling — passes every one of them and then fails on
+# the first slow day. That needs measurement, so run-seeders.sh now appends one row per
+# seeder and per bundle SECTION to state/seeder-runtimes.tsv.
+#
+# AN EMPTY HISTORY IS NOT A CLEAN BILL OF HEALTH. Anything with no observations is
+# reported as UNMEASURED, never folded into the "no findings" line — that distinction is
+# the whole point of collecting the data.
+import os
+RUNTIMES = pathlib.Path(os.environ.get('SEEDER_RUNTIMES',
+                                        HERE.parent / 'state' / 'seeder-runtimes.tsv'))
+obs = collections.defaultdict(list)
+if RUNTIMES.is_file():
+    for line in RUNTIMES.read_text(errors='replace').splitlines():
+        parts = line.split('\t')
+        if len(parts) != 4:
+            continue
+        _, target, elapsed, status = parts
+        try:
+            obs[target].append((float(elapsed), status))
+        except ValueError:
+            pass
+
+TIGHT_AT = 0.70
+over, tightm, unmeasured = [], [], []
+for b, l, script, budget, inners in rows:
+    key = f"seed-bundle-{b}/{l}"
+    seen_runs = obs.get(key, [])
+    if not seen_runs:
+        unmeasured.append(key)
+        continue
+    worst = max(e for e, _ in seen_runs)
+    ratio = worst * 1000 / budget
+    if ratio >= 0.95:
+        over.append((key, worst, budget / 1000, ratio, len(seen_runs)))
+    elif ratio >= TIGHT_AT:
+        tightm.append((key, worst, budget / 1000, ratio, len(seen_runs)))
+
+if over:
+    print("  AT OR OVER BUDGET (measured) — these have already run to their ceiling:")
+    for k, w, b_, r, n in sorted(over, key=lambda x: -x[3]):
+        print(f"    {k}: worst {w:.0f}s of a {b_:.0f}s budget ({r*100:.0f}%, n={n})")
+    print()
+    findings.extend(over)
+if tightm:
+    print(f"  TIGHT (measured >= {TIGHT_AT*100:.0f}% of budget — one slow day away from failing):")
+    for k, w, b_, r, n in sorted(tightm, key=lambda x: -x[3]):
+        print(f"    {k}: worst {w:.0f}s of a {b_:.0f}s budget ({r*100:.0f}%, n={n})")
+    print()
+    # TIGHT is REPORTED BUT DOES NOT FAIL THE RUN. A section that sits at 75% of its
+    # budget every day would otherwise page every day, which is precisely the alert
+    # fatigue that let a real 3.5h outage go unread on 2026-09-01. Impossible budgets and
+    # measured overruns page; "keep an eye on this" belongs in the log.
+
+print(f"  measured: {len(rows) - len(unmeasured)} of {len(rows)} sections have runtime "
+      f"history; {len(unmeasured)} UNMEASURED (no observations — not a pass)")
+if not RUNTIMES.is_file():
+    print("  note: state/seeder-runtimes.tsv does not exist yet — history accrues as the")
+    print("  sweep runs. Until then the measured checks above are vacuous, by construction.")
+print()
+
 tight = [(b, l, budget, max(i, default=(0, ''))[0]) for b, l, s, budget, i in rows
          if i and budget / 2 <= max(i)[0] < budget]
 if tight:
