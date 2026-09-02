@@ -210,6 +210,18 @@ export function loadSharedConfig(filename) {
 
 export function loadEnvFile(metaUrl) {
   const __dirname = metaUrl ? dirname(fileURLToPath(metaUrl)) : process.cwd();
+  // `.env.local` FIRST, then `.env`. This used to load only `.env.local`, and on the
+  // self-hosted box the operational config lives in `.env` — so running a seeder the way
+  // its own header documents it (`node scripts/seed-regional-briefs.mjs`) left
+  // WM_BRIEF_LLM_URL, OPENROUTER_API_KEY and GROQ_API_KEY all unset. The provider chain
+  // skips any provider whose env key is missing, so every region reported
+  // "all providers failed, shipping empty brief" in 0.1s — which looks exactly like a
+  // dead LLM rather than a config that was never read. It cost a wrong diagnosis on
+  // 2026-09-02; cron works only because seed-briefs.sh does `set -a; . .env` first.
+  //
+  // Precedence is preserved by the `!process.env[key]` guard below: an already-exported
+  // var wins, then `.env.local`, then `.env`. The loop therefore must NOT return after
+  // the first file any more — it has to fall through to fill gaps from `.env`.
   const candidates = [
     join(__dirname, '..', '.env.local'),
     join(__dirname, '..', '..', '.env.local'),
@@ -217,6 +229,7 @@ export function loadEnvFile(metaUrl) {
   if (process.env.HOME) {
     candidates.push(join(process.env.HOME, 'Documents/GitHub/worldmonitor', '.env.local'));
   }
+  candidates.push(join(__dirname, '..', '.env'), join(__dirname, '..', '..', '.env'));
   for (const envPath of candidates) {
     if (!existsSync(envPath)) continue;
     const lines = readFileSync(envPath, 'utf8').split('\n');
@@ -232,7 +245,6 @@ export function loadEnvFile(metaUrl) {
       }
       if (!process.env[key]) process.env[key] = val;
     }
-    return;
   }
 }
 

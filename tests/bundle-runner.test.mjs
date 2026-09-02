@@ -289,3 +289,44 @@ test('dependsOn: throws on unknown label reference', async () => {
     cleanup();
   }
 });
+
+// A CREDENTIAL DECLINE IS NOT A BUNDLE FAILURE (2026-09-02).
+// seed-health-air-quality exits non-zero with "Missing OPENAQ_API_KEY" — it is working
+// correctly and declining, not broken. That was counted in failed:N, so the bundle
+// reported FAIL and the nightly sweep listed it among genuine defects, where it sat
+// unactioned. NOKEY is its own state because it names the credential to obtain.
+test('a section declining for a missing credential is NOKEY, not failed', async () => {
+  const name = '_bundle-runner-test-nokey.mjs';
+  const path = join(SCRIPTS_DIR, name);
+  writeFileSync(path, "console.error('FETCH FAILED: Missing OPENAQ_API_KEY');process.exit(1);\n");
+  try {
+    const { stdout, stderr, code } = await runBundleWith([{ label: 'Decliner', script: name }]);
+    const all = stdout + stderr;
+    assert.match(all, /section=Decliner status=NOKEY/);
+    assert.match(all, /OPENAQ_API_KEY/);
+    assert.match(all, /failed:0/);
+    assert.match(all, /nokey:1/);
+    assert.equal(code, 0, 'a decline must not fail the bundle');
+  } finally {
+    unlinkSync(path);
+  }
+});
+
+// The credential suffix is REQUIRED. The sweep-level twin of this pattern had it optional
+// and booked a SUCCESSFUL seeder as a missing credential because it logged
+// "no WM_API_BASE_URL". A URL is not a credential.
+test('a non-credential uppercase token is not treated as a decline', async () => {
+  const name = '_bundle-runner-test-notdecline.mjs';
+  const path = join(SCRIPTS_DIR, name);
+  writeFileSync(path, "console.error('no WM_API_BASE_URL configured');process.exit(1);\n");
+  try {
+    const { stdout, stderr, code } = await runBundleWith([{ label: 'NotADecline', script: name }]);
+    const all = stdout + stderr;
+    assert.match(all, /section=NotADecline status=FAILED/);
+    assert.match(all, /failed:1/);
+    assert.doesNotMatch(all, /nokey:/);
+    assert.equal(code, 1);
+  } finally {
+    unlinkSync(path);
+  }
+});

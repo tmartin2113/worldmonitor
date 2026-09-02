@@ -127,7 +127,12 @@ function spawnSeed(scriptPath, { timeoutMs, label, bundleStartedAtMs }) {
     // own line says exactly that, and it already flows through these callbacks; it was
     // simply never retained.
     let declineLine = null;
-    const DECLINE_RE = /(?:Missing|missing|No|no)\s+[A-Z][A-Z0-9_]{2,}(?:_KEY|_KEYS|_TOKEN|_SECRET|_API|_APPNAME|_PASSWORD|_USER)?(?:\s+key)?|[A-Z][A-Z0-9_]{2,}(?:_KEY|_KEYS|_TOKEN|_SECRET|_API|_APPNAME|_PASSWORD|_USER)\s+not set/;
+    // The credential suffix is REQUIRED here, not optional. The sweep-level twin of this
+    // pattern had it optional and matched the informational line `no WM_API_BASE_URL` on a
+    // seeder that had SUCCEEDED, booking a working run as a missing credential
+    // (2026-09-02). A URL is not a credential: with no credential-shaped token present,
+    // this is not a decline.
+    const DECLINE_RE = /(?:Missing|missing|No|no)\s+[A-Z][A-Z0-9_]{2,}(?:_KEY|_KEYS|_TOKEN|_SECRET|_API|_APPNAME|_PASSWORD|_USER)(?:\s+key)?|[A-Z][A-Z0-9_]{2,}(?:_KEY|_KEYS|_TOKEN|_SECRET|_API|_APPNAME|_PASSWORD|_USER)\s+not set/;
     const noteDecline = (line) => {
       if (!declineLine && DECLINE_RE.test(line)) declineLine = line.trim().slice(0, 160);
     };
@@ -205,9 +210,16 @@ function spawnSeed(scriptPath, { timeoutMs, label, bundleStartedAtMs }) {
         // Promote a credential decline into the reason; otherwise keep the bare exit
         // code. Only a decline is promoted -- arbitrary child text in a one-line summary
         // would be noise, and a wrong reason is worse than none.
+        // A CREDENTIAL DECLINE IS NOT A FAILURE. A seeder exiting non-zero because it
+        // has no API key is working correctly — it declined. Counting it in `failed:N`
+        // made the whole bundle report FAIL, which the sweep then printed as a broken
+        // seeder: that is how `Missing OPENAQ_API_KEY` sat in the nightly failure list
+        // looking like a defect. NOKEY is its own state because it is ACTIONABLE — it
+        // names the exact credential to obtain. Same distinction the sweep itself draws.
         settle({
           elapsed,
           ok: false,
+          status: declineLine ? 'NOKEY' : undefined,
           reason: declineLine
             ? `exit ${code ?? 'null'}: ${declineLine}`
             : `exit ${code ?? 'null'}${signal ? ` (signal ${signal})` : ''}`,
@@ -258,7 +270,7 @@ export async function runBundle(label, sections, opts = {}) {
   const budgetLabel = Number.isFinite(maxBundleMs) ? `, budget ${Math.round(maxBundleMs / 1000)}s` : '';
   console.log(`[Bundle:${label}] Starting (${sections.length} sections${budgetLabel})`);
 
-  let ran = 0, skipped = 0, deferred = 0, failed = 0;
+  let ran = 0, skipped = 0, deferred = 0, failed = 0, nokey = 0;
 
   for (const section of sections) {
     const scriptPath = join(__dirname, section.script);
@@ -316,11 +328,11 @@ export async function runBundle(label, sections, opts = {}) {
       // signal-escalation ordering.
       const status = result.status || 'FAILED';
       console.error(`[Bundle:${label}] section=${section.label} status=${status} elapsed=${result.elapsed}s reason=${(result.reason || 'unknown').replace(/\s+/g, ' ')}`);
-      failed++;
+      if (status === 'NOKEY') nokey++; else failed++;
     }
   }
 
   const totalSec = ((Date.now() - t0) / 1000).toFixed(1);
-  console.log(`[Bundle:${label}] Finished in ${totalSec}s, ran:${ran} skipped:${skipped} deferred:${deferred} failed:${failed}`);
+  console.log(`[Bundle:${label}] Finished in ${totalSec}s, ran:${ran} skipped:${skipped} deferred:${deferred} failed:${failed}${nokey ? ` nokey:${nokey}` : ''}`);
   process.exit(failed > 0 ? 1 : 0);
 }
