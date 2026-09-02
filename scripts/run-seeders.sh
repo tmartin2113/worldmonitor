@@ -94,7 +94,42 @@ caps_seed() {
   [ "$timeout_enabled" = true ] && ! is_bundle "$1"
 }
 
+# THE tsx LOADER, FOR THE ONE BUNDLE THAT NEEDS IT.
+#
+# seed-bundle-resilience-validation dynamically imports ../server/*.ts, and that server
+# code is written for a bundler: extensionless relative imports and JSON imports with no
+# `with { type: 'json' }`. Node's own loader accepts neither, so under plain `node` the
+# Sensitivity-Suite section died with ERR_IMPORT_ATTRIBUTE_MISSING and then
+# ERR_MODULE_NOT_FOUND, and the bundle reported `failed:1` every night.
+#
+# It is not a code defect. Dockerfile.seed-bundle-resilience-validation sets
+#   NODE_OPTIONS="... --import=file:///app/node_modules/tsx/dist/loader.mjs"
+# and the seeder's own header says so. On Railway the bundle runs in that container; on
+# this box the sweep runs the seeders BARE ON THE HOST, where nothing ever set
+# NODE_OPTIONS — a container-only assumption, silently unmet.
+#
+# Scoped to the single seeder whose Dockerfile declares the loader (it is the only one).
+# Applying it to all 151 would change module resolution under every working seeder to fix
+# one, which is a poor trade.
+#
+# I nearly "fixed" this by adding import attributes to 31 server .ts files — treating a
+# symptom, in production request-handling code, for the benefit of one weekly validator.
+# The Dockerfile is the authority on how these are meant to run; read it first.
+TSX_LOADER="$PROJECT_DIR/node_modules/tsx/dist/loader.mjs"
+
+needs_tsx() {
+  case "$(basename "$1")" in
+    seed-bundle-resilience-validation.mjs) [ -f "$TSX_LOADER" ] ;;
+    *) return 1 ;;
+  esac
+}
+
 run_seed() {
+  if needs_tsx "$1"; then
+    NODE_OPTIONS="${NODE_OPTIONS:-} --import=file://$TSX_LOADER" \
+      timeout -k 30 "$SEED_TIMEOUT" node "$1" 2>&1
+    return
+  fi
   if caps_seed "$1"; then
     # -k: if it ignores SIGTERM, SIGKILL it 30s later so the run can move on.
     timeout -k 30 "$SEED_TIMEOUT" node "$1" 2>&1
@@ -278,6 +313,13 @@ for f in "$SCRIPT_DIR"/seed-*.mjs; do
     mod=$(echo "$output" | grep -oE "Cannot find (module|package) '[^']+'" | head -1 | grep -oE "'[^']+'" | tr -d "'")
     printf "DEPFAIL (missing package %s — not in package.json)\n" "${mod:-unknown}"
     depfail=$((depfail + 1))
+  # A BUNDLE THAT RAN SECTIONS AND FAILED NONE IS A SUCCESS, NOT A SKIP. The skip branch
+  # below greps the last line for "skip", and a clean summary reads
+  # "ran:3 skipped:0 deferred:0 failed:0" — so `skipped:0`, which says nothing was
+  # skipped, matched the skip test and printed SKIP. Third instance of this exact defect
+  # in one file: read the NUMBERS, not a keyword that happens to appear next to them.
+  elif echo "$last" | grep -qE 'ran:[1-9][0-9]*.*failed:0'; then
+    printf "OK (%s)\n" "$last"
   elif echo "$last" | grep -qi "skip\|not set\|missing.*key\|not found"; then
     printf "SKIP (%s)\n" "$last"
     skip=$((skip + 1))
