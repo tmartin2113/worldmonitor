@@ -1,6 +1,10 @@
 #!/bin/sh
 # Run all seed scripts against the local Redis REST proxy.
-# Usage: ./scripts/run-seeders.sh
+# Usage: ./scripts/run-seeders.sh [name-substring]
+#   With no argument, runs every seed-*.mjs (the nightly cron form). With one, runs
+#   only seeders whose filename contains it — added 2026-09-01 to re-verify a single
+#   seeder through the REAL classifier after a classification bug, rather than
+#   re-testing the regex in isolation and assuming the branch it lands in.
 #
 # Requires the worldmonitor stack to be running (uvx podman-compose up -d).
 # The Redis REST proxy listens on localhost:8079 by default.
@@ -113,8 +117,30 @@ ok=0 fail=0 skip=0 timedout=0 excluded=0 nokey=0 deferred=0 depfail=0
 # Detected from the file's own docstring rather than a hardcoded list, so a future
 # manual-only seeder is excluded the day it is written instead of the day someone
 # notices it in the failure count.
+# WHICH CREDENTIALS DID THIS RUN DECLINE FOR? Echoes a comma-separated list, or
+# nothing. NOKEY is classified on whether this returns a NAME - it is the same
+# regex that prints the name, so the two can never disagree again.
+#
+# THEY DID DISAGREE, 2026-09-01. The classify regex made the credential suffix
+# OPTIONAL ((_KEY|_API|...)?), so a bare uppercase token satisfied it; the naming
+# regex required the suffix. seed-forecasts.mjs logs the informational line
+#   "no WM_API_BASE_URL"
+# on a run that reported state:"OK", recordCount:5 and "=== Done (371ms) ===".
+# It was classified NOKEY (needs ) - a SUCCESSFUL seeder booked as a missing
+# credential, and part of why ok fell 108 -> 104 overnight. The empty name was the
+# tell: a NOKEY that cannot name a credential is not a decline, and its whole value
+# is naming the thing to go obtain. WM_API_BASE_URL is a URL, not a credential.
+decline_creds() {
+  printf '%s' "$1" \
+    | grep -oE '(Missing|missing|No|no) +[A-Z][A-Z0-9_]{2,}(_KEY|_KEYS|_TOKEN|_SECRET|_API|_APPNAME|_PASSWORD|_USER)( +key)?|[A-Z][A-Z0-9_]{2,}(_KEY|_KEYS|_TOKEN|_SECRET|_API|_APPNAME|_PASSWORD|_USER) +not set' \
+    | grep -oE '[A-Z][A-Z0-9_]{2,}(_KEY|_KEYS|_TOKEN|_SECRET|_API|_APPNAME|_PASSWORD|_USER)' \
+    | sort -u | paste -sd, -
+}
+
 manual_only() {
-  head -40 "$1" | grep -qiE 'MANUAL FALLBACK|Do NOT configure as a|MANUAL ONLY'
+  # DEDICATED CRON is not the same claim as MANUAL ONLY: the seeder is scheduled, just
+  # not here. Both mean 'this sweep must not run it', which is what the excluder asks.
+  head -40 "$1" | grep -qiE 'MANUAL FALLBACK|Do NOT configure as a|MANUAL ONLY|DEDICATED CRON'
 }
 
 # RUN MARKER. The cron entry appends (it used to truncate, so there was exactly one run
@@ -125,8 +151,18 @@ echo "=== $(date -u +%FT%TZ) run-seeders start ==="
 
 for f in "$SCRIPT_DIR"/seed-*.mjs; do
   name="$(basename "$f")"
+  if [ -n "${1:-}" ]; then
+    case "$name" in *"$1"*) ;; *) continue ;; esac
+  fi
   if manual_only "$f"; then
-    printf "→ %s ... EXCLUDED (manual-only by its own header)\n" "$name"
+    # Say WHICH exclusion applies. "manual-only" was printed for every excluded seeder,
+    # including ones excluded because they own a separate cron — a reader chasing a
+    # missing feed would be told to run it by hand when it is in fact already scheduled.
+    if head -40 "$f" | grep -qi "DEDICATED CRON"; then
+      printf "→ %s ... EXCLUDED (runs on its own cron, by its own header)\n" "$name"
+    else
+      printf "→ %s ... EXCLUDED (manual-only by its own header)\n" "$name"
+    fi
     excluded=$((excluded + 1))
     continue
   fi
@@ -154,7 +190,11 @@ for f in "$SCRIPT_DIR"/seed-*.mjs; do
   # Same class as run-tier.sh counting exit-0 as success, fixed the same morning:
   # a classifier that reads a summary line for a keyword instead of for its
   # numbers. Check the numbers first.
-  elif echo "$last" | grep -qE 'failed:[1-9]'; then
+  # ...AND THE SAME SUMMARY IS WRITTEN WITH AN EQUALS BY OTHER SEEDERS. The colon form
+  # above missed 'generated=7 skipped=1 failed=0', which then fell through to the skip
+  # branch and printed SKIP for a run that generated 7 briefs and failed none. Accept
+  # both separators so the number is what decides, in either phrasing.
+  elif echo "$last" | grep -qE 'failed[:=][1-9]'; then
     printf "FAIL (%s)\n" "$last"
     fail=$((fail + 1))
   # A CREDENTIAL DECLINE IS NOT A CRASH, AND ITS MESSAGE IS NOT ON THE LAST LINE.
@@ -181,14 +221,9 @@ for f in "$SCRIPT_DIR"/seed-*.mjs; do
     # directions before shipping: 5/5 known declines classify NOKEY, and 6/6 genuine
     # failures still classify FAIL - HTTP 403, an exhausted ollama budget, a missing npm
     # package, a connect timeout, a 500, and a TypeError.
-    elif echo "$output" | grep -qoE '(Missing|missing|No|no) +[A-Z][A-Z0-9_]{2,}(_KEY|_KEYS|_TOKEN|_SECRET|_API|_APPNAME|_PASSWORD|_USER)?( +key)?|[A-Z][A-Z0-9_]{2,}(_KEY|_KEYS|_TOKEN|_SECRET|_API|_APPNAME|_PASSWORD|_USER) +not set'; then
-      # NAME EVERY CREDENTIAL IT DECLINED FOR, from the decline lines only.
-      # A head -1 over the whole output named the first credential-shaped token anywhere:
-      # seed-aviation reported ICAO_API_KEY, which is a PARTIAL skip (it still wrote FAA
-      # data), while the credential that actually failed the run was AVIATIONSTACK_API.
-      # Naming one of several sends the reader shopping for the wrong thing, so list all.
-      key=$(echo "$output" | grep -oE '(Missing|missing|No|no) +[A-Z][A-Z0-9_]{2,}(_KEY|_KEYS|_TOKEN|_SECRET|_API|_APPNAME|_PASSWORD|_USER)?( +key)?|[A-Z][A-Z0-9_]{2,}(_KEY|_KEYS|_TOKEN|_SECRET|_API|_APPNAME|_PASSWORD|_USER) +not set' \
-            | grep -oE '[A-Z][A-Z0-9_]{2,}(_KEY|_KEYS|_TOKEN|_SECRET|_API|_APPNAME|_PASSWORD|_USER)' | sort -u | paste -sd, -)
+    # Classified on decline_creds() returning a NAME. An unnamed decline is not a
+    # decline - see the 2026-09-01 false NOKEY recorded on that function.
+    elif key=$(decline_creds "$output"); [ -n "$key" ]; then
     printf "NOKEY (needs %s)\n" "$key"
     nokey=$((nokey + 1))
   # A PREREQUISITE SEEDER IS A DEPENDENCY PROBLEM, NOT A FAILURE. The runner globs

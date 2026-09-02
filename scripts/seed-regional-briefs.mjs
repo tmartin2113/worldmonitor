@@ -11,6 +11,14 @@
  *
  * Does NOT run as part of the 6h derived-signals bundle — briefs are
  * weekly, not per-snapshot.
+ *
+ * DEDICATED CRON — excluded from run-seeders.sh. Generation is sequential per region
+ * and outlasts that sweep's per-seeder SEED_TIMEOUT, so the shared cron can only ever
+ * kill it: on 2026-09-01 it burned the full 1800s cap and was killed, having already
+ * been generated properly by its own 05:30 cron. seed-briefs.sh said this was the
+ * intent on 2026-08-12 ("the shared run-seeders.sh cron kills it under its per-seeder
+ * SEED_TIMEOUT cap") — the note was written and the exclusion was never applied, so it
+ * was killed nightly for three weeks with the reason sitting in a comment.
  */
 
 import { pathToFileURL } from 'node:url';
