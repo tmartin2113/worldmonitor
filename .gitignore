@@ -90,3 +90,7 @@ tmp/
 docs/plans/
 docs/brainstorms/
 playground-pricing.html
+
+# Seeder runtime history — append-only local measurements consumed by
+# scripts/timeout-audit.py. Machine-specific and grows nightly; not source.
+state/
