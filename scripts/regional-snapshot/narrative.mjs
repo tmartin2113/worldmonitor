@@ -63,7 +63,14 @@ const DEFAULT_PROVIDERS = [
     envKey: 'WM_BRIEF_LLM_URL',
     apiUrl: process.env.WM_BRIEF_LLM_URL || 'http://localhost:11434/v1/chat/completions',
     model: process.env.WM_BRIEF_LLM_MODEL || 'mirofish-granite:latest',
-    timeout: 300_000, // CPU inference — generous; this is a nightly batch
+    // 60s, not 300s. A SINGLE call's timeout must not exceed the budget of the job
+    // running it: the Regional-Snapshots bundle section allows 180s TOTAL for 8 regions,
+    // so one 300s local call could blow the whole section by itself — which is exactly
+    // how it failed, `timeout after 180s (SIGTERM)`, every night.
+    // Measured: the same script run standalone completes in 205-287s for all 8 regions
+    // (~26-36s each) and a cold granite load is ~25s. 60s is ~2x the observed need, and
+    // bounds the worst case at 8 x 60 = 480s inside the raised 600s section budget.
+    timeout: 60_000,
     headers: () => ({ 'Content-Type': 'application/json' }),
   },
   {
