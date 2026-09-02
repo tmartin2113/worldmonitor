@@ -33,7 +33,16 @@ const DEFAULT_PROVIDERS = [
     envKey: 'WM_BRIEF_LLM_URL',
     apiUrl: process.env.WM_BRIEF_LLM_URL || 'http://localhost:11434/v1/chat/completions',
     model: process.env.WM_BRIEF_LLM_MODEL || 'mirofish-granite:latest',
-    timeout: 300_000, // CPU inference — generous; nightly batch
+    // 120s, not 300s. THE OLD VALUE COULD NOT FIT IN THE JOB'S OWN BUDGET: 7 regions
+    // x 300s = 2100s worst case against seed-briefs.sh's 900s ceiling, so any run whose
+    // regions averaged over ~128s was structurally unable to finish. It did not finish on
+    // 2026-09-01 or 09-02 — killed at exactly 900s both days, leaving the stored briefs
+    // 54.7h stale, while the wrapper's `tail -3` showed only whichever region was in
+    // flight and made a whole-job timeout read as one flaky region.
+    // Still generous against measurement: the last successful run took 264s for ALL SEVEN
+    // regions (~38s each) and a cold granite load is ~25s. Worst case is now 7 x 120 =
+    // 840s, inside the raised 1200s ceiling.
+    timeout: 120_000,
     headers: () => ({ 'Content-Type': 'application/json' }),
   },
   {
