@@ -8,7 +8,22 @@ loadEnvFile(import.meta.url);
 const CANONICAL_KEY = 'intelligence:gdelt-intel:v1';
 const CACHE_TTL = 86400; // 24h — intentionally much longer than the 2h cron so verifySeedKey always has a prior snapshot to merge from when GDELT 429s all topics
 const TIMELINE_TTL = 43200; // 12h = 2× cron interval; tone/vol must survive until next 6h run
-const GDELT_DOC_API = 'https://api.gdeltproject.org/api/v2/doc/doc';
+// HTTPS by default. Overridable because outbound TCP/443 to api.gdeltproject.org is
+// DURABLY BLOCKED from the prime box (measured 2026-09-02): DNS resolves, port 80 serves
+// the identical query at HTTP 200 in ~5s, and 443 never completes the TCP handshake —
+// which surfaces as a bare `fetch failed` / UND_ERR_CONNECT_TIMEOUT with no status code,
+// so nothing upstream could name it. Ruled out: auth (port 80 needs none), IPv6 (no AAAA
+// record; forced -4 fails identically), and rate limiting (120s and 300s of complete
+// quiet changed nothing). Other hosts reach :443 fine from the same box.
+//
+// The designed workaround — a Decodo residential-proxy fallback in fetchGdeltJson — is
+// inert here because PROXY_URL is unset, so all that remained was ~150s of retry backoff
+// into a blocked port, nightly, writing nothing.
+//
+// Default stays HTTPS so other deployments are unaffected; this box sets the env var.
+// Revert by removing GDELT_DOC_API from .env once :443 is reachable again.
+const GDELT_DOC_API = process.env.GDELT_DOC_API
+  || 'https://api.gdeltproject.org/api/v2/doc/doc';
 const INTER_TOPIC_DELAY_MS = 20_000; // 20s between topics on success
 const POST_EXHAUST_DELAY_MS = 120_000; // 2min extra cooldown after a topic exhausts all retries
 
