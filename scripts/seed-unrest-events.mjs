@@ -5,7 +5,43 @@ import { getAcledToken } from './shared/acled-oauth.mjs';
 
 loadEnvFile(import.meta.url);
 
-const GDELT_GKG_URL = 'https://api.gdeltproject.org/api/v1/gkg_geojson';
+// HTTPS by default so Railway and every other deployment are unaffected.
+// Overridable because outbound TCP/443 to api.gdeltproject.org is durably blocked
+// from the prime box — TCP connects and TLS never completes — while port 80 serves
+// the identical GKG query at HTTP 200 in ~2.9s (measured 2026-09-03, 50 features).
+// Same precedent as GDELT_DOC_API in seed-gdelt-intel.mjs. Revert by removing
+// GDELT_GKG_URL + GDELT_ALLOW_DIRECT from .env once :443 is reachable again.
+const GDELT_GKG_URL = process.env.GDELT_GKG_URL || 'https://api.gdeltproject.org/api/v1/gkg_geojson';
+// Direct fetch is an EXPLICIT operator opt-in. The proxy requirement stays the
+// default so the locked "no proxy -> throw PROXY_URL pointer" contract is untouched.
+const GDELT_ALLOW_DIRECT = process.env.GDELT_ALLOW_DIRECT === '1';
+
+// Direct (no-CONNECT-proxy) sibling of fetchGdeltViaProxy, same retry shape:
+// bail immediately on SyntaxError, retry transient failures with jitter.
+export async function fetchGdeltDirect(url, opts = {}) {
+  const {
+    _fetch = globalThis.fetch,
+    _sleep = (ms) => new Promise((r) => setTimeout(r, ms)),
+    _maxAttempts = 3,
+    _jitter = () => 1500 + Math.random() * 1500,
+  } = opts;
+  let lastErr;
+  for (let attempt = 1; attempt <= _maxAttempts; attempt++) {
+    try {
+      const resp = await _fetch(url, { signal: AbortSignal.timeout(45_000) });
+      if (!resp.ok) throw new Error(`GDELT direct HTTP ${resp.status}`);
+      return JSON.parse(await resp.text());
+    } catch (err) {
+      lastErr = err;
+      if (err instanceof SyntaxError) throw err;
+      if (attempt < _maxAttempts) {
+        console.warn(`  [GDELT] direct attempt ${attempt}/${_maxAttempts} failed (${describeErr(err)}); retrying`);
+        await _sleep(_jitter());
+      }
+    }
+  }
+  throw lastErr;
+}
 const ACLED_API_URL = 'https://acleddata.com/api/acled/read';
 const CANONICAL_KEY = 'unrest:events:v1';
 const CACHE_TTL = 16200; // 4.5h — 6x the 45 min cron interval (was 1.3x)
@@ -256,9 +292,14 @@ export async function fetchGdeltViaProxy(url, proxyAuth, opts = {}) {
 const UNREST_THEMES = ['PROTEST', 'STRIKE', 'VIOLENT_UNREST'];
 
 export async function fetchGdeltEvents(opts = {}) {
-  const { _resolveProxyForConnect = resolveProxyForConnect, ..._proxyOpts } = opts;
+  const {
+    _resolveProxyForConnect = resolveProxyForConnect,
+    _allowDirect = GDELT_ALLOW_DIRECT,
+    _directFetcher = fetchGdeltDirect,
+    ..._proxyOpts
+  } = opts;
   const proxyAuth = _resolveProxyForConnect();
-  if (!proxyAuth) {
+  if (!proxyAuth && !_allowDirect) {
     // Direct fetch hasn't worked from Railway since PR #3256; this seeder
     // hard-requires a CONNECT proxy. Surface the env var ops needs to set.
     throw new Error('GDELT requires CONNECT proxy: PROXY_URL env var is not set on this Railway service');
@@ -290,7 +331,9 @@ export async function fetchGdeltEvents(opts = {}) {
     const url = `${GDELT_GKG_URL}?${params}`;
     let data;
     try {
-      data = await fetchGdeltViaProxy(url, proxyAuth, _proxyOpts);
+      data = proxyAuth
+        ? await fetchGdeltViaProxy(url, proxyAuth, _proxyOpts)
+        : await _directFetcher(url, _proxyOpts);
     } catch (proxyErr) {
       lastError = proxyErr;
       continue;

@@ -359,3 +359,42 @@ test('feature exposing only source_url (no url field) is still deduped across th
   assert.equal(events.length, 1);
   assert.match(events[0].title, /5 reports/, 'source_url-only features deduped across themes (NOT 15)');
 });
+
+// ── Direct-fetch opt-in (2026-09-03) ────────────────────────────────────────
+// This box cannot reach api.gdeltproject.org over TCP/443 at all — TCP connects
+// and TLS never completes (see the GDELT_DOC_API precedent in
+// scripts/seed-gdelt-intel.mjs). Port 80 serves the identical GKG query at
+// HTTP 200 in ~2.9s with 50 features, measured 2026-09-03. Without a path the
+// seeder returns `0 ACLED + 0 GDELT` forever and unrest:events stays MISSING.
+//
+// The proxy requirement stays the DEFAULT so contract #5 above is untouched and
+// Railway is unaffected; direct is an explicit operator opt-in.
+test('no proxy + no opt-in still throws the PROXY_URL pointer (contract #5 holds)', async () => {
+  let fetcherCalls = 0;
+  await assert.rejects(
+    () => fetchGdeltEvents({
+      _resolveProxyForConnect: () => null,
+      _allowDirect: false,
+      _directFetcher: async () => { fetcherCalls++; return { features: [] }; },
+    }),
+    /PROXY_URL env var is not set/,
+  );
+  assert.equal(fetcherCalls, 0, 'must not touch the network when it refuses');
+});
+
+test('no proxy + explicit opt-in fetches directly instead of throwing', async () => {
+  const urls = [];
+  const result = await fetchGdeltEvents({
+    _resolveProxyForConnect: () => null,
+    _allowDirect: true,
+    _directFetcher: async (url) => {
+      urls.push(url);
+      return { features: [{ properties: { name: 'Testville', count: 2, shareimage: '', html: '<a href="http://x/1">a</a>' }, geometry: { type: 'Point', coordinates: [10, 20] } }] };
+    },
+    _sleep: async () => {},
+    _jitter: () => 0,
+  });
+  assert.ok(Array.isArray(result), 'returns events');
+  assert.equal(urls.length, 3, 'fans out across all three unrest themes');
+  assert.ok(urls.every((u) => u.includes('gkg_geojson')), 'hits the GKG endpoint');
+});
