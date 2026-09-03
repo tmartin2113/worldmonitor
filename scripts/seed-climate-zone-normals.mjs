@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { loadEnvFile, runSeed, sleep } from './_seed-utils.mjs';
+import { loadEnvFile, runSeed, sleep, getRedisCredentials, writeExtraKey } from './_seed-utils.mjs';
 import { CLIMATE_ZONES, MIN_CLIMATE_ZONE_COUNT, hasRequiredClimateZones } from './_climate-zones.mjs';
 import { chunkItems, fetchOpenMeteoArchiveBatch } from './_open-meteo-archive.mjs';
 
@@ -20,6 +20,55 @@ const NORMALS_BATCH_SIZE = 2;
 // (497KB), while the full run logged 93 x HTTP 429 and completed ZERO zones even
 // with a 25-minute deadline — so the budget was never the constraint, the rate was.
 const NORMALS_BATCH_DELAY_MS = 15_000;
+
+// ── INCREMENTAL ACCUMULATION ────────────────────────────────────────────────
+// 1991-2020 normals are STATIC: a zone fetched once is correct forever. There is
+// therefore no reason to fetch 25 zones in one burst, and every reason not to —
+// Open-Meteo weights a call by days x locations x variables, so a full run is
+// ~570 weighted calls against a ~600/min cap and rate-limits itself. Measured
+// 2026-09-03: a full run logged 93 x HTTP 429 and completed ZERO zones even with
+// a 25-minute deadline, while ONE batch returns HTTP 200 in 1.0s.
+//
+// So the run accumulates instead of bursting: it fetches at most
+// NORMALS_MAX_BATCHES_PER_RUN batches of zones it does not already have, persists
+// after EVERY batch, and reports RETRY until the set is complete. A rate-limit or
+// a crash now costs one batch, not the whole run, and the monthly cron converges
+// in a few cycles. Progress survives because it is written before the run ends.
+const NORMALS_PARTIAL_KEY = 'climate:zone-normals:partial:v1';
+const NORMALS_PARTIAL_TTL = 180 * 24 * 60 * 60; // 180d — static data; must outlive the monthly cadence
+const NORMALS_MAX_BATCHES_PER_RUN = 4; // 4 x 2 zones x ~44 weighted calls, spread 15s apart
+
+async function readPartialNormals() {
+  try {
+    const { url, token } = getRedisCredentials();
+    const resp = await fetch(`${url}/get/${encodeURIComponent(NORMALS_PARTIAL_KEY)}`, {
+      headers: { Authorization: `Bearer ${token}` },
+      signal: AbortSignal.timeout(10_000),
+    });
+    if (!resp.ok) return [];
+    const body = await resp.json();
+    if (!body?.result) return [];
+    const parsed = JSON.parse(body.result);
+    const list = Array.isArray(parsed) ? parsed : parsed?.data?.normals ?? parsed?.normals;
+    // Only accept fully-formed zones — a half-written entry must not count as done,
+    // or a zone silently never gets refetched.
+    return Array.isArray(list)
+      ? list.filter((z) => z?.zone && Array.isArray(z.months) && z.months.length === 12)
+      : [];
+  } catch {
+    return []; // partial cache is an optimisation; never let it fail the seed
+  }
+}
+
+async function writePartialNormals(normals) {
+  try {
+    await writeExtraKey(NORMALS_PARTIAL_KEY, { normals }, NORMALS_PARTIAL_TTL);
+    return true;
+  } catch (err) {
+    console.log(`  [CLIMATE_NORMALS] partial-progress write failed (${err?.message ?? err}) — this run's zones will be refetched`);
+    return false;
+  }
+}
 
 function round(value, decimals = 2) {
   const scale = 10 ** decimals;
@@ -99,13 +148,50 @@ export function buildZoneNormalsFromBatch(zones, batchPayloads) {
   });
 }
 
-export async function fetchClimateZoneNormals() {
-  const normals = [];
-  let failures = 0;
+export async function fetchClimateZoneNormals(opts = {}) {
+  const {
+    _readPartial = readPartialNormals,
+    _writePartial = writePartialNormals,
+    _maxBatches = NORMALS_MAX_BATCHES_PER_RUN,
+    _fetchBatch = fetchOpenMeteoArchiveBatch,
+    _sleep = sleep,
+  } = opts;
 
-  for (const batch of chunkItems(CLIMATE_ZONES, NORMALS_BATCH_SIZE)) {
+  // Start from whatever previous runs already proved. Static data, so these
+  // never need refetching.
+  //
+  // COPY, don't alias: this array is pushed into below, and aliasing whatever the
+  // reader returned would mutate the caller's own data. Harmless with the default
+  // helper (it builds a fresh array) and a real bug with any other reader — it
+  // silently made this file's own accumulation test pass a set it had corrupted.
+  //
+  // The try/catch belongs HERE, not only inside readPartialNormals: the partial
+  // cache is an optimisation, and no reader — default or injected — may turn a
+  // cache miss into a failed seed.
+  let restored = [];
+  try {
+    restored = await _readPartial();
+  } catch (err) {
+    console.log(`  [CLIMATE_NORMALS] partial-progress read failed (${err?.message ?? err}) — starting from scratch this run`);
+  }
+  const normals = Array.isArray(restored) ? [...restored] : [];
+  const have = new Set(normals.map((z) => z.zone));
+  const todo = CLIMATE_ZONES.filter((z) => !have.has(z.name));
+  if (normals.length) {
+    console.log(`  [CLIMATE_NORMALS] resuming with ${normals.length}/${CLIMATE_ZONES.length} zones already accumulated; ${todo.length} to go`);
+  }
+
+  let failures = 0;
+  let batchesRun = 0;
+
+  for (const batch of chunkItems(todo, NORMALS_BATCH_SIZE)) {
+    if (batchesRun >= _maxBatches) {
+      console.log(`  [CLIMATE_NORMALS] per-run cap of ${_maxBatches} batches reached — ${todo.length - batchesRun * NORMALS_BATCH_SIZE} zone(s) deferred to the next run`);
+      break;
+    }
+    batchesRun += 1;
     try {
-      const payloads = await fetchOpenMeteoArchiveBatch(batch, {
+      const payloads = await _fetchBatch(batch, {
         startDate: NORMALS_START,
         endDate: NORMALS_END,
         daily: ['temperature_2m_mean', 'precipitation_sum'],
@@ -117,15 +203,23 @@ export async function fetchClimateZoneNormals() {
       const batchNormals = buildZoneNormalsFromBatch(batch, payloads);
       normals.push(...batchNormals);
       failures += Math.max(0, batch.length - batchNormals.length);
+      // Persist after EVERY batch. This is the whole point: a 429 or a crash on
+      // the next batch must cost one batch, not the accumulated set.
+      if (batchNormals.length) await _writePartial(normals);
     } catch (err) {
       console.log(`  [CLIMATE_NORMALS] ${err?.message ?? err}`);
       failures += batch.length;
     }
-    await sleep(NORMALS_BATCH_DELAY_MS);
+    await _sleep(NORMALS_BATCH_DELAY_MS);
   }
 
   if (normals.length < MIN_CLIMATE_ZONE_COUNT) {
-    throw new Error(`Only ${normals.length}/${CLIMATE_ZONES.length} zones returned normals (${failures} errors)`);
+    // Not a failure of this run so much as a partial one — say so precisely, and
+    // name what was banked, so a reader can tell "converging" from "stuck".
+    throw new Error(
+      `Accumulated ${normals.length}/${CLIMATE_ZONES.length} zones (need ${MIN_CLIMATE_ZONE_COUNT}); `
+      + `${failures} error(s) this run. Progress is persisted — the next run resumes from here.`
+    );
   }
   if (!hasRequiredClimateZones(normals, (zone) => zone.zone)) {
     throw new Error('Missing one or more required climate-specific zone normals');
