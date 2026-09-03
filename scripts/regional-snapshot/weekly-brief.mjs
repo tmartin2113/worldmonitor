@@ -46,6 +46,30 @@ const DEFAULT_PROVIDERS = [
     headers: () => ({ 'Content-Type': 'application/json' }),
   },
   {
+    // LOCAL SECOND OPINION, ahead of both cloud rungs. Measured 2026-09-03:
+    // granite-worker returns valid JSON for this prompt in 2.1s, against 32-65s for
+    // the primary (mirofish-granite is large and CPU-pinned). It is 4.2GB and CPU
+    // resident, so unlike qwen3.8-ctx112k (21.5s, 17.5GB VRAM) it does NOT contend
+    // with IronClaw's pinned doer model — ollama scheduling contention took that
+    // agent's heartbeat down for 3.5h on 09-01.
+    //
+    // Why local rather than cloud: on 09-03 the effective chain was ONE tier.
+    // OPENROUTER_API_KEY is unset (the rung is skipped outright by the !envVal
+    // check) and groq 403s at the org level, so when the primary hit its budget cap
+    // every region logged "all providers failed, shipping empty narrative". A cloud
+    // fallback also shares a failure mode with the thing it backs up: outbound :443
+    // to api.gdeltproject.org is durably blocked from this box.
+    //
+    // Gated on WM_FALLBACK_LLM_URL so deployments without a local ollama (Railway,
+    // Vercel) skip it exactly like any other unset-key rung.
+    name: 'ollama-worker',
+    envKey: 'WM_FALLBACK_LLM_URL',
+    apiUrl: process.env.WM_FALLBACK_LLM_URL || 'http://localhost:11434/v1/chat/completions',
+    model: process.env.WM_FALLBACK_LLM_MODEL || 'granite-worker:latest',
+    timeout: 45_000,
+    headers: () => ({ 'Content-Type': 'application/json' }),
+  },
+  {
     name: 'openrouter',
     envKey: 'OPENROUTER_API_KEY',
     apiUrl: 'https://openrouter.ai/api/v1/chat/completions',
