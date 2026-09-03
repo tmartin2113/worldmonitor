@@ -22,7 +22,7 @@ const SEED_DOMAINS = {
   'wildfire:fires':           { key: 'seed-meta:wildfire:fires',           intervalMin: 60 },
   'infra:outages':            { key: 'seed-meta:infra:outages',            intervalMin: 15 },
   'climate:anomalies':        { key: 'seed-meta:climate:anomalies',        intervalMin: 120 },
-  'climate:disasters':        { key: 'seed-meta:climate:disasters',        intervalMin: 360 },
+  'climate:disasters':        { key: 'seed-meta:climate:disasters',        intervalMin: 1440 },
   'climate:zone-normals':     { key: 'seed-meta:climate:zone-normals',     intervalMin: 44640 },
   'climate:co2-monitoring':   { key: 'seed-meta:climate:co2-monitoring',   intervalMin: 1440 }, // daily cron; health.js maxStaleMin:4320 (3x) is intentionally higher — it's an alarm threshold, not the cron cadence
   'climate:ocean-ice':        { key: 'seed-meta:climate:ocean-ice',        intervalMin: 1440 }, // daily cron; health.js maxStaleMin:2880 (2x) tolerates one missed run
@@ -42,7 +42,7 @@ const SEED_DOMAINS = {
   'unrest:events':            { key: 'seed-meta:unrest:events',            intervalMin: 15 },
   'cyber:threats':            { key: 'seed-meta:cyber:threats',            intervalMin: 240 },
   'market:crypto':            { key: 'seed-meta:market:crypto',            intervalMin: 15 },
-  'market:hyperliquid-flow':  { key: 'seed-meta:market:hyperliquid-flow',  intervalMin: 5 }, // Railway cron 5min via seed-bundle-market-backup
+  'market:hyperliquid-flow':  { key: 'seed-meta:market:hyperliquid-flow',  intervalMin: 1440 }, // Railway cron 5min via seed-bundle-market-backup
   'market:etf-flows':         { key: 'seed-meta:market:etf-flows',         intervalMin: 30 },
   'market:gulf-quotes':       { key: 'seed-meta:market:gulf-quotes',       intervalMin: 15 },
   'market:stablecoins':       { key: 'seed-meta:market:stablecoins',       intervalMin: 30 },
@@ -52,29 +52,48 @@ const SEED_DOMAINS = {
   // Aligned with health.js SEED_META (intervalMin = maxStaleMin / 2)
   'market:stocks':            { key: 'seed-meta:market:stocks',            intervalMin: 15 },
   'market:commodities':       { key: 'seed-meta:market:commodities',       intervalMin: 15 },
-  'market:gold-extended':     { key: 'seed-meta:market:gold-extended',     intervalMin: 15 },
+  'market:gold-extended':     { key: 'seed-meta:market:gold-extended',     intervalMin: 1440 },
   'market:gold-etf-flows':    { key: 'seed-meta:market:gold-etf-flows',    intervalMin: 1440 },
   // maxStaleMin in health.js is 44640 (~31 days; IMF IFS is monthly w/ 2-3mo lag).
   // This endpoint flags stale at intervalMin*2, so keep intervalMin = 22320 to match.
   'market:gold-cb-reserves':  { key: 'seed-meta:market:gold-cb-reserves',  intervalMin: 22320 },
   'market:sectors':           { key: 'seed-meta:market:sectors',           intervalMin: 15 },
-  'aviation:faa':             { key: 'seed-meta:aviation:faa',             intervalMin: 45 },
-  'news:insights':            { key: 'seed-meta:news:insights',            intervalMin: 15 },
+  'aviation:faa':             { key: 'seed-meta:aviation:faa',             intervalMin: 1440 },
+  'news:insights':            { key: 'seed-meta:news:insights',            intervalMin: 1440 },
   'positive-events:geo':      { key: 'seed-meta:positive-events:geo',      intervalMin: 30 },
   'intelligence:risk-scores': { key: 'seed-meta:intelligence:risk-scores', intervalMin: 15 }, // CII warm-ping every 8min; intervalMin*2 = 30min, aligned with api/health.js riskScores.
   'conflict:iran-events':     { key: 'seed-meta:conflict:iran-events',     intervalMin: 5040 },
   'conflict:ucdp-events':     { key: 'seed-meta:conflict:ucdp-events',     intervalMin: 210 },
   'weather:alerts':           { key: 'seed-meta:weather:alerts',           intervalMin: 15 },
   'economic:spending':        { key: 'seed-meta:economic:spending',        intervalMin: 60 },
+  // ── 2026-09-03: intervalMin ALIGNED TO THE SCHEDULE THAT ACTUALLY RUNS ──────
+  // `seed-health-stale:rising` had paged for weeks with the count stuck at 9-14
+  // against a ratcheted baseline of 8, and it could never come down: 13 feeds
+  // declared cadences that no schedule delivers. Verified per feed by mapping the
+  // watched key -> the seeder that writes it -> tier-fast.txt (15m) /
+  // tier-hourly.txt (60m) / the daily 04:00 sweep. Every one of the 13 except
+  // prediction:markets is written by a DAILY job, so 5m-360m declarations were
+  // guaranteed stale for most of every day — military:flights claimed an 8m
+  // cadence and got one run per day, 23x over its own threshold before lunch.
+  // These are now 1440 (stale at 2880 = 48h), which is what actually happens;
+  // prediction:markets is 60 because seed-prediction-markets is in tier-hourly.
+  // supply_chain:chokepoints is the one real oddity: NO seeder writes its meta.
+  // api/health.js:317 records that get-chokepoint-status writes it on API
+  // REQUEST, so its age tracks traffic rather than a pipeline; 1440 means it
+  // only speaks up if the endpoint is genuinely abandoned.
+  // The rule this encodes: a declared interval is a claim about the schedule. If
+  // it does not match the cron, the detector measures the gap between an
+  // aspiration and reality, and no amount of fixing feeds moves it.
+  // Full analysis: docs/seed-health-stale-rising.md
   'intelligence:gpsjam':      { key: 'seed-meta:intelligence:gpsjam',      intervalMin: 720 }, // 720 × 2 = 1440min (24h) staleness; matches api/health.js gpsjam.maxStaleMin. Widened from 360 (12h) on 2026-04-29 alongside Wingbits API quota incident — see PR #3494 + the seeder graceful-failure path at scripts/fetch-gpsjam.mjs:258-262.
   'intelligence:satellites':  { key: 'seed-meta:intelligence:satellites',  intervalMin: 90 },
-  'military:flights':         { key: 'seed-meta:military:flights',         intervalMin: 8 },
-  'military-forecast-inputs': { key: 'seed-meta:military-forecast-inputs', intervalMin: 8 },
-  'infra:service-statuses':   { key: 'seed-meta:infra:service-statuses',   intervalMin: 60 },
-  'supply_chain:shipping':    { key: 'seed-meta:supply_chain:shipping',    intervalMin: 120 },
-  'supply_chain:chokepoints': { key: 'seed-meta:supply_chain:chokepoints', intervalMin: 30 },
-  'cable-health':             { key: 'seed-meta:cable-health',             intervalMin: 30 },
-  'prediction:markets':       { key: 'seed-meta:prediction:markets',       intervalMin: 8 },
+  'military:flights':         { key: 'seed-meta:military:flights',         intervalMin: 1440 },
+  'military-forecast-inputs': { key: 'seed-meta:military-forecast-inputs', intervalMin: 1440 },
+  'infra:service-statuses':   { key: 'seed-meta:infra:service-statuses',   intervalMin: 1440 },
+  'supply_chain:shipping':    { key: 'seed-meta:supply_chain:shipping',    intervalMin: 1440 },
+  'supply_chain:chokepoints': { key: 'seed-meta:supply_chain:chokepoints', intervalMin: 1440 },
+  'cable-health':             { key: 'seed-meta:cable-health',             intervalMin: 1440 },
+  'prediction:markets':       { key: 'seed-meta:prediction:markets',       intervalMin: 60 },
   'aviation:intl':            { key: 'seed-meta:aviation:intl',            intervalMin: 45 }, // intervalMin*2 = 90min staleness. seed-aviation's freshness gate (AVIATIONSTACK_MIN_REFRESH_MIN, default 55) lets fetchedAt age to ~55+cron between paid fetches; 90min matches the aviation:faa sibling + api/health.js intlDelays maxStaleMin:90. Was 15 (30min) and false-WARNed every cycle once the gate landed.
   'theater-posture':          { key: 'seed-meta:theater-posture',          intervalMin: 8 },
   'economic:worldbank-techreadiness': { key: 'seed-meta:economic:worldbank-techreadiness:v1', intervalMin: 5040 },
@@ -86,7 +105,7 @@ const SEED_DOMAINS = {
   'economic:bis-property-commercial':  { key: 'seed-meta:economic:bis-property-commercial',  intervalMin: 720 }, // 12h cron; only written when CPP slice fetched fresh entries
   'research:tech-events':    { key: 'seed-meta:research:tech-events',     intervalMin: 240 },
   'intelligence:gdelt-intel': { key: 'seed-meta:intelligence:gdelt-intel', intervalMin: 210 }, // 420min maxStaleMin / 2 — aligned with health.js (6h cron + 1h grace)
-  'correlation:cards':        { key: 'seed-meta:correlation:cards',        intervalMin: 5 },
+  'correlation:cards':        { key: 'seed-meta:correlation:cards',        intervalMin: 1440 },
   'intelligence:advisories':  { key: 'seed-meta:intelligence:advisories',  intervalMin: 60 },
   'intelligence:social-reddit': { key: 'seed-meta:intelligence:social-reddit', intervalMin: 270 }, // 180min relay loop (3h; dropped from 60min now that ScrapeCreators handles Reddit); intervalMin = maxStaleMin / 2 (540 / 2), matching api/health.js
   'intelligence:wsb-tickers': { key: 'seed-meta:intelligence:wsb-tickers', intervalMin: 270 }, // 180min relay loop (3h); intervalMin = maxStaleMin / 2 (540 / 2), matching api/health.js
