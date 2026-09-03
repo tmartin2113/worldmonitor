@@ -64,7 +64,15 @@ const DEFAULT_PROVIDERS = [
     name: 'groq',
     envKey: 'GROQ_API_KEY',
     apiUrl: 'https://api.groq.com/openai/v1/chat/completions',
-    model: 'llama-3.3-70b-versatile',
+    // llama-3.3-70b-versatile 404s on this account — it is not in /v1/models at all,
+    // so this rung could never fire regardless of permissions. openai/gpt-oss-120b IS
+    // listed. Measured 2026-09-03: the old model returns 404 model_not_found; this one
+    // returns 403 "blocked at the organization level ... enable this model in the org
+    // settings at https://console.groq.com/settings/limits".
+    // So the rung is still inert TODAY, but for a reason the owner can fix in a console
+    // toggle rather than one that can never be fixed. Whisper works because STT is the
+    // one thing currently enabled — the account is not chat-less, it is chat-blocked.
+    model: 'openai/gpt-oss-120b',
     timeout: 25_000,
     headers: (key) => ({
       Authorization: `Bearer ${key}`,
