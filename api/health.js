@@ -200,6 +200,13 @@ const STANDALONE_KEYS = {
   chokepointFlows:          'energy:chokepoint-flows:v1',
   emberElectricity:         'energy:ember:v1:_all',
   resilienceIntervals:      'resilience:intervals:v9:US',
+  // chokepointExposure had a SEED_META entry (maxStaleMin 2880) but appeared in
+  // NEITHER registry, and classifyKey() only ever walks BOOTSTRAP_KEYS and
+  // STANDALONE_KEYS — so its freshness config was dead and the seed could die with
+  // /api/health still reporting HEALTHY. Probe key follows the resilienceIntervals
+  // pattern above: one representative member of the fan-out
+  // (supply-chain:exposure:{iso2}:{hs2}:v1), verified present in Redis 2026-09-03.
+  chokepointExposure:       'supply-chain:exposure:US:27:v1',
   sprPolicies:              'energy:spr-policies:v1',
   pipelinesGas:             'energy:pipelines:gas:v1',
   pipelinesOil:             'energy:pipelines:oil:v1',
@@ -871,6 +878,18 @@ export default async function handler(req, ctx) {
       ],
       4_000,
     );
+    // redisPipeline() returns null on missing creds, HTTP error or timeout. Without
+    // this guard the optional chaining below swallowed it: results?.[0]?.result is
+    // undefined, Array.isArray(undefined) is false, and the handler emitted a 200
+    // with {lastFailure: null, failureLog: []} — "Redis is down" rendered as "there
+    // have never been any failures". The main path already 503s on the same
+    // condition; the history path must not disagree with it.
+    if (!results) {
+      return jsonResponse(
+        { status: 'REDIS_DOWN', error: 'Redis request failed', checkedAt: new Date().toISOString() },
+        503, headers,
+      );
+    }
     const parseJson = (raw) => {
       if (typeof raw !== 'string') return null;
       try { return JSON.parse(raw); } catch { return null; }
