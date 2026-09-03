@@ -9,5 +9,9 @@ await runBundle('derived-signals', [
     // same script completes in 205-287s when the sweep runs it standalone, so 180s could
     // never succeed and the section reported `timeout after 180s` every night while the
     // standalone copy quietly did the work. Budgets have to be set from measurement.
-    timeoutMs: 600_000 },
+    // 900s, not 600s: the per-call budget rose to 95s from measurement (see
+    // narrative.mjs), so 8 regions worst-case is 760s and 600s could SIGTERM a
+    // legitimate run. Third time this class has bitten here — the budget follows
+    // the measurement, not the other way round.
+    timeoutMs: 900_000 },
 ]);

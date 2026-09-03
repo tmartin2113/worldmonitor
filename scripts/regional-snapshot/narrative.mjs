@@ -37,8 +37,20 @@ const NARRATIVE_TEMPERATURE = 0.3;
 const NARRATIVE_LLM_MAX_RETRIES = 2;
 const NARRATIVE_LLM_RETRY_BASE_MS = 1_000;
 const NARRATIVE_LLM_RETRY_AFTER_MAX_MS = 10_000;
-const NARRATIVE_LLM_CALL_BUDGET_MS = 45_000;
-const NARRATIVE_LLM_CALL_BUDGET_GUARD_MS = 5_000;
+// 65s, not 45s. THE BUDGET WAS SILENTLY CAPPING THE PROVIDER TIMEOUT BELOW IT.
+// The abort is AbortSignal.timeout(Math.min(provider.timeout, usable)) where
+// usable = this budget minus the 5s guard, so 45s produced a 40,000ms deadline on
+// every local call — overriding the 60s the local provider declares, and appearing
+// nowhere in the source as a number anyone could grep for. Measured effect over one
+// week: 103 x `500 | 39.999-40.000s` in ollama's journal, each one a region that then
+// fell through to cloud providers that also failed and SHIPPED AN EMPTY NARRATIVE,
+// while the bundle reported `OK ... persisted=8 skipped=0 failed=0`.
+// Sized from measurement, not from a guess: granite/CPU takes 32.6-45.7s per region
+// (2026-09-03), so 60s usable is ~31% headroom over the observed worst case, and
+// 8 x 65s = 520s stays inside the 600s Regional-Snapshots section budget.
+// Guarded by tests/regional-snapshot-narrative-budget.test.mjs.
+export const NARRATIVE_LLM_CALL_BUDGET_MS = 95_000;
+export const NARRATIVE_LLM_CALL_BUDGET_GUARD_MS = 5_000;
 
 let narrativeFetchForTests = null;
 export function __setNarrativeTransportForTests(overrides = null) {
@@ -52,7 +64,7 @@ const MAX_WATCH_ITEMS = 3;
 /**
  * Provider chain. Order matters: first provider with a configured env var wins.
  */
-const DEFAULT_PROVIDERS = [
+export const DEFAULT_PROVIDERS = [
   {
     // Local CPU inference (Ollama). Primary provider on the self-hosted box:
     // mirofish-granite is CPU-pinned (num_gpu 0), so brief generation never
@@ -70,7 +82,13 @@ const DEFAULT_PROVIDERS = [
     // Measured: the same script run standalone completes in 205-287s for all 8 regions
     // (~26-36s each) and a cold granite load is ~25s. 60s is ~2x the observed need, and
     // bounds the worst case at 8 x 60 = 480s inside the raised 600s section budget.
-    timeout: 60_000,
+    // 90s, not 60s. Measured uncapped 2026-09-03 across a full run: 18.0, 39.4, 43.9,
+    // 44.6, 44.8, 45.3 and 65.0s — and under contention 6 of 8 regions exceeded 60s.
+    // 60s sat just under the real worst case, so it still lost regions after the budget
+    // cap was removed. 90s is ~38% over the observed worst; with the 95s call budget
+    // (90 + 5s guard) the worst case is 8 x 95 = 760s, which is why the Regional-Snapshots
+    // section budget moves 600s -> 900s in seed-bundle-derived-signals.mjs.
+    timeout: 90_000,
     headers: () => ({ 'Content-Type': 'application/json' }),
   },
   {
