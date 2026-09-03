@@ -46,7 +46,11 @@ const TIMELINE_TTL = 43200; // 12h = 2× cron interval; tone/vol must survive un
 // into a blocked port, nightly, writing nothing.
 //
 // Default stays HTTPS so other deployments are unaffected; this box sets the env var.
-// Revert by removing GDELT_DOC_API from .env once :443 is reachable again.
+// KEEP THIS. :443 IS reachable (re-measured 2026-09-03) — the problem was never a
+// block. api.gdeltproject.org's TLS handshake takes 8.5-10.1s from this box while
+// TCP connects in 0.06s and other GCP hosts handshake in 0.056s, so HTTPS costs
+// 11.6s against 1.96s over HTTP. The override stands on latency for a public,
+// unauthenticated API, not on evading anything. See seed-unrest-events.mjs.
 const GDELT_DOC_API = process.env.GDELT_DOC_API
   || 'https://api.gdeltproject.org/api/v2/doc/doc';
 const INTER_TOPIC_DELAY_MS = 20_000; // 20s between topics on success

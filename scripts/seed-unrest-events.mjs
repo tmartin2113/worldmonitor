@@ -6,11 +6,18 @@ import { getAcledToken } from './shared/acled-oauth.mjs';
 loadEnvFile(import.meta.url);
 
 // HTTPS by default so Railway and every other deployment are unaffected.
-// Overridable because outbound TCP/443 to api.gdeltproject.org is durably blocked
-// from the prime box — TCP connects and TLS never completes — while port 80 serves
-// the identical GKG query at HTTP 200 in ~2.9s (measured 2026-09-03, 50 features).
-// Same precedent as GDELT_DOC_API in seed-gdelt-intel.mjs. Revert by removing
-// GDELT_GKG_URL + GDELT_ALLOW_DIRECT from .env once :443 is reachable again.
+// Overridable because api.gdeltproject.org's TLS handshake is pathologically slow
+// from this box: measured 2026-09-03, TCP connects in 0.06s and the handshake alone
+// takes 8.5-10.1s, so the same GKG query costs 11.6s over HTTPS against 1.96s over
+// HTTP. Other GCP-hosted endpoints handshake in 0.056s from here, so it is that
+// host's TLS termination and not our egress. Forcing TLS 1.2, TLS 1.3 or HTTP/1.1
+// changes nothing (~9.9s each).
+//
+// This is NOT a block. An earlier note here said :443 was "durably blocked" and that
+// TLS "never completes" — it does complete, just past most timeouts, which is what
+// made it look blocked. Keep the HTTP override anyway: it is 5x faster for a public,
+// unauthenticated API, so it stands on latency rather than on evading anything.
+// Same precedent as GDELT_DOC_API in seed-gdelt-intel.mjs.
 const GDELT_GKG_URL = process.env.GDELT_GKG_URL || 'https://api.gdeltproject.org/api/v1/gkg_geojson';
 // Direct fetch is an EXPLICIT operator opt-in. The proxy requirement stays the
 // default so the locked "no proxy -> throw PROXY_URL pointer" contract is untouched.

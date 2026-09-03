@@ -146,6 +146,13 @@ test('fetchGdeltEvents with no proxy creds → throws clear ops-actionable error
   await assert.rejects(
     fetchGdeltEvents({
       _resolveProxyForConnect: () => null,
+      // PIN THE OPT-IN OFF. _allowDirect defaults to GDELT_ALLOW_DIRECT, which
+      // loadEnvFile reads from .env — this box sets it to 1, so without pinning, this
+      // test fell through to a REAL direct fetch and took 8.2s instead of throwing.
+      // The contract is "no proxy AND no explicit opt-in -> refuse, touch no network";
+      // leaving it to the environment made a locked contract depend on a machine's
+      // .env, the same non-hermetic failure as the IronClaw wizard test fixed today.
+      _allowDirect: false,
       _proxyFetcher: async () => { fetcherCalled = true; return jsonBuffer({}); },
       _sleep: noSleep,
       _jitter: noJitter,

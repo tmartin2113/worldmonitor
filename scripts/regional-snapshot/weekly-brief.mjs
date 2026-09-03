@@ -58,7 +58,11 @@ const DEFAULT_PROVIDERS = [
     // check) and groq 403s at the org level, so when the primary hit its budget cap
     // every region logged "all providers failed, shipping empty narrative". A cloud
     // fallback also shares a failure mode with the thing it backs up: outbound :443
-    // to api.gdeltproject.org is durably blocked from this box.
+    // to api.gdeltproject.org's TLS handshake takes 8.5-10.1s from this box
+    // (TCP connects in 0.06s; other GCP hosts handshake in 0.056s), so any timeout
+    // under ~12s reads as a hang. Measured 2026-09-03. Port 80 serves the identical
+    // query in 1.96s vs 11.6s. NOT a block — an earlier note here said 'durably
+    // blocked' and that was wrong.
     //
     // Gated on WM_FALLBACK_LLM_URL so deployments without a local ollama (Railway,
     // Vercel) skip it exactly like any other unset-key rung.
