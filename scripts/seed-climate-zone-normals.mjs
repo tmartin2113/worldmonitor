@@ -12,7 +12,14 @@ const NORMALS_TTL = 95 * 24 * 60 * 60; // 95 days = >3x a 31-day monthly interva
 const NORMALS_START = '1991-01-01';
 const NORMALS_END = '2020-12-31';
 const NORMALS_BATCH_SIZE = 2;
-const NORMALS_BATCH_DELAY_MS = 3_000;
+// 15s, not 3s. Open-Meteo weights a call by days x locations x variables, and each
+// batch here is 2 locations x ~11,000 days (the WMO 1991-2020 normals period) x N
+// variables — roughly 44 weighted calls apiece. Thirteen of them 3s apart put ~570
+// weighted calls inside one minute, against the free tier's ~600/min cap, so the run
+// rate-limited itself. Measured 2026-09-03: ONE batch returns HTTP 200 in 1.0s
+// (497KB), while the full run logged 93 x HTTP 429 and completed ZERO zones even
+// with a 25-minute deadline — so the budget was never the constraint, the rate was.
+const NORMALS_BATCH_DELAY_MS = 15_000;
 
 function round(value, decimals = 2) {
   const scale = 10 ** decimals;
@@ -149,6 +156,10 @@ export function declareRecords(data) {
 const isMain = process.argv[1] && import.meta.url.endsWith(process.argv[1].replace(/^file:\/\//, ''));
 if (isMain) {
   runSeed('climate', 'zone-normals', CLIMATE_ZONE_NORMALS_KEY, fetchClimateZoneNormals, {
+    // 13 batches x (1s request + 15s spacing) is ~210s, and the inherited default is
+    // lockTtlMs + margin = 240s — too tight to absorb even one retry. Sized explicitly
+    // from the measurement above rather than inherited from an unrelated default.
+    fetchPhaseTimeoutMs: 600_000,
     validateFn: validate,
     ttlSeconds: NORMALS_TTL,
     sourceVersion: 'open-meteo-wmo-1991-2020-v1',
