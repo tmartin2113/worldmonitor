@@ -7,6 +7,17 @@
  * Env:   WINDY_API_KEY, UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN
  */
 
+// LOAD .env FIRST. This seeder read process.env directly and never called
+// loadEnvFile, so a standalone `node scripts/seed-webcams.mjs` printed
+// "WINDY_API_KEY not set" even with the key present in .env — a message that
+// reads as a missing credential when the credential is right there. It worked
+// nightly only because run-seeders.sh does `set -a` and exports .env to its
+// children, so the defect was invisible from the sweep and only appeared the
+// moment anyone ran the seeder by hand to test a new key.
+// Every other leaf seeder does this; seed-webcams was one of three that did not.
+import { loadEnvFile } from './_seed-utils.mjs';
+loadEnvFile(import.meta.url);
+
 const WINDY_API_KEY = process.env.WINDY_API_KEY;
 if (!WINDY_API_KEY) {
   console.log('WINDY_API_KEY not set — skipping webcam seed');

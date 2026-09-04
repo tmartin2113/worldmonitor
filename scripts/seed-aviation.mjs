@@ -399,7 +399,24 @@ function aviationDetermineSeverity(avgDelay, delayedPct) {
 
 async function fetchAviationStackSingle(apiKey, iata) {
   const today = new Date().toISOString().slice(0, 10);
-  const url = `${AVIATIONSTACK_URL}?access_key=${apiKey}&dep_iata=${iata}&flight_date=${today}&limit=100`;
+  // flight_date IS A PAID PARAMETER. Measured 2026-09-04 on this account:
+  //   dep_iata alone            -> HTTP 200
+  //   flight_date (any request) -> HTTP 403 function_access_restricted,
+  //        "your current subscription plan does not support this API function"
+  // So every airport 403'd and the section failed wholesale, which reads as a bad
+  // key when the key is fine.
+  //
+  // Dropping flight_date alone is NOT enough: with no status filter the free tier
+  // returns SCHEDULED future flights and 0 of 100 carry departure.delay — useless
+  // to a delay calculation. flight_status IS permitted and does carry delays:
+  // measured on FRA, active 19/100, landed 37/100. 'landed' is correct here — a
+  // departure delay is only final once the flight has actually gone — and yields
+  // about twice the usable rows.
+  //
+  // AVIATIONSTACK_FLIGHT_DATE=1 restores the paid behaviour if the plan is upgraded.
+  const url = process.env.AVIATIONSTACK_FLIGHT_DATE === '1'
+    ? `${AVIATIONSTACK_URL}?access_key=${apiKey}&dep_iata=${iata}&flight_date=${today}&limit=100`
+    : `${AVIATIONSTACK_URL}?access_key=${apiKey}&dep_iata=${iata}&flight_status=landed&limit=100`;
   try {
     const resp = await fetch(url, {
       headers: { 'User-Agent': CHROME_UA },
