@@ -50,8 +50,32 @@ const CANONICAL_KEY = 'resilience:recovery:reexport-share:v1';
 // of data-key TTL).
 const CACHE_TTL_SECONDS = 35 * 24 * 3600;
 
-const COMTRADE_URL = 'https://comtradeapi.un.org/data/v1/get/C/A/HS';
+// TWO PATHS, and the free one is not a lesser version of the same data.
+//   /data/v1/get/C/A/HS      -> 401 without a subscription key
+//   /public/v1/preview/...   -> HTTP 200 with NO key, same query, same rows
+// Measured 2026-09-04: reporterCode=784&period=2023&flowCode=RX&cmdCode=TOTAL
+// returns count=217 on preview, and this seeder ALWAYS sets cmdCode=TOTAL, so it
+// sits well under preview's cap. The fields preview nulls out (reporterISO,
+// reporterDesc) are ones this seeder never reads — it uses only flowCode,
+// reporterCode, partnerCode, period, primaryValue and cmdCode.
+//
+// The keyed path stays primary so a subscription still buys the higher limits;
+// preview is used only when no key is configured.
+const COMTRADE_DATA_URL = 'https://comtradeapi.un.org/data/v1/get/C/A/HS';
+const COMTRADE_PREVIEW_URL = 'https://comtradeapi.un.org/public/v1/preview/C/A/HS';
+// preview truncates at 500 rows and says so ONLY via the count matching exactly
+// 500 — there is no truncated flag. A silent cut would understate a re-export
+// share, so callers must treat count>=PREVIEW_ROW_CAP as unusable rather than
+// as data. Measured: the broad query without cmdCode returns exactly 500.
+const PREVIEW_ROW_CAP = 500;
+const USING_PREVIEW = !process.env.COMTRADE_API_KEYS;
+const COMTRADE_URL = USING_PREVIEW ? COMTRADE_PREVIEW_URL : COMTRADE_DATA_URL;
 const MAX_RECORDS = 250_000;
+// Preview truncates far below MAX_RECORDS and signals it only by returning
+// exactly PREVIEW_ROW_CAP rows — there is no flag. Feed that into the SAME
+// truncation path the keyed cap uses, so a preview cut is omitted per country
+// rather than silently under-reporting a re-export share.
+const EFFECTIVE_ROW_CAP = USING_PREVIEW ? PREVIEW_ROW_CAP : MAX_RECORDS;
 const FETCH_TIMEOUT_MS = 45_000;
 const RETRY_MAX_ATTEMPTS = 3;
 const INTER_CALL_PACING_MS = 750;
@@ -105,11 +129,15 @@ async function fetchComtradeFlow(apiKey, reporterCode, flowCode, years, { iso2 }
   for (let attempt = 1; attempt <= RETRY_MAX_ATTEMPTS; attempt += 1) {
     try {
       const resp = await fetch(urlStr, {
-        headers: {
-          'Ocp-Apim-Subscription-Key': apiKey,
-          'User-Agent': CHROME_UA,
-          Accept: 'application/json',
-        },
+        // No subscription header on the keyless preview path: it is not needed
+        // there, and sending a MALFORMED key fails the request before it even
+        // leaves the process. Observed 2026-09-04 — a key value containing a
+        // stray U+2190 threw "Cannot convert argument to a ByteString ... value
+        // 8592", every fetch failed, and the seeder still finished with
+        // recordCount 0 and health status ok.
+        headers: USING_PREVIEW
+          ? { 'User-Agent': CHROME_UA, Accept: 'application/json' }
+          : { 'Ocp-Apim-Subscription-Key': apiKey, 'User-Agent': CHROME_UA, Accept: 'application/json' },
         signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
       });
 
@@ -140,7 +168,7 @@ async function fetchComtradeFlow(apiKey, reporterCode, flowCode, years, { iso2 }
 
       const json = await resp.json();
       const rows = Array.isArray(json?.data) ? json.data : [];
-      if (rows.length >= MAX_RECORDS) {
+      if (rows.length >= EFFECTIVE_ROW_CAP) {
         console.warn(`[reexport-share] ${iso2} ${flowCode}: response at cap (${rows.length}>=${MAX_RECORDS}); possible truncation — omitting country`);
         return { rows: [], truncated: true, status: 200 };
       }
@@ -241,8 +269,13 @@ export function clampShare(rawShare) {
 
 async function fetchReexportShare() {
   const apiKey = (process.env.COMTRADE_API_KEYS || '').split(',').filter(Boolean)[0];
+  // A missing key is no longer fatal: /public/v1/preview serves this same query
+  // with no key at all (verified 2026-09-04, count=217 for the cmdCode=TOTAL
+  // query this seeder always sends). Preview truncates at PREVIEW_ROW_CAP, which
+  // feeds the existing per-country truncation path, so a cut is omitted rather
+  // than silently under-reporting a share.
   if (!apiKey) {
-    throw new Error('[reexport-share] COMTRADE_API_KEYS not set — cannot fetch');
+    console.log('[reexport-share] no COMTRADE_API_KEYS — using the keyless /public/v1/preview path');
   }
 
   const years = buildPeriodYears();
